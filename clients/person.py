@@ -13,6 +13,7 @@ from base64 import b64encode, b64decode
 import pkcs11
 import os
 
+from dateutil.parser import parse
 import OpenSSL
 from pkcs11.constants import Attribute
 from pkcs11.constants import ObjectClass
@@ -441,8 +442,9 @@ class PKCS11PersonClient(OSPersonClient):
     session = None
     certificates = None
     key_token = None
+    info = None
 
-    def __init__(self, slot=None, person=None, wait_time=10, settings=Settings()):
+    def __init__(self, slot=None,  wait_time=10, settings=Settings()):
         if slot:
             self.slot = slot
         else:
@@ -450,8 +452,13 @@ class PKCS11PersonClient(OSPersonClient):
 
         self.wait_time = wait_time
         self.settings = settings
-        self.person = person
         self.get_module_lib()
+        self.info = self.get_info()
+        self.person = self.get_person()
+
+        if self.person is None:
+            raise Exception("Person can not be created, sorry read certificates fail")
+
         #self.session = self.get_session()
         #self.certificates = self.get_certificates()
 
@@ -513,6 +520,42 @@ class PKCS11PersonClient(OSPersonClient):
             return session
         return self.session
 
+    def get_person(self):
+        info = self.get_info()
+        person = None
+        if info:
+           person = info[0]['identification']
+        return person
+
+    def get_info(self):
+        if self.info: 
+            return self.info
+        info = []
+        slot = self.get_slot()
+        token = slot.get_token()
+        with token.open() as session:
+            for cert in session.get_objects({
+                Attribute.CLASS: ObjectClass.CERTIFICATE}):
+                x509 = OpenSSL.crypto.load_certificate(
+                            OpenSSL.crypto.FILETYPE_ASN1, cert[Attribute.VALUE])
+                subject = x509.get_subject()
+                name = "%s %s"%(subject.GN, subject.SN )
+                identification = subject.serialNumber
+                person = {
+                    'name': name.title(),
+                    'identification': identification.replace("CPF-", ''),
+                    'type': subject.O,
+                    'organization': subject.OU,
+                    'country': subject.C,
+                    'commonName': subject.commonName,
+                    'serialNumber': subject.serialNumber,
+                    'cert_serialnumber': x509.get_serial_number(),
+                    'cert_start': parse(x509.get_notBefore()),
+                    'cert_expire': parse(x509.get_notAfter())
+                }
+                info.append(person)
+
+        return info
     def get_certificates(self):
         """Extrae los certificados dentro del dispositivo y los guarda de forma estructurada para simplificar el acceso"""
         if self.certificates is None:
