@@ -5,7 +5,7 @@ Created on 2 ago. 2017
 '''
 
 
-from clients.person import PersonClient
+from clientfva.person import PersonClient
 
 client = PersonClient(person='04-0212-0119')
 client.register()
