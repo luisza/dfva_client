@@ -20,8 +20,6 @@ from . import Settings
 from .rsa import get_hash_sum, encrypt
 
 
-
-
 class PersonClientInterface():
     """
     .. note:: Este cliente está en desarrollo por lo que muchas cosas falta y muchos errores no son manejados
@@ -459,7 +457,8 @@ class PKCS11PersonClient(OSPersonClient):
         self.person = self.get_person()
 
         if self.person is None:
-            raise Exception("Person can not be created, sorry read certificates fail")
+            raise Exception(
+                "Person can not be created, sorry read certificates fail")
 
         #self.session = self.get_session()
         #self.certificates = self.get_certificates()
@@ -526,22 +525,21 @@ class PKCS11PersonClient(OSPersonClient):
         info = self.get_info()
         person = None
         if info:
-           person = info[0]['identification']
+            person = info[0]['identification']
         return person
 
     def get_info(self):
-        if self.info: 
-            return self.info
+
         info = []
         slot = self.get_slot()
         token = slot.get_token()
         with token.open() as session:
             for cert in session.get_objects({
-                Attribute.CLASS: ObjectClass.CERTIFICATE}):
+                    Attribute.CLASS: ObjectClass.CERTIFICATE}):
                 x509 = OpenSSL.crypto.load_certificate(
-                            OpenSSL.crypto.FILETYPE_ASN1, cert[Attribute.VALUE])
+                    OpenSSL.crypto.FILETYPE_ASN1, cert[Attribute.VALUE])
                 subject = x509.get_subject()
-                name = "%s %s"%(subject.GN, subject.SN )
+                name = "%s %s" % (subject.GN, subject.SN)
                 identification = subject.serialNumber
                 person = {
                     'name': name.title(),
@@ -558,6 +556,7 @@ class PKCS11PersonClient(OSPersonClient):
                 info.append(person)
 
         return info
+
     def get_certificates(self):
         """Extrae los certificados dentro del dispositivo y los guarda de forma estructurada para simplificar el acceso"""
         if self.certificates is None:
