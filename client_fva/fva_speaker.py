@@ -7,10 +7,14 @@ Created on 17 ago. 2017
 import requests
 import os
 import OpenSSL
+from pkcs11 import Mechanism
 from pkcs11.constants import Attribute
 from pkcs11.constants import ObjectClass
 import pkcs11
 from client_fva.rsa import pem_to_base64
+import json
+import urllib
+from base64 import b64decode, b64encode
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ca_bundle = os.path.join(BASE_DIR, 'lib/certs/ca_bundle.pem')
 
@@ -20,6 +24,7 @@ class FVA_client:
     certificates = None
     session = None
     slot = None
+    stop = False
 
     def __init__(self):
         self.slot = self.get_slot()
@@ -31,6 +36,8 @@ class FVA_client:
 
         url = "https://www.firmadigital.go.cr/wcfv2/Bccr.Firma.Fva.Hub/signalr/negotiate?clientProtocol=1.4&connectionData=%5B%7B%22name%22%3A%22administradordeclientes%22%7D%5D"
         response = requests.get(url, verify=ca_bundle, headers=headers)
+        result = response.json()
+
     # {'ProtocolVersion': '1.4',
     #  'DisconnectTimeout': 30.0,
     #  'ConnectionId': '80b6be12-b116-4180-a45f-1cb6acb3e2cc',
@@ -41,32 +48,29 @@ class FVA_client:
     #  'KeepAliveTimeout': 20.0,
     #  'TransportConnectTimeout': 5.0,
     #  'Url': '/wcfv2/Bccr.Firma.Fva.Hub/signalr'}
-        return response.json()
+        self.base_url = 'https://www.firmadigital.go.cr' + result['Url']
+        self.params = {
+            'connectionData':   '[{"name":"administradordeclientes"}]',
+            'connectionToken': result['ConnectionToken'],
+            'connectionId': result['ConnectionId'],
+            'transport': 'serverSentEvents',
+
+        }
+        return result
 
     def start_the_communication(self, data):
-        print(data)
         certificates = self.get_certificates()
-        con_data = "connectionData=[{\"name\":\"administradordeclientes\"}]"
-        url_var = "%s/connect?connectionToken=%s&connectionId=%s" % (
-            data['Url'],
-            data['ConnectionToken'],
-            data['ConnectionId'])
-
-        url = """https://www.firmadigital.go.cr/%s&transport=serverSentEvents&%s
-    """ % (
-            url_var, con_data
-        )
+        # url = self.base_url+'/connect'
+        url = """https://www.firmadigital.go.cr/%s/connect""" % (data['Url'])
 
         uname = os.uname()
-        print(
-            repr(pem_to_base64(certificates['authentication']['pem'].decode())))
         headers = {
             'Accept': 'text/event-stream',
             'CertificadoAutenticacion': pem_to_base64(certificates['authentication']['pem'].decode()),
             'CertificadoFirmante': pem_to_base64(certificates['sign']['pem'].decode()),
             'NombreDelSistemaOperativo': uname[0],
             'VersionDelSistemaOperativo': uname[3],
-            'IpPrivada': '192.168.1.2',
+            'IpPrivada': '127.0.0.1',
             'Arquitectura': 'amd64' if uname[4] == 'x86_64' else 'x86',
             'NombreDelHost': uname[1],
             'User-Agent': 'SignalR (lang=Java; os=linux; version=2.0)',
@@ -75,7 +79,9 @@ class FVA_client:
 
         self.response = requests.get(url, headers=headers,
                                      verify=ca_bundle,
+                                     params=self.params,
                                      stream=True)
+
         return self.response
 
     def get_slot(self):
@@ -169,11 +175,83 @@ class FVA_client:
         response = self.start_the_communication(data)
         return response
 
+    def process_messages(self, response):
+        for message in self.read_messages(response):
+            try:
+                data = json.loads(message)
+            except:
+                print(message)
+                continue
+            if 'M' in data and data['M']:
+                if "M" in data['M'][0] and data['M'][0]['M'] == "Firme":
+                    self.sign(data)
+
+    def read_messages(self, response):
+        """
+        Esto es parte de lo que viene
+          @c(a="a")
+          public String HashAFirmarDocumento;
+          @c(a="b")
+          public String HashAFirmarResumen;
+          @c(a="c")
+          public String ResumenDelDocumento;
+          @c(a="d")
+          public String NombreDeLaEntidad;
+          @c(a="e")
+          public String LogoDeLaEntidad;
+          @c(a="f")
+          public int TimeoutEnSegundos;
+          @c(a="g")
+          public int IdDeLaSolicitud;
+          @c(a="h")
+          public int TipoDeFirma;
+        """
+
+        for line in response.iter_lines():
+            if not line:
+                continue
+            text = line.decode()
+            if text and 'data: {}' != text:
+                yield text.replace('data: ', '')
+
+    def sign(self, data):
+        params = {
+            "H": "administradorDeClientes",
+            "M": "FirmaRealizada",
+            "A": [],
+            "I": 0
+
+        }
+        dev = {}
+        dev["e"] = data['M'][0]['A'][0]['g']
+        dev["d"] = 0
+        dev["c"] = input('Código: ')
+        dev['b'] = self.get_signed_hash(data['M'][0]['A'][0]['b']).decode()
+        dev['a'] = self.get_signed_hash(data['M'][0]['A'][0]['a']).decode()
+        params['A'].append(dev)
+
+        url = self.base_url + '/send'
+
+        headers = {
+            'User-Agent': 'SignalR (lang=Java; os=linux; version=2.0)',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+
+        params = 'data=' + urllib.parse.quote_plus(json.dumps(params))
+        self.sign_response = requests.post(
+            url, data=params,  verify=ca_bundle,
+            params=self.params, headers=headers)
+
+    def get_signed_hash(self, hash):
+        certificates = self.get_certificates()
+        d = certificates['sign']['priv_key'].sign(
+            b64decode(hash), mechanism=Mechanism.SHA256_RSA_PKCS)
+        return b64encode(d)
+
 
 """
 from client_fva.fva_speaker import FVA_client
 c = FVA_client()
 response = c.start()
-response.raw.read(1024)
-
+c.process_messages(response)
 """
