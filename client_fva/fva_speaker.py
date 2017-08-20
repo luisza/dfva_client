@@ -237,9 +237,9 @@ class FVA_client:
             'Content-Type': 'application/x-www-form-urlencoded'
         }
 
-        params = 'data=' + urllib.parse.quote_plus(json.dumps(params))
+        body = 'data=' + urllib.parse.quote_plus(json.dumps(params))
         self.sign_response = requests.post(
-            url, data=params,  verify=ca_bundle,
+            url, data=body,  verify=ca_bundle,
             params=self.params, headers=headers)
 
     def get_signed_hash(self, hash):

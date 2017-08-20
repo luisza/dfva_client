@@ -164,7 +164,7 @@ class PersonBaseClient(PersonClientInterface):
         self.wait_time = wait_time
         self.settings = settings()
 
-    def _encript(self, str_data, etype='authenticate'):
+    def _encrypt(self, str_data, etype='authenticate'):
         """ Encrypta usando alguno de los 2 encryptadores del dispositivo PKCS11.
         * etype = authenticate, sign
         """
@@ -191,7 +191,7 @@ class PersonBaseClient(PersonClientInterface):
         }
 
         str_data = json.dumps(data)
-        edata = self._encript(str_data, etype='authenticate')
+        edata = self._encrypt(str_data, etype='authenticate')
         hashsum = get_hash_sum(edata,  algorithm)
         edata = edata.decode()
         params = {
@@ -201,7 +201,7 @@ class PersonBaseClient(PersonClientInterface):
             'person': self.person,
             "data": edata,
         }
-        result = requests.post(
+        result = self.requests.post(
             self.settings.FVA_SERVER_URL +
             self.settings.AUTHENTICATE_PERSON, json=params)
 
@@ -222,7 +222,7 @@ class PersonBaseClient(PersonClientInterface):
         }
 
         str_data = json.dumps(data)
-        edata = self._encript(str_data, etype='authenticate')
+        edata = self._encrypt(str_data, etype='authenticate')
         hashsum = get_hash_sum(edata,  algorithm)
         edata = edata.decode()
         params = {
@@ -232,7 +232,7 @@ class PersonBaseClient(PersonClientInterface):
             'person': self.person,
             "data": edata,
         }
-        result = requests.post(
+        result = self.requests.post(
             self.settings.FVA_SERVER_URL +
             self.settings.CHECK_AUTHENTICATE_PERSON % (code,), json=params)
 
@@ -257,7 +257,7 @@ class PersonBaseClient(PersonClientInterface):
         }
 
         str_data = json.dumps(data)
-        edata = self._encript(str_data, etype='sign')
+        edata = self._encrypt(str_data, etype='sign')
         hashsum = get_hash_sum(edata,  algorithm)
         edata = edata.decode()
         params = {
@@ -271,7 +271,7 @@ class PersonBaseClient(PersonClientInterface):
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json'}
 
-        result = requests.post(
+        result = self.requests.post(
             self.settings.FVA_SERVER_URL + self.settings.SIGN_PERSON,
             json=params, headers=headers)
 
@@ -293,7 +293,7 @@ class PersonBaseClient(PersonClientInterface):
         }
 
         str_data = json.dumps(data)
-        edata = self._encript(str_data, etype='sign')
+        edata = self._encrypt(str_data, etype='sign')
         hashsum = get_hash_sum(edata,  algorithm)
         edata = edata.decode()
         params = {
@@ -303,7 +303,7 @@ class PersonBaseClient(PersonClientInterface):
             'person': self.person,
             "data": edata,
         }
-        result = requests.post(
+        result = self.requests.post(
             self.settings.FVA_SERVER_URL +
             self.settings.CHECK_SIGN_PERSON % (code,), json=params)
 
@@ -324,7 +324,7 @@ class PersonBaseClient(PersonClientInterface):
 
         str_data = json.dumps(data)
         # print(str_data)
-        edata = self._encript(str_data, etype='sign')
+        edata = self._encrypt(str_data, etype='sign')
         hashsum = get_hash_sum(edata,  algorithm)
         edata = edata.decode()
         params = {
@@ -342,7 +342,7 @@ class PersonBaseClient(PersonClientInterface):
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json'}
 
-        result = requests.post(
+        result = self.requests.post(
             self.settings.FVA_SERVER_URL + url, json=params, headers=headers)
 
         return result.json()
@@ -356,7 +356,7 @@ class PersonBaseClient(PersonClientInterface):
         }
 
         str_data = json.dumps(data)
-        edata = self._encript(str_data, etype='authenticate')
+        edata = self._encrypt(str_data, etype='authenticate')
         hashsum = get_hash_sum(edata,  algorithm)
         edata = edata.decode()
         params = {
@@ -366,7 +366,7 @@ class PersonBaseClient(PersonClientInterface):
             'person': self.person,
             "data": edata,
         }
-        result = requests.post(
+        result = self.requests.post(
             self.settings.FVA_SERVER_URL +
             self.settings.SUSCRIPTOR_CONNECTED, json=params)
 
@@ -444,7 +444,11 @@ class PKCS11PersonClient(OSPersonClient):
     key_token = None
     info = None
 
-    def __init__(self, slot=None,  wait_time=10, settings=Settings()):
+    def __init__(self, slot=None,  wait_time=10, settings=Settings(),
+                 request_client=requests):
+
+        self.requests = request_client
+
         if slot:
             self.slot = slot
         else:
@@ -517,8 +521,8 @@ class PKCS11PersonClient(OSPersonClient):
         # volver a iniciarla
         if self.session is None:
             self.token = self.slot.get_token()
-            session = self.token.open(user_pin=self.get_pin())
-            return session
+            self.session = self.token.open(user_pin=self.get_pin())
+            return self.session
         return self.session
 
     def get_person(self):
@@ -603,7 +607,7 @@ class PKCS11PersonClient(OSPersonClient):
 
         return key_token
 
-    def _encript(self, str_data, etype='authenticate'):
+    def _encrypt(self, str_data, etype='authenticate'):
         """
         etype = authenticate, sign
         """
@@ -634,7 +638,7 @@ class PKCS11PersonClient(OSPersonClient):
             "code": edata,
         }
 
-        result = requests.post(
+        result = self.requests.post(
             self.settings.FVA_SERVER_URL +
             self.settings.LOGIN_PERSON, json=params)
         data = result.json()
@@ -642,7 +646,8 @@ class PKCS11PersonClient(OSPersonClient):
         return data
 
     def unregister(self):
-        self.session.close()
+        if self.session:
+            self.session.close()
 
 
 PersonClient = PKCS11PersonClient
