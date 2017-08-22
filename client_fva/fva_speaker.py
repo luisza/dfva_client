@@ -6,28 +6,30 @@ Created on 17 ago. 2017
 
 import requests
 import os
-import OpenSSL
-from pkcs11 import Mechanism
-from pkcs11.constants import Attribute
-from pkcs11.constants import ObjectClass
-import pkcs11
 from client_fva.rsa import pem_to_base64
 import json
 import urllib
 from base64 import b64decode, b64encode
+from client_fva.pkcs11client import PKCS11Client
+from pkcs11.mechanisms import Mechanism
+from client_fva import signals
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ca_bundle = os.path.join(BASE_DIR, 'lib/certs/ca_bundle.pem')
+from threading import Thread
+from blinker import signal
 
 
-class FVA_client:
+class FVA_Base_client(PKCS11Client):
     info = None
     certificates = None
     session = None
     slot = None
     stop = False
 
-    def __init__(self):
-        self.slot = self.get_slot()
+    def __init__(self, *args, **kwargs):
+        PKCS11Client.__init__(self, *args, **kwargs)
+        self.identification = self.get_identification()
+        self.signal = signal(self.identification)
 
     def start_the_negotiation(self):
         headers = {
@@ -66,8 +68,8 @@ class FVA_client:
         uname = os.uname()
         headers = {
             'Accept': 'text/event-stream',
-            'CertificadoAutenticacion': pem_to_base64(certificates['authentication']['pem'].decode()),
-            'CertificadoFirmante': pem_to_base64(certificates['sign']['pem'].decode()),
+            'CertificadoAutenticacion': pem_to_base64(certificates['authentication'].decode()),
+            'CertificadoFirmante': pem_to_base64(certificates['sign'].decode()),
             'NombreDelSistemaOperativo': uname[0],
             'VersionDelSistemaOperativo': uname[3],
             'IpPrivada': '127.0.0.1',
@@ -84,93 +86,7 @@ class FVA_client:
 
         return self.response
 
-    def get_slot(self):
-        """Obtiene el primer slot (tarjeta) disponible
-        .. warning:: Solo usar en pruebas y mejorar la forma como se capta
-        """
-        lib = pkcs11.lib(self.get_module_lib())
-        slots = lib.get_slots()
-        if not slots:
-            raise Exception("PKCS11: Slot not found")
-        self.slot = slots[0]
-        return self.slot
-
-    def get_module_lib(self):
-        """Obtiene la biblioteca de comunicación con la tarjeta """
-        if 'PKCS11_MODULE' in os.environ:
-            return os.environ['PKCS11_MODULE']
-
-        if os.path.exists('/usr/lib/libASEP11.so'):
-            return '/usr/lib/libASEP11.so'
-
-        try:
-            import platform
-            arch = platform.architecture()[0]
-            if arch == '64bit':
-                arch = 'x86_64'
-            else:
-                arch = 'x86'
-
-            BASE_DIR = os.path.dirname(
-                os.path.dirname(os.path.abspath(__file__)))
-            path = os.path.join(
-                BASE_DIR, 'clients/lib/%s/libASEP11.so' % (arch, ))
-            if os.path.exists(path):
-                return path
-        except Exception as e:
-            raise Exception(
-                "Sorry not PKCS11 module found, please use export PKCS11_MODULE='<path>' before call python ")
-
-    def get_pin(self):
-        """Obtiene el pin de la tarjeta para iniciar sessión"""
-        if 'PKCS11_PIN' in os.environ:
-            return os.environ['PKCS11_PIN']
-        else:
-            return input("Write your pin: ")
-
-        raise Exception(
-            'Sorry PIN is Needed, we will remove this, but for now use export PKCS11_PIN=<pin> before call python')
-
-    def get_session(self):
-        """Obtiene o inicializa una sessión para el uso de la tarjeta.
-        .. warning:: Ojo cachear la session y revisar si está activa
-        """
-        # Fixme: Verificar si la sessión está activa y si no lo está entonces
-        # volver a iniciarla
-        if self.session is None:
-            self.token = self.slot.get_token()
-            self.session = self.token.open(user_pin=self.get_pin())
-            return self.session
-        return self.session
-
-    def get_certificates(self):
-        """Extrae los certificados dentro del dispositivo y los guarda de forma estructurada para simplificar el acceso"""
-        if self.certificates is None:
-            certs = {}
-            cert_label = []
-            session = self.get_session()
-            for cert in session.get_objects({
-                    Attribute.CLASS: ObjectClass.CERTIFICATE}):
-                x509 = OpenSSL.crypto.load_certificate(
-                    OpenSSL.crypto.FILETYPE_ASN1, cert[Attribute.VALUE])
-                certs[cert[3]] = {
-                    'cert': cert,
-                    'pub_key': OpenSSL.crypto.dump_publickey(OpenSSL.crypto.FILETYPE_PEM, x509.get_pubkey()),
-                    'pem': OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, x509),
-                }
-                cert_label.append(cert[3])
-
-            for privkey in session.get_objects({Attribute.CLASS: ObjectClass.PRIVATE_KEY}):
-                if privkey.label in certs:
-                    certs[privkey.label]['priv_key'] = privkey
-
-            self.certificates = {
-                'authentication': certs[cert_label[0]],
-                'sign': certs[cert_label[1]]
-            }
-        return self.certificates
-
-    def start(self):
+    def start_client(self):
         data = self.start_the_negotiation()
         response = self.start_the_communication(data)
         return response
@@ -222,12 +138,20 @@ class FVA_client:
             "I": 0
 
         }
+        sobj = signals.SignalObject(signals.PIN_CODE_REQUEST, data)
+        respobj = signals.get_signal_response(
+            self.signal.send('fva_speaker', obj=sobj))
+
         dev = {}
         dev["e"] = data['M'][0]['A'][0]['g']
-        dev["d"] = 0
-        dev["c"] = input('Código: ')
-        dev['b'] = self.get_signed_hash(data['M'][0]['A'][0]['b']).decode()
-        dev['a'] = self.get_signed_hash(data['M'][0]['A'][0]['a']).decode()
+        dev["d"] = 2 if respobj.response['rejected'] else 0
+        dev["c"] = ""
+        if not respobj.response['rejected']:
+            dev["c"] = respobj.response['code']
+            dev['b'] = self.get_signed_hash(data['M'][0]['A'][0]['b'],
+                                            pin=respobj.response['pin']).decode()
+            dev['a'] = self.get_signed_hash(data['M'][0]['A'][0]['a'],
+                                            pin=respobj.response['pin']).decode()
         params['A'].append(dev)
 
         url = self.base_url + '/send'
@@ -238,15 +162,49 @@ class FVA_client:
         }
 
         body = 'data=' + urllib.parse.quote_plus(json.dumps(params))
+        # FIXME: revisar estado y si algo va mal volver a enviar la
+        # solicitud
         self.sign_response = requests.post(
             url, data=body,  verify=ca_bundle,
             params=self.params, headers=headers)
 
-    def get_signed_hash(self, hash):
-        certificates = self.get_certificates()
+    def get_signed_hash(self, hash, pin=None):
+        certificates = self.get_keys(pin=pin)
         d = certificates['sign']['priv_key'].sign(
             b64decode(hash), mechanism=Mechanism.SHA256_RSA_PKCS)
         return b64encode(d)
+
+
+class FVA_client(FVA_Base_client, Thread):
+    def __init__(self, *args, **kwargs):
+
+        FVA_Base_client.__init__(self, *args, **kwargs)
+        Thread.__init__(self)
+        self.daemon = kwargs.get('daemon', True)
+
+    def run(self):
+        tryrun = True
+        while tryrun:
+            data = self.start_client()
+            self.process_messages(data)
+            tryrun = self.daemon
+
+
+class OSDummyClient:
+    def __init__(self):
+        self.client = FVA_client()
+        self.client.start()
+        self.client.signal.connect(self.request_pin_code)
+
+    def request_pin_code(self, sender, **kw):
+        obj = kw['obj']
+        print("%s dice:\n\n" % (obj.data['M'][0]['A'][0]['d'], ))
+        print(obj.data['M'][0]['A'][0]['c'])
+
+        obj.response['pin'] = input('Insert your pin: ')
+        obj.response['code'] = input('Insert the code: ')
+        obj.response['rejected'] = False
+        return obj
 
 
 """
@@ -254,4 +212,9 @@ from client_fva.fva_speaker import FVA_client
 c = FVA_client()
 response = c.start()
 c.process_messages(response)
+
+
+from client_fva.fva_speaker import OSDummyClient
+client= OSDummyClient()
+
 """

@@ -4,12 +4,10 @@ Created on 3 ago. 2017
 @author: luis
 '''
 
-
-from Crypto.Random import get_random_bytes
 from Crypto.Cipher import AES
 import io
 import hashlib
-from base64 import b64decode, b64encode
+from base64 import b64encode
 
 
 def pem_to_base64(certificate):

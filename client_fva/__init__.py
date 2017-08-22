@@ -1,5 +1,5 @@
 
-class Settings():
+class Settings(dict):
     FVA_SERVER_URL = 'http://localhost:8000'
     AUTHENTICATE_PERSON = '/authenticate/person/'
     CHECK_AUTHENTICATE_PERSON = '/authenticate/%s/person_show/'

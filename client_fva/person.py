@@ -6,18 +6,12 @@ Created on 1 ago. 2017
 import requests
 import json
 import time
-import pkcs11
-import os
-import OpenSSL
-from pkcs11.constants import Attribute
-from pkcs11.constants import ObjectClass
-
 from datetime import datetime
-from dateutil.parser import parse
 from base64 import b64encode, b64decode
 
 from . import Settings
 from .rsa import get_hash_sum, encrypt
+from client_fva.pkcs11client import PKCS11Client
 
 
 class PersonClientInterface():
@@ -66,7 +60,7 @@ class PersonClientInterface():
     .. note:: Esta interfaz describe todos los métodos disponibles del cliente en python.
     """
 
-    def __init__(self, slot=None, person=None, wait_time=10, settings=Settings()):
+    def __init__(self, *args, **kwargs):
         """
         Inicializa el cliente con los parámetros proporcionados.
 
@@ -158,11 +152,6 @@ class PersonClientInterface():
 
 
 class PersonBaseClient(PersonClientInterface):
-
-    def __init__(self, person, wait_time=10, settings=Settings):
-        self.person = person
-        self.wait_time = wait_time
-        self.settings = settings()
 
     def _encrypt(self, str_data, etype='authenticate'):
         """ Encrypta usando alguno de los 2 encryptadores del dispositivo PKCS11.
@@ -438,26 +427,19 @@ class OSPersonClient(PersonBaseClient):
             _format=_format)
 
 
-class PKCS11PersonClient(OSPersonClient):
+class PKCS11PersonClient(PKCS11Client, OSPersonClient):
     session = None
     certificates = None
     key_token = None
     info = None
 
-    def __init__(self, slot=None,  wait_time=10, settings=Settings(),
-                 request_client=requests):
+    def __init__(self, *args, **kwargs):
 
-        self.requests = request_client
+        self.requests = kwargs.get('request_client', requests)
+        self.wait_time = kwargs.get('wait_time', 10)
+        self.settings = kwargs.get('settings', Settings())
+        PKCS11Client.__init__(self, *args, **kwargs)
 
-        if slot:
-            self.slot = slot
-        else:
-            self.slot = self.get_slot()
-
-        self.wait_time = wait_time
-        self.settings = settings
-        self.get_module_lib()
-        self.info = self.get_info()
         self.person = self.get_person()
 
         if self.person is None:
@@ -467,142 +449,24 @@ class PKCS11PersonClient(OSPersonClient):
         #self.session = self.get_session()
         #self.certificates = self.get_certificates()
 
-    def get_module_lib(self):
-        """Obtiene la biblioteca de comunicación con la tarjeta """
-        if 'PKCS11_MODULE' in os.environ:
-            return os.environ['PKCS11_MODULE']
-
-        if os.path.exists('/usr/lib/libASEP11.so'):
-            return '/usr/lib/libASEP11.so'
-
-        try:
-            import platform
-            arch = platform.architecture()[0]
-            if arch == '64bit':
-                arch = 'x86_64'
-            else:
-                arch = 'x86'
-
-            BASE_DIR = os.path.dirname(
-                os.path.dirname(os.path.abspath(__file__)))
-            path = os.path.join(
-                BASE_DIR, 'clients/lib/%s/libASEP11.so' % (arch, ))
-            if os.path.exists(path):
-                return path
-        except Exception as e:
-            raise Exception(
-                "Sorry not PKCS11 module found, please use export PKCS11_MODULE='<path>' before call python ")
-
-    def get_pin(self):
-        """Obtiene el pin de la tarjeta para iniciar sessión"""
-        if 'PKCS11_PIN' in os.environ:
-            return os.environ['PKCS11_PIN']
-        else:
-            return input("Write your pin: ")
-
-        raise Exception(
-            'Sorry PIN is Needed, we will remove this, but for now use export PKCS11_PIN=<pin> before call python')
-
-    def get_slot(self):
-        """Obtiene el primer slot (tarjeta) disponible
-        .. warning:: Solo usar en pruebas y mejorar la forma como se capta
-        """
-        lib = pkcs11.lib(self.get_module_lib())
-        slots = lib.get_slots()
-        if not slots:
-            raise Exception("PKCS11: Slot not found")
-        return slots[0]
-
-    def get_session(self):
-        """Obtiene o inicializa una sessión para el uso de la tarjeta.
-        .. warning:: Ojo cachear la session y revisar si está activa
-        """
-        # Fixme: Verificar si la sessión está activa y si no lo está entonces
-        # volver a iniciarla
-        if self.session is None:
-            self.token = self.slot.get_token()
-            self.session = self.token.open(user_pin=self.get_pin())
-            return self.session
-        return self.session
-
     def get_person(self):
-        info = self.get_info()
-        person = None
-        if info:
-            person = info[0]['identification']
-        return person
-
-    def get_info(self):
-
-        info = []
-        slot = self.get_slot()
-        token = slot.get_token()
-        with token.open() as session:
-            for cert in session.get_objects({
-                    Attribute.CLASS: ObjectClass.CERTIFICATE}):
-                x509 = OpenSSL.crypto.load_certificate(
-                    OpenSSL.crypto.FILETYPE_ASN1, cert[Attribute.VALUE])
-                subject = x509.get_subject()
-                name = "%s %s" % (subject.GN, subject.SN)
-                identification = subject.serialNumber
-                person = {
-                    'name': name.title(),
-                    'identification': identification.replace("CPF-", ''),
-                    'type': subject.O,
-                    'organization': subject.OU,
-                    'country': subject.C,
-                    'commonName': subject.commonName,
-                    'serialNumber': subject.serialNumber,
-                    'cert_serialnumber': x509.get_serial_number(),
-                    'cert_start': parse(x509.get_notBefore()),
-                    'cert_expire': parse(x509.get_notAfter())
-                }
-                info.append(person)
-
-        return info
-
-    def get_certificates(self):
-        """Extrae los certificados dentro del dispositivo y los guarda de forma estructurada para simplificar el acceso"""
-        if self.certificates is None:
-            certs = {}
-            cert_label = []
-            session = self.get_session()
-            for cert in session.get_objects({
-                    Attribute.CLASS: ObjectClass.CERTIFICATE}):
-                x509 = OpenSSL.crypto.load_certificate(
-                    OpenSSL.crypto.FILETYPE_ASN1, cert[Attribute.VALUE])
-                certs[cert[3]] = {
-                    'cert': cert,
-                    'pub_key': OpenSSL.crypto.dump_publickey(OpenSSL.crypto.FILETYPE_PEM, x509.get_pubkey()),
-                    'pem': OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, x509),
-                }
-                cert_label.append(cert[3])
-
-            for privkey in session.get_objects({Attribute.CLASS: ObjectClass.PRIVATE_KEY}):
-                if privkey.label in certs:
-                    certs[privkey.label]['priv_key'] = privkey
-
-            self.certificates = {
-                'authentication': certs[cert_label[0]],
-                'sign': certs[cert_label[1]]
-            }
-        return self.certificates
+        return self.get_identification()
 
     def _get_public_auth_certificate(self):
         certificates = self.get_certificates()
-        return certificates['authentication']['pem'].decode()
+        return certificates['authentication'].decode()
 
     def _get_public_sign_certificate(self):
         certificates = self.get_certificates()
-        return certificates['sign']['pem'].decode()
+        return certificates['sign'].decode()
 
     def get_key_token(self):
         """Convierte a texto plano o número el token de sessión de DFVA que está encriptado"""
         if self.key_token is None:
             self.register()
 
-        certificates = self.get_certificates()
-        key_token = certificates['authentication']['priv_key'].decrypt(
+        keys = self.get_keys()
+        key_token = keys['authentication']['priv_key'].decrypt(
             self.key_token)
 
         return key_token
@@ -613,17 +477,17 @@ class PKCS11PersonClient(OSPersonClient):
         """
         if etype == 'authenticate':
             etype = 'authentication'
-        certificates = self.get_certificates()
+        keys = self.get_keys()
         keytoken = self.get_key_token()
-        signed_token = certificates[etype]['priv_key'].sign(keytoken)
+        signed_token = keys[etype]['priv_key'].sign(keytoken)
         return encrypt(keytoken, signed_token, str_data)
 
     def sign_identification(self, identification):
         """Firma con la llave privada la identificación de la persona, para determinar si es correctamente, la 
         persona que dice ser (validación en DFVA).
         """
-        certificates = self.get_certificates()
-        return certificates['authentication']['priv_key'].sign(identification)
+        keys = self.get_keys()
+        return keys['authentication']['priv_key'].sign(identification)
 
     def register(self, algorithm='sha512'):
 
