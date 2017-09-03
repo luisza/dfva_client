@@ -14,7 +14,7 @@ from client_fva.pkcs11client import PKCS11Client
 from pkcs11.mechanisms import Mechanism
 from client_fva import signals
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ca_bundle = os.path.join(BASE_DIR, 'lib/certs/ca_bundle.pem')
+ca_bundle = os.path.join(BASE_DIR, 'libs/certs/ca_bundle.pem')
 from threading import Thread
 from blinker import signal
 

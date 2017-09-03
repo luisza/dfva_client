@@ -61,7 +61,7 @@ class PKCS11Client:
             BASE_DIR = os.path.dirname(
                 os.path.dirname(os.path.abspath(__file__)))
             path = os.path.join(
-                BASE_DIR, 'clients/lib/%s/libASEP11.so' % (arch, ))
+                BASE_DIR, 'client_fva/libs/%s/libASEP11.so' % (arch, ))
             if os.path.exists(path):
                 return path
         except Exception as e:
