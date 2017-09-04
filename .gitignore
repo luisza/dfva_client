@@ -104,4 +104,4 @@ ENV/
 .pydevproject
 .settings
 
-client_fva/libs/certs/
+#client_fva/libs/certs/
