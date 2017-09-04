@@ -108,6 +108,7 @@ class PKCS11Client:
                     OpenSSL.crypto.FILETYPE_ASN1, cert[Attribute.VALUE])
                 certs.append(OpenSSL.crypto.dump_certificate(
                     OpenSSL.crypto.FILETYPE_PEM, x509))
+
         # FIXME: not positional extraction
         self.certificates = {
             'authentication': certs[0],
@@ -148,26 +149,29 @@ class PKCS11Client:
         """Extrae los certificados dentro del dispositivo y los guarda de forma estructurada para simplificar el acceso"""
 
         if self.keys is None:
-            certs = {}
-            cert_label = []
+
+            self.keys = {}
             session = self.get_session(pin=pin)
-            for cert in session.get_objects({
-                    Attribute.CLASS: ObjectClass.CERTIFICATE}):
+            certs = list(session.get_objects({
+                Attribute.CLASS: ObjectClass.CERTIFICATE}))
+            for cert in certs:
                 x509 = OpenSSL.crypto.load_certificate(
                     OpenSSL.crypto.FILETYPE_ASN1, cert[Attribute.VALUE])
-                certs[cert[3]] = {
-                    'pub_key': OpenSSL.crypto.dump_publickey(OpenSSL.crypto.FILETYPE_PEM, x509.get_pubkey()),
+                objs = {
+                    'pub_key': OpenSSL.crypto.dump_publickey(
+                        OpenSSL.crypto.FILETYPE_PEM, x509.get_pubkey()),
+                    'priv_key': list(session.get_objects({Attribute.CLASS: ObjectClass.PRIVATE_KEY,
+                                                          Attribute.LABEL: cert[3]}))[0]
                 }
-                cert_label.append(cert[3])
 
-            for privkey in session.get_objects({Attribute.CLASS: ObjectClass.PRIVATE_KEY}):
-                if privkey.label in certs:
-                    certs[privkey.label]['priv_key'] = privkey
+                subject = x509.get_subject()
+                if 'AUTENTICACION' in subject.CN:
+                    self.keys['authentication'] = objs
+                elif 'FIRMA' in subject.CN:
+                    self.keys['sign'] = objs
+                else:
+                    print("ERROR:", objs)
 
-            self.keys = {
-                'authentication': certs[cert_label[0]],
-                'sign': certs[cert_label[1]]
-            }
         return self.keys
 
     def get_identification(self):

@@ -7,7 +7,8 @@ Created on 3 ago. 2017
 from Crypto.Cipher import AES
 import io
 import hashlib
-from base64 import b64encode
+from base64 import b64encode, b64decode
+import json
 
 
 def pem_to_base64(certificate):
@@ -51,3 +52,20 @@ def encrypt(session_key, encypted_key, message):
     file_out.seek(0)
 
     return b64encode(file_out.read())
+
+
+def decrypt(private_key, cipher_text, as_str=True, session_key=None):
+    raw_cipher_data = b64decode(cipher_text)
+    file_in = io.BytesIO(raw_cipher_data)
+    file_in.seek(0)
+    if session_key is None:
+        enc_session_key, nonce, tag, ciphertext = \
+            [file_in.read(x)
+             for x in (int(private_key.key_length / 8), 16, 16, -1)]
+
+        session_key = private_key.decrypt(enc_session_key)
+    cipher_aes = AES.new(session_key, AES.MODE_EAX, nonce)
+    decrypted = cipher_aes.decrypt_and_verify(ciphertext, tag)
+    if as_str:
+        return json.loads(decrypted.decode())
+    return decrypted

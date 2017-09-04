@@ -12,6 +12,7 @@ from base64 import b64encode, b64decode
 from . import Settings
 from .rsa import get_hash_sum, encrypt
 from client_fva.pkcs11client import PKCS11Client
+from client_fva.rsa import decrypt
 
 
 class PersonClientInterface():
@@ -159,6 +160,11 @@ class PersonBaseClient(PersonClientInterface):
         """
         pass
 
+    def _decrypt(self, str_data):
+        """ Desencripta usando la llave privada del certificados de autenticación del dispositivo PKCS11.
+        """
+        pass
+
     def _get_public_auth_certificate(self):
         """Obtiene el certificado de autenticación de la tarjeta"""
         pass
@@ -195,6 +201,7 @@ class PersonBaseClient(PersonClientInterface):
             self.settings.AUTHENTICATE_PERSON, json=params)
 
         data = result.json()
+        data = self._decrypt(data['data'])
         if wait:
             while not data['received_notification']:
                 time.sleep(self.wait_time)
@@ -226,6 +233,7 @@ class PersonBaseClient(PersonClientInterface):
             self.settings.CHECK_AUTHENTICATE_PERSON % (code,), json=params)
 
         data = result.json()
+        data = self._decrypt(data['data'])
         return data
 
     def sign(self, identification, document, resume, _format="xml",
@@ -265,7 +273,7 @@ class PersonBaseClient(PersonClientInterface):
             json=params, headers=headers)
 
         data = result.json()
-
+        data = self._decrypt(data['data'])
         if wait:
             while not data['received_notification']:
                 time.sleep(self.wait_time)
@@ -297,6 +305,7 @@ class PersonBaseClient(PersonClientInterface):
             self.settings.CHECK_SIGN_PERSON % (code,), json=params)
 
         data = result.json()
+        data = self._decrypt(data['data'])
         return data
 
     def validate(self, document, file_path=None, algorithm='sha512',
@@ -334,7 +343,9 @@ class PersonBaseClient(PersonClientInterface):
         result = self.requests.post(
             self.settings.FVA_SERVER_URL + url, json=params, headers=headers)
 
-        return result.json()
+        data = result.json()
+        data = self._decrypt(data['data'])
+        return data
 
     def is_suscriptor_connected(self, identification, algorithm='sha512'):
 
@@ -481,6 +492,11 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
         keytoken = self.get_key_token()
         signed_token = keys[etype]['priv_key'].sign(keytoken)
         return encrypt(keytoken, signed_token, str_data)
+
+    def _decrypt(self, str_data):
+        etype = 'authentication'
+        keys = self.get_keys()
+        return decrypt(keys[etype]['priv_key'], str_data)
 
     def sign_identification(self, identification):
         """Firma con la llave privada la identificación de la persona, para determinar si es correctamente, la 
