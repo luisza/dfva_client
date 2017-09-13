@@ -13,7 +13,7 @@ from . import Settings
 from .rsa import get_hash_sum, encrypt
 from client_fva.pkcs11client import PKCS11Client
 from client_fva.rsa import decrypt
-
+from pytz import timezone
 
 class PersonClientInterface():
     """
@@ -174,9 +174,9 @@ class PersonBaseClient(PersonClientInterface):
         pass
 
     def _get_time(self):
-        # Fixme: sincronizar con timezone de CR y no usar el reloj de la
-        # computadora
-        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cr_timezone = timezone('America/Costa_Rica')
+        actual_hour = cr_timezone.localize(datetime.now())
+        return actual_hour.isoformat() #.strftime("%Y-%m-%d %H:%M:%S")
 
     def authenticate(self, identification, wait=False, algorithm='sha512'):
         data = {
@@ -250,7 +250,7 @@ class PersonBaseClient(PersonClientInterface):
             'document_hash': get_hash_sum(document,  algorithm),
             'identification': identification,
             'resumen': resume,
-            'request_datetime': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'request_datetime': self._get_time(),
         }
 
         str_data = json.dumps(data)
@@ -317,7 +317,7 @@ class PersonBaseClient(PersonClientInterface):
         data = {
             'person': self.person,
             'document': document,
-            'request_datetime': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'request_datetime': self._get_time(),
         }
 
         str_data = json.dumps(data)
