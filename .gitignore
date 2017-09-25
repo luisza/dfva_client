@@ -103,5 +103,6 @@ ENV/
 .project
 .pydevproject
 .settings
+.idea/
 
 #client_fva/libs/certs/

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ManageContactGroups</class>
+ <widget class="QWidget" name="ManageContactGroups">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>615</width>
+    <height>371</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Administrar Grupos</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">color:rgb(76, 118, 82);
+background-color:rgb(216, 230, 225);</string>
+  </property>
+  <layout class="QGridLayout" name="manageContactGroupsLayout">
+   <item row="1" column="0">
+    <widget class="QLineEdit" name="searchContact">
+     <property name="placeholderText">
+      <string>Buscar...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QPushButton" name="addContactGroup">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(11, 35, 21);
+font: 75 9pt &quot;Noto Sans&quot;;
+background-color: rgb(229, 229, 229);</string>
+     </property>
+     <property name="text">
+      <string>Grupo</string>
+     </property>
+     <property name="icon">
+      <iconset resource="resources.qrc">
+       <normaloff>:/images/agregar.png</normaloff>:/images/agregar.png</iconset>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QTreeView" name="contactGroupsTreeView"/>
+   </item>
+   <item row="0" column="0" colspan="2">
+    <widget class="QLabel" name="titleLabel">
+     <property name="styleSheet">
+      <string notr="true">font: 13pt;</string>
+     </property>
+     <property name="text">
+      <string>Administrar Grupos</string>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

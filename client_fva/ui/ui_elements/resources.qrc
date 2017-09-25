@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/administrar_contactos.png</file>
+        <file>images/administrar_grupos.png</file>
+        <file>images/autenticacion.png</file>
+        <file>images/configuracion_modulo.png</file>
+        <file>images/firma.png</file>
+        <file>images/icono.png</file>
+        <file>images/mis_firmas.png</file>
+        <file>images/mis_solicitudes.png</file>
+        <file>images/salir.png</file>
+        <file>images/refrescar.png</file>
+        <file>images/agregar.png</file>
+        <file>images/editar.png</file>
+        <file>images/enviar.png</file>
+        <file>images/validar.png</file>
+    </qresource>
+</RCC>
