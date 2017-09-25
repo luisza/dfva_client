@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_elements/tabDefault.ui'
+# Form implementation generated from reading ui file 'ui_elements/tabdefault.ui'
 #
 # Created by: PyQt5 UI code generator 5.5.1
 #
@@ -36,7 +36,7 @@ class Ui_TabDefault(object):
 "background-color: rgb(229, 229, 229);\n"
 "")
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/refrescar.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/images/refresh.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.refreshDevices.setIcon(icon)
         self.refreshDevices.setAutoDefault(False)
         self.refreshDevices.setDefault(False)
@@ -49,7 +49,7 @@ class Ui_TabDefault(object):
 
     def retranslateUi(self, TabDefault):
         _translate = QtCore.QCoreApplication.translate
-        TabDefault.setWindowTitle(_translate("TabDefault", "Administrar Contactos"))
+        TabDefault.setWindowTitle(_translate("TabDefault", "Sin Dispositivo"))
         self.initialMessageLbl.setText(_translate("TabDefault", "Favor conecte su dispositivo de firma para comenzar."))
         self.refreshDevices.setText(_translate("TabDefault", "Refrescar Dispositivos"))
 

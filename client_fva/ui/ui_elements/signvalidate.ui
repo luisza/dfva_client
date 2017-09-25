@@ -140,7 +140,7 @@ background-color: rgb(229, 229, 229);</string>
             </property>
             <property name="icon">
              <iconset resource="resources.qrc">
-              <normaloff>:/images/agregar.png</normaloff>:/images/agregar.png</iconset>
+              <normaloff>:/images/add.png</normaloff>:/images/add.png</iconset>
             </property>
            </widget>
           </item>
@@ -171,7 +171,7 @@ background-color: rgb(229, 229, 229);</string>
             </property>
             <property name="icon">
              <iconset resource="resources.qrc">
-              <normaloff>:/images/firma.png</normaloff>:/images/firma.png</iconset>
+              <normaloff>:/images/sign.png</normaloff>:/images/sign.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -221,7 +221,7 @@ background-color: rgb(229, 229, 229);</string>
             </property>
             <property name="icon">
              <iconset resource="resources.qrc">
-              <normaloff>:/images/validar.png</normaloff>:/images/validar.png</iconset>
+              <normaloff>:/images/validate.png</normaloff>:/images/validate.png</iconset>
             </property>
             <property name="iconSize">
              <size>

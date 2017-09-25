@@ -30,7 +30,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="resources.qrc">
-    <normaloff>:/images/icono.png</normaloff>:/images/icono.png</iconset>
+    <normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset>
   </property>
   <property name="windowOpacity">
    <double>-1.000000000000000</double>
@@ -104,95 +104,7 @@ background-color:rgb(216, 230, 225);</string>
        <attribute name="title">
         <string>Dispositivo</string>
        </attribute>
-       <layout class="QGridLayout" name="tab1Layout">
-        <item row="2" column="0">
-         <spacer name="verticalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>80</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="3" column="1">
-         <widget class="QPushButton" name="refreshDevices">
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">color: rgb(11, 35, 21);
-font: 75 9pt &quot;Noto Sans&quot;;
-background-color: rgb(229, 229, 229);
-</string>
-          </property>
-          <property name="text">
-           <string>Refrescar Dispositivos</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/images/refrescar.png</normaloff>:/images/refrescar.png</iconset>
-          </property>
-          <property name="autoDefault">
-           <bool>false</bool>
-          </property>
-          <property name="default">
-           <bool>false</bool>
-          </property>
-          <property name="flat">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>100</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="1" column="0" colspan="2">
-         <widget class="QLabel" name="initialMessageLbl">
-          <property name="styleSheet">
-           <string notr="true">font: 13pt;</string>
-          </property>
-          <property name="text">
-           <string>Favor conecte su dispositivo de firma para comenzar.</string>
-          </property>
-          <property name="scaledContents">
-           <bool>true</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="wordWrap">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
+       <layout class="QGridLayout" name="tab1Layout"/>
       </widget>
      </widget>
     </item>
@@ -259,7 +171,7 @@ background-color: rgb(229, 229, 229);
   <action name="actionSign">
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/images/firma.png</normaloff>:/images/firma.png</iconset>
+     <normaloff>:/images/sign.png</normaloff>:/images/sign.png</iconset>
    </property>
    <property name="text">
     <string>Firma</string>
@@ -286,7 +198,7 @@ background-color: rgb(229, 229, 229);
   <action name="actionAuthentication">
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/images/autenticacion.png</normaloff>:/images/autenticacion.png</iconset>
+     <normaloff>:/images/autentication.png</normaloff>:/images/autentication.png</iconset>
    </property>
    <property name="text">
     <string>Autenticación</string>
@@ -298,7 +210,7 @@ background-color: rgb(229, 229, 229);
   <action name="actionManageContacts">
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/images/administrar_contactos.png</normaloff>:/images/administrar_contactos.png</iconset>
+     <normaloff>:/images/manage_contacts.png</normaloff>:/images/manage_contacts.png</iconset>
    </property>
    <property name="text">
     <string>Administar Contactos</string>
@@ -310,7 +222,7 @@ background-color: rgb(229, 229, 229);
   <action name="actionManageGroups">
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/images/administrar_grupos.png</normaloff>:/images/administrar_grupos.png</iconset>
+     <normaloff>:/images/manage_groups.png</normaloff>:/images/manage_groups.png</iconset>
    </property>
    <property name="text">
     <string>Administrar Grupos</string>
@@ -322,7 +234,7 @@ background-color: rgb(229, 229, 229);
   <action name="actionPreferences">
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/images/configuracion_modulo.png</normaloff>:/images/configuracion_modulo.png</iconset>
+     <normaloff>:/images/configure_module.png</normaloff>:/images/configure_module.png</iconset>
    </property>
    <property name="text">
     <string>Preferencias</string>
@@ -334,7 +246,7 @@ background-color: rgb(229, 229, 229);
   <action name="actionMySignatures">
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/images/mis_firmas.png</normaloff>:/images/mis_firmas.png</iconset>
+     <normaloff>:/images/my_signatures.png</normaloff>:/images/my_signatures.png</iconset>
    </property>
    <property name="text">
     <string>Mis Firmas</string>
@@ -346,7 +258,7 @@ background-color: rgb(229, 229, 229);
   <action name="actionMyRequests">
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/images/mis_solicitudes.png</normaloff>:/images/mis_solicitudes.png</iconset>
+     <normaloff>:/images/my_requests.png</normaloff>:/images/my_requests.png</iconset>
    </property>
    <property name="text">
     <string>Mis Solicitudes</string>
@@ -358,7 +270,7 @@ background-color: rgb(229, 229, 229);
   <action name="actionExit">
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/images/salir.png</normaloff>:/images/salir.png</iconset>
+     <normaloff>:/images/exit.png</normaloff>:/images/exit.png</iconset>
    </property>
    <property name="text">
     <string>Cerrar</string>
@@ -376,7 +288,7 @@ background-color: rgb(229, 229, 229);
   <action name="actionFirmar_Autenticar">
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/images/firma.png</normaloff>:/images/firma.png</iconset>
+     <normaloff>:/images/sign.png</normaloff>:/images/sign.png</iconset>
    </property>
    <property name="text">
     <string>Firmar - Autenticar</string>

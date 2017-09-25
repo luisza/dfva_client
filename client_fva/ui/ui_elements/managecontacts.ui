@@ -37,7 +37,7 @@ background-color: rgb(229, 229, 229);</string>
      </property>
      <property name="icon">
       <iconset resource="resources.qrc">
-       <normaloff>:/images/agregar.png</normaloff>:/images/agregar.png</iconset>
+       <normaloff>:/images/add.png</normaloff>:/images/add.png</iconset>
      </property>
     </widget>
    </item>

@@ -1,4 +1,4 @@
-from client_fva.ui.tabDefaultui import Ui_TabDefault
+from client_fva.ui.tabdefaultui import Ui_TabDefault
 from PyQt5 import QtWidgets
 
 
