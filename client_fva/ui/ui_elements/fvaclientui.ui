@@ -132,8 +132,8 @@ background-color:rgb(216, 230, 225);</string>
     <property name="title">
      <string>Solicitar</string>
     </property>
-    <addaction name="actionSign"/>
-    <addaction name="actionAuthentication"/>
+    <addaction name="actionRequestSignature"/>
+    <addaction name="actionRequestAuthentication"/>
    </widget>
    <widget class="QMenu" name="menuContactos">
     <property name="title">
@@ -160,7 +160,7 @@ background-color:rgb(216, 230, 225);</string>
     <property name="title">
      <string>Mis Documentos</string>
     </property>
-    <addaction name="actionFirmar_Autenticar"/>
+    <addaction name="actionSignAuthenticate"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -168,7 +168,7 @@ background-color:rgb(216, 230, 225);</string>
    <addaction name="menuFrima"/>
    <addaction name="menuContactos"/>
   </widget>
-  <action name="actionSign">
+  <action name="actionRequestSignature">
    <property name="icon">
     <iconset resource="resources.qrc">
      <normaloff>:/images/sign.png</normaloff>:/images/sign.png</iconset>
@@ -195,7 +195,7 @@ background-color:rgb(216, 230, 225);</string>
     <bool>true</bool>
    </property>
   </action>
-  <action name="actionAuthentication">
+  <action name="actionRequestAuthentication">
    <property name="icon">
     <iconset resource="resources.qrc">
      <normaloff>:/images/autentication.png</normaloff>:/images/autentication.png</iconset>
@@ -285,7 +285,7 @@ background-color:rgb(216, 230, 225);</string>
     <bool>true</bool>
    </property>
   </action>
-  <action name="actionFirmar_Autenticar">
+  <action name="actionSignAuthenticate">
    <property name="icon">
     <iconset resource="resources.qrc">
      <normaloff>:/images/sign.png</normaloff>:/images/sign.png</iconset>
