@@ -34,7 +34,7 @@ background-color:rgb(216, 230, 225);</string>
    <item row="1" column="0" colspan="2">
     <widget class="QLabel" name="initialMessageLbl">
      <property name="styleSheet">
-      <string notr="true">font: 13pt;</string>
+      <string notr="true">font: bold;</string>
      </property>
      <property name="text">
       <string>Favor conecte su dispositivo de firma para comenzar.</string>
@@ -83,7 +83,6 @@ background-color:rgb(216, 230, 225);</string>
      </property>
      <property name="styleSheet">
       <string notr="true">color: rgb(11, 35, 21);
-font: 75 9pt &quot;Noto Sans&quot;;
 background-color: rgb(229, 229, 229);
 </string>
      </property>

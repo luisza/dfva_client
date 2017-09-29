@@ -21,7 +21,6 @@ class Ui_ManageContactGroups(object):
         self.manageContactGroupsLayout.addWidget(self.searchContact, 1, 0, 1, 1)
         self.addContactGroup = QtWidgets.QPushButton(ManageContactGroups)
         self.addContactGroup.setStyleSheet("color: rgb(11, 35, 21);\n"
-"font: 75 9pt \"Noto Sans\";\n"
 "background-color: rgb(229, 229, 229);")
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -32,7 +31,7 @@ class Ui_ManageContactGroups(object):
         self.contactGroupsTreeView.setObjectName("contactGroupsTreeView")
         self.manageContactGroupsLayout.addWidget(self.contactGroupsTreeView, 2, 0, 1, 2)
         self.titleLabel = QtWidgets.QLabel(ManageContactGroups)
-        self.titleLabel.setStyleSheet("font: 13pt;")
+        self.titleLabel.setStyleSheet("font: bold;")
         self.titleLabel.setScaledContents(True)
         self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.titleLabel.setWordWrap(True)

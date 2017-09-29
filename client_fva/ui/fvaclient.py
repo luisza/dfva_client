@@ -11,6 +11,9 @@ from client_fva.ui.managecontacts import ManageContacts
 from client_fva.ui.managecontactgroups import ManageContactGroups
 from PyQt5 import QtWidgets, QtGui
 
+main_app = None
+fva_client_ui = None
+
 
 class FVAClient(Ui_FVAClientUI):
 
@@ -43,7 +46,9 @@ class FVAClient(Ui_FVAClientUI):
     def setup_tray_icon(self):
         trayIcon = QtWidgets.QSystemTrayIcon(QtGui.QIcon(":/images/icon.png"), self.main_window)
         menu = QtWidgets.QMenu()
-        exitAction = menu.addAction("Exit")
+        openAction = menu.addAction("Abrir")
+        openAction.triggered.connect(self.show)
+        exitAction = menu.addAction("Salir")
         exitAction.triggered.connect(self.exit)
         trayIcon.setContextMenu(menu)
         trayIcon.setToolTip("Cliente FVA")
@@ -76,41 +81,43 @@ class FVAClient(Ui_FVAClientUI):
             else:
                 self.show()
 
-    def open_my_requests(self, event):
-        my_requests_ui = MyRequests(QtWidgets.QWidget())
+    def open_my_requests(self):
+        my_requests_ui = MyRequests(QtWidgets.QWidget(), main_app)
         self.setup_current_tab_layout(my_requests_ui.myRequestsLayout)
 
-    def open_my_signatures(self, event):
-        my_signatures_ui = MySignatures(QtWidgets.QWidget())
+    def open_my_signatures(self):
+        my_signatures_ui = MySignatures(QtWidgets.QWidget(), main_app)
         self.setup_current_tab_layout(my_signatures_ui.mySignaturesLayout)
 
-    def open_settings(self, event):
-        settings_ui = Settings(QtWidgets.QWidget())
+    def open_settings(self):
+        settings_ui = Settings(QtWidgets.QWidget(), main_app, fva_client_ui)
         self.setup_current_tab_layout(settings_ui.settingsLayout)
 
-    def open_request_signature(self, event):
-        request_signature_ui = RequestSignature(QtWidgets.QWidget())
+    def open_request_signature(self):
+        request_signature_ui = RequestSignature(QtWidgets.QWidget(), main_app)
         self.setup_current_tab_layout(request_signature_ui.requestSignatureLayout)
 
-    def open_request_authentication(self, event):
-        request_authentication_ui = RequestAuthentication(QtWidgets.QWidget())
+    def open_request_authentication(self):
+        request_authentication_ui = RequestAuthentication(QtWidgets.QWidget(), main_app)
         self.setup_current_tab_layout(request_authentication_ui.requestAuthenticationLayout)
 
-    def open_sign_validate(self, event):
-        sign_validate_ui = SignValidate(QtWidgets.QWidget())
+    def open_sign_validate(self):
+        sign_validate_ui = SignValidate(QtWidgets.QWidget(), main_app)
         self.setup_current_tab_layout(sign_validate_ui.signValidateLayout)
 
-    def open_manage_contacts(self, event):
-        manage_contacts_ui = ManageContacts(QtWidgets.QWidget())
+    def open_manage_contacts(self):
+        manage_contacts_ui = ManageContacts(QtWidgets.QWidget(), main_app)
         self.setup_current_tab_layout(manage_contacts_ui.manageContactsLayout)
 
-    def open_manage_contact_groups(self, event):
-        manage_contact_groups_ui = ManageContactGroups(QtWidgets.QWidget())
+    def open_manage_contact_groups(self):
+        manage_contact_groups_ui = ManageContactGroups(QtWidgets.QWidget(), main_app)
         self.setup_current_tab_layout(manage_contact_groups_ui.manageContactGroupsLayout)
 
 
 def run():
-    app = QtWidgets.QApplication(sys.argv)
+    global main_app
+    main_app = QtWidgets.QApplication(sys.argv)
+    global fva_client_ui
     fva_client_ui = FVAClient(QtWidgets.QMainWindow())
     fva_client_ui.show()
-    sys.exit(app.exec_())
+    sys.exit(main_app.exec_())

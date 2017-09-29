@@ -18,7 +18,7 @@ class Ui_RequestSignature(object):
         self.requestSignatureLayout.setObjectName("requestSignatureLayout")
         self.titleLabel = QtWidgets.QLabel(RequestSignature)
         self.titleLabel.setAcceptDrops(False)
-        self.titleLabel.setStyleSheet("font: 13pt;")
+        self.titleLabel.setStyleSheet("font: bold;")
         self.titleLabel.setScaledContents(True)
         self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.titleLabel.setWordWrap(True)
@@ -45,8 +45,8 @@ class Ui_RequestSignature(object):
         self.filesFrameLayout = QtWidgets.QGridLayout(self.filesFrame)
         self.filesFrameLayout.setObjectName("filesFrameLayout")
         self.label = QtWidgets.QLabel(self.filesFrame)
-        self.label.setStyleSheet("font: 75 10pt \"Noto Sans\";\n"
-"color: rgb(0, 0, 0);")
+        self.label.setStyleSheet("color: rgb(0, 0, 0);\n"
+"font: bold;")
         self.label.setScaledContents(False)
         self.label.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.label.setIndent(0)
@@ -59,7 +59,6 @@ class Ui_RequestSignature(object):
         self.browseFiles = QtWidgets.QPushButton(self.filesFrame)
         self.browseFiles.setAutoFillBackground(False)
         self.browseFiles.setStyleSheet("color: rgb(11, 35, 21);\n"
-"font: 75 9pt \"Noto Sans\";\n"
 "background-color: rgb(229, 229, 229);")
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -78,12 +77,13 @@ class Ui_RequestSignature(object):
         self.contactsListWidget.setObjectName("contactsListWidget")
         self.contactsFrameLayout.addWidget(self.contactsListWidget, 8, 0, 1, 3)
         self.searchContact = QtWidgets.QLineEdit(self.contactsFrame)
+        self.searchContact.setStyleSheet("")
         self.searchContact.setText("")
         self.searchContact.setObjectName("searchContact")
         self.contactsFrameLayout.addWidget(self.searchContact, 4, 0, 1, 1)
         self.label_2 = QtWidgets.QLabel(self.contactsFrame)
-        self.label_2.setStyleSheet("font: 75 10pt \"Noto Sans\";\n"
-"color: rgb(0, 0, 0);")
+        self.label_2.setStyleSheet("color: rgb(0, 0, 0);\n"
+"font: bold;")
         self.label_2.setScaledContents(False)
         self.label_2.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.label_2.setIndent(0)
@@ -92,7 +92,6 @@ class Ui_RequestSignature(object):
         self.addContact = QtWidgets.QPushButton(self.contactsFrame)
         self.addContact.setAutoFillBackground(False)
         self.addContact.setStyleSheet("color: rgb(11, 35, 21);\n"
-"font: 75 9pt \"Noto Sans\";\n"
 "background-color: rgb(229, 229, 229);")
         self.addContact.setIcon(icon)
         self.addContact.setObjectName("addContact")
@@ -100,19 +99,6 @@ class Ui_RequestSignature(object):
         self.scrollAreaLayout.addWidget(self.contactsFrame, 0, 1, 1, 1)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.requestSignatureLayout.addWidget(self.scrollArea, 1, 0, 1, 1)
-        self.requestSignature = QtWidgets.QPushButton(RequestSignature)
-        self.requestSignature.setEnabled(True)
-        self.requestSignature.setSizeIncrement(QtCore.QSize(0, 0))
-        self.requestSignature.setBaseSize(QtCore.QSize(0, 0))
-        self.requestSignature.setStyleSheet("color: rgb(11, 35, 21);\n"
-"font: 75 9pt \"Noto Sans\";\n"
-"background-color: rgb(229, 229, 229);")
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(":/images/send.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.requestSignature.setIcon(icon1)
-        self.requestSignature.setIconSize(QtCore.QSize(16, 16))
-        self.requestSignature.setObjectName("requestSignature")
-        self.requestSignatureLayout.addWidget(self.requestSignature, 3, 0, 1, 1)
         self.requestAuthProgressBar = QtWidgets.QProgressBar(RequestSignature)
         self.requestAuthProgressBar.setProperty("value", 0)
         self.requestAuthProgressBar.setOrientation(QtCore.Qt.Horizontal)
@@ -120,6 +106,18 @@ class Ui_RequestSignature(object):
         self.requestAuthProgressBar.setTextDirection(QtWidgets.QProgressBar.BottomToTop)
         self.requestAuthProgressBar.setObjectName("requestAuthProgressBar")
         self.requestSignatureLayout.addWidget(self.requestAuthProgressBar, 4, 0, 1, 1)
+        self.requestSignature = QtWidgets.QPushButton(RequestSignature)
+        self.requestSignature.setEnabled(True)
+        self.requestSignature.setSizeIncrement(QtCore.QSize(0, 0))
+        self.requestSignature.setBaseSize(QtCore.QSize(0, 0))
+        self.requestSignature.setStyleSheet("color: rgb(11, 35, 21);\n"
+"background-color: rgb(229, 229, 229);")
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/images/send.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.requestSignature.setIcon(icon1)
+        self.requestSignature.setIconSize(QtCore.QSize(16, 16))
+        self.requestSignature.setObjectName("requestSignature")
+        self.requestSignatureLayout.addWidget(self.requestSignature, 3, 0, 1, 1)
 
         self.retranslateUi(RequestSignature)
         QtCore.QMetaObject.connectSlotsByName(RequestSignature)
@@ -133,8 +131,8 @@ class Ui_RequestSignature(object):
         self.searchContact.setPlaceholderText(_translate("RequestSignature", "Buscar..."))
         self.label_2.setText(_translate("RequestSignature", "Contacto"))
         self.addContact.setText(_translate("RequestSignature", "Contacto"))
-        self.requestSignature.setText(_translate("RequestSignature", "Solicitar Firma"))
         self.requestAuthProgressBar.setFormat(_translate("RequestSignature", "Solicitando..."))
+        self.requestSignature.setText(_translate("RequestSignature", "Solicitar Firma"))
 
 from . import resources_rc
 

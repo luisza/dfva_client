@@ -21,7 +21,7 @@ background-color:rgb(216, 230, 225);</string>
    <item>
     <widget class="QLabel" name="titleLabel">
      <property name="styleSheet">
-      <string notr="true">font: 13pt;</string>
+      <string notr="true">font: bold;</string>
      </property>
      <property name="text">
       <string>Preferencias</string>
@@ -40,8 +40,7 @@ background-color:rgb(216, 230, 225);</string>
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="styleSheet">
-      <string notr="true">color: rgb(11, 35, 21);
-font: 75 9pt &quot;Noto Sans&quot;;</string>
+      <string notr="true">color: rgb(11, 35, 21);</string>
      </property>
      <property name="tabPosition">
       <enum>QTabWidget::West</enum>
@@ -75,7 +74,7 @@ font: 75 9pt &quot;Noto Sans&quot;;</string>
        <item row="0" column="0">
         <widget class="QLabel" name="label">
          <property name="styleSheet">
-          <string notr="true">font: 75 11pt &quot;Noto Sans&quot;;
+          <string notr="true">font: bold;
 color: rgb(0, 0, 0);</string>
          </property>
          <property name="text">
@@ -86,10 +85,10 @@ color: rgb(0, 0, 0);</string>
        <item row="1" column="0">
         <widget class="QSlider" name="fontSize">
          <property name="minimum">
-          <number>1</number>
+          <number>10</number>
          </property>
          <property name="maximum">
-          <number>30</number>
+          <number>25</number>
          </property>
          <property name="singleStep">
           <number>1</number>
@@ -136,7 +135,7 @@ color: rgb(0, 0, 0);</string>
        <item row="3" column="0">
         <widget class="QLabel" name="label_3">
          <property name="styleSheet">
-          <string notr="true">font: 75 11pt &quot;Noto Sans&quot;;
+          <string notr="true">font: bold;
 color: rgb(0, 0, 0);</string>
          </property>
          <property name="text">
@@ -163,7 +162,7 @@ color: rgb(0, 0, 0);</string>
        <item row="6" column="0">
         <widget class="QLabel" name="label_2">
          <property name="styleSheet">
-          <string notr="true">font: 75 11pt &quot;Noto Sans&quot;;
+          <string notr="true">font: bold;
 color: rgb(0, 0, 0);</string>
          </property>
          <property name="text">
@@ -184,7 +183,7 @@ color: rgb(0, 0, 0);</string>
        <item row="0" column="0">
         <widget class="QCheckBox" name="savePassword">
          <property name="styleSheet">
-          <string notr="true">font: 75 11pt &quot;Noto Sans&quot;;
+          <string notr="true">font: bold;
 color: rgb(0, 0, 0);
 </string>
          </property>
@@ -209,7 +208,7 @@ color: rgb(0, 0, 0);
        <item row="2" column="0">
         <widget class="QLabel" name="label_4">
          <property name="styleSheet">
-          <string notr="true">font: 75 11pt &quot;Noto Sans&quot;;
+          <string notr="true">font: bold;
 color: rgb(0, 0, 0);</string>
          </property>
          <property name="text">
@@ -219,6 +218,9 @@ color: rgb(0, 0, 0);</string>
        </item>
        <item row="4" column="0">
         <widget class="QLabel" name="label_6">
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
          <property name="text">
           <string>*Cuando existen problemas de red</string>
          </property>
@@ -240,7 +242,7 @@ color: rgb(0, 0, 0);</string>
        <item row="6" column="0">
         <widget class="QLabel" name="label_5">
          <property name="styleSheet">
-          <string notr="true">font: 75 11pt &quot;Noto Sans&quot;;
+          <string notr="true">font: bold;
 color: rgb(0, 0, 0);</string>
          </property>
          <property name="text">
@@ -317,6 +319,9 @@ color: rgb(0, 0, 0);</string>
        </item>
        <item row="3" column="0" colspan="2">
         <widget class="QLabel" name="label_7">
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
          <property name="text">
           <string>* Corresponde al lugar en la máquina dónde se ubica el módulo para el dispositivo de firma (PKCS11)</string>
          </property>
@@ -331,8 +336,8 @@ color: rgb(0, 0, 0);</string>
        <item row="0" column="0">
         <widget class="QLabel" name="label_8">
          <property name="styleSheet">
-          <string notr="true">font: 75 11pt &quot;Noto Sans&quot;;
-color: rgb(0, 0, 0);</string>
+          <string notr="true">color: rgb(0, 0, 0);
+font: bold;</string>
          </property>
          <property name="text">
           <string>Ubicación del Módulo *</string>
@@ -359,6 +364,10 @@ color: rgb(0, 0, 0);</string>
         </widget>
        </item>
       </layout>
+      <zorder>label_7</zorder>
+      <zorder>selectModulePath</zorder>
+      <zorder>label_8</zorder>
+      <zorder>modulePath</zorder>
      </widget>
     </widget>
    </item>
@@ -382,7 +391,6 @@ color: rgb(0, 0, 0);</string>
        <widget class="QPushButton" name="apply">
         <property name="styleSheet">
          <string notr="true">color: rgb(11, 35, 21);
-font: 75 9pt &quot;Noto Sans&quot;;
 background-color: rgb(229, 229, 229);</string>
         </property>
         <property name="text">
@@ -394,7 +402,6 @@ background-color: rgb(229, 229, 229);</string>
        <widget class="QPushButton" name="cancel">
         <property name="styleSheet">
          <string notr="true">color: rgb(11, 35, 21);
-font: 75 9pt &quot;Noto Sans&quot;;
 background-color: rgb(229, 229, 229);</string>
         </property>
         <property name="text">
@@ -406,7 +413,6 @@ background-color: rgb(229, 229, 229);</string>
        <widget class="QPushButton" name="ok">
         <property name="styleSheet">
          <string notr="true">color: rgb(11, 35, 21);
-font: 75 9pt &quot;Noto Sans&quot;;
 background-color: rgb(229, 229, 229);</string>
         </property>
         <property name="text">

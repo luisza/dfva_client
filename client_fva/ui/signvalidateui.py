@@ -18,7 +18,7 @@ class Ui_SignValidate(object):
         self.signValidateLayout.setObjectName("signValidateLayout")
         self.titleLabel = QtWidgets.QLabel(SignValidate)
         self.titleLabel.setAcceptDrops(False)
-        self.titleLabel.setStyleSheet("font: 13pt;")
+        self.titleLabel.setStyleSheet("font: bold;")
         self.titleLabel.setScaledContents(True)
         self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.titleLabel.setWordWrap(True)
@@ -45,7 +45,7 @@ class Ui_SignValidate(object):
         self.fileFrameLayout = QtWidgets.QGridLayout(self.fileFrame)
         self.fileFrameLayout.setObjectName("fileFrameLayout")
         self.label = QtWidgets.QLabel(self.fileFrame)
-        self.label.setStyleSheet("font: 75 10pt \"Noto Sans\";\n"
+        self.label.setStyleSheet("font: bold;\n"
 "color: rgb(0, 0, 0);")
         self.label.setScaledContents(False)
         self.label.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
@@ -61,7 +61,6 @@ class Ui_SignValidate(object):
         self.browseFiles = QtWidgets.QPushButton(self.fileFrame)
         self.browseFiles.setAutoFillBackground(False)
         self.browseFiles.setStyleSheet("color: rgb(11, 35, 21);\n"
-"font: 75 9pt \"Noto Sans\";\n"
 "background-color: rgb(229, 229, 229);")
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -73,7 +72,6 @@ class Ui_SignValidate(object):
         self.sign.setSizeIncrement(QtCore.QSize(0, 0))
         self.sign.setBaseSize(QtCore.QSize(0, 0))
         self.sign.setStyleSheet("color: rgb(11, 35, 21);\n"
-"font: 75 9pt \"Noto Sans\";\n"
 "background-color: rgb(229, 229, 229);")
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap(":/images/sign.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -88,7 +86,6 @@ class Ui_SignValidate(object):
         self.validate.setSizeIncrement(QtCore.QSize(0, 0))
         self.validate.setBaseSize(QtCore.QSize(0, 0))
         self.validate.setStyleSheet("color: rgb(11, 35, 21);\n"
-"font: 75 9pt \"Noto Sans\";\n"
 "background-color: rgb(229, 229, 229);")
         icon2 = QtGui.QIcon()
         icon2.addPixmap(QtGui.QPixmap(":/images/validate.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -100,6 +97,7 @@ class Ui_SignValidate(object):
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.signValidateLayout.addWidget(self.scrollArea, 4, 0, 1, 3)
         self.signValidateProgressBar = QtWidgets.QProgressBar(SignValidate)
+        self.signValidateProgressBar.setStyleSheet("")
         self.signValidateProgressBar.setProperty("value", 0)
         self.signValidateProgressBar.setOrientation(QtCore.Qt.Horizontal)
         self.signValidateProgressBar.setInvertedAppearance(False)

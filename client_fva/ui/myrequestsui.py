@@ -17,7 +17,7 @@ class Ui_MyRequests(object):
         self.myRequestsLayout = QtWidgets.QVBoxLayout(MyRequests)
         self.myRequestsLayout.setObjectName("myRequestsLayout")
         self.titleLabel = QtWidgets.QLabel(MyRequests)
-        self.titleLabel.setStyleSheet("font: 13pt;")
+        self.titleLabel.setStyleSheet("font: bold;")
         self.titleLabel.setScaledContents(True)
         self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.titleLabel.setWordWrap(True)

@@ -17,15 +17,14 @@ class Ui_Settings(object):
         self.settingsLayout = QtWidgets.QVBoxLayout(Settings)
         self.settingsLayout.setObjectName("settingsLayout")
         self.titleLabel = QtWidgets.QLabel(Settings)
-        self.titleLabel.setStyleSheet("font: 13pt;")
+        self.titleLabel.setStyleSheet("font: bold;")
         self.titleLabel.setScaledContents(True)
         self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.titleLabel.setWordWrap(True)
         self.titleLabel.setObjectName("titleLabel")
         self.settingsLayout.addWidget(self.titleLabel)
         self.tabWidget = QtWidgets.QTabWidget(Settings)
-        self.tabWidget.setStyleSheet("color: rgb(11, 35, 21);\n"
-"font: 75 9pt \"Noto Sans\";")
+        self.tabWidget.setStyleSheet("color: rgb(11, 35, 21);")
         self.tabWidget.setTabPosition(QtWidgets.QTabWidget.West)
         self.tabWidget.setTabShape(QtWidgets.QTabWidget.Rounded)
         self.tabWidget.setElideMode(QtCore.Qt.ElideNone)
@@ -39,13 +38,13 @@ class Ui_Settings(object):
         self.appearanceLayout = QtWidgets.QGridLayout(self.appearance)
         self.appearanceLayout.setObjectName("appearanceLayout")
         self.label = QtWidgets.QLabel(self.appearance)
-        self.label.setStyleSheet("font: 75 11pt \"Noto Sans\";\n"
+        self.label.setStyleSheet("font: bold;\n"
 "color: rgb(0, 0, 0);")
         self.label.setObjectName("label")
         self.appearanceLayout.addWidget(self.label, 0, 0, 1, 1)
         self.fontSize = QtWidgets.QSlider(self.appearance)
-        self.fontSize.setMinimum(1)
-        self.fontSize.setMaximum(30)
+        self.fontSize.setMinimum(10)
+        self.fontSize.setMaximum(25)
         self.fontSize.setSingleStep(1)
         self.fontSize.setPageStep(12)
         self.fontSize.setProperty("value", 12)
@@ -60,7 +59,7 @@ class Ui_Settings(object):
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.appearanceLayout.addItem(spacerItem, 2, 0, 1, 1)
         self.label_3 = QtWidgets.QLabel(self.appearance)
-        self.label_3.setStyleSheet("font: 75 11pt \"Noto Sans\";\n"
+        self.label_3.setStyleSheet("font: bold;\n"
 "color: rgb(0, 0, 0);")
         self.label_3.setObjectName("label_3")
         self.appearanceLayout.addWidget(self.label_3, 3, 0, 1, 1)
@@ -70,7 +69,7 @@ class Ui_Settings(object):
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.appearanceLayout.addItem(spacerItem1, 5, 0, 1, 1)
         self.label_2 = QtWidgets.QLabel(self.appearance)
-        self.label_2.setStyleSheet("font: 75 11pt \"Noto Sans\";\n"
+        self.label_2.setStyleSheet("font: bold;\n"
 "color: rgb(0, 0, 0);")
         self.label_2.setObjectName("label_2")
         self.appearanceLayout.addWidget(self.label_2, 6, 0, 1, 1)
@@ -83,7 +82,7 @@ class Ui_Settings(object):
         self.securityLayout = QtWidgets.QGridLayout(self.security)
         self.securityLayout.setObjectName("securityLayout")
         self.savePassword = QtWidgets.QCheckBox(self.security)
-        self.savePassword.setStyleSheet("font: 75 11pt \"Noto Sans\";\n"
+        self.savePassword.setStyleSheet("font: bold;\n"
 "color: rgb(0, 0, 0);\n"
 "")
         self.savePassword.setObjectName("savePassword")
@@ -91,17 +90,18 @@ class Ui_Settings(object):
         spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.securityLayout.addItem(spacerItem2, 1, 0, 1, 1)
         self.label_4 = QtWidgets.QLabel(self.security)
-        self.label_4.setStyleSheet("font: 75 11pt \"Noto Sans\";\n"
+        self.label_4.setStyleSheet("font: bold;\n"
 "color: rgb(0, 0, 0);")
         self.label_4.setObjectName("label_4")
         self.securityLayout.addWidget(self.label_4, 2, 0, 1, 1)
         self.label_6 = QtWidgets.QLabel(self.security)
+        self.label_6.setStyleSheet("")
         self.label_6.setObjectName("label_6")
         self.securityLayout.addWidget(self.label_6, 4, 0, 1, 1)
         spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.securityLayout.addItem(spacerItem3, 5, 0, 1, 1)
         self.label_5 = QtWidgets.QLabel(self.security)
-        self.label_5.setStyleSheet("font: 75 11pt \"Noto Sans\";\n"
+        self.label_5.setStyleSheet("font: bold;\n"
 "color: rgb(0, 0, 0);")
         self.label_5.setObjectName("label_5")
         self.securityLayout.addWidget(self.label_5, 6, 0, 1, 1)
@@ -129,13 +129,14 @@ class Ui_Settings(object):
         self.selectModulePath.setObjectName("selectModulePath")
         self.moduleLayout.addWidget(self.selectModulePath, 2, 1, 1, 1)
         self.label_7 = QtWidgets.QLabel(self.module)
+        self.label_7.setStyleSheet("")
         self.label_7.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.label_7.setWordWrap(True)
         self.label_7.setObjectName("label_7")
         self.moduleLayout.addWidget(self.label_7, 3, 0, 1, 2)
         self.label_8 = QtWidgets.QLabel(self.module)
-        self.label_8.setStyleSheet("font: 75 11pt \"Noto Sans\";\n"
-"color: rgb(0, 0, 0);")
+        self.label_8.setStyleSheet("color: rgb(0, 0, 0);\n"
+"font: bold;")
         self.label_8.setObjectName("label_8")
         self.moduleLayout.addWidget(self.label_8, 0, 0, 1, 1)
         self.modulePath = QtWidgets.QLineEdit(self.module)
@@ -146,6 +147,10 @@ class Ui_Settings(object):
         self.modulePath.setClearButtonEnabled(False)
         self.modulePath.setObjectName("modulePath")
         self.moduleLayout.addWidget(self.modulePath, 1, 0, 1, 2)
+        self.label_7.raise_()
+        self.selectModulePath.raise_()
+        self.label_8.raise_()
+        self.modulePath.raise_()
         self.tabWidget.addTab(self.module, "")
         self.settingsLayout.addWidget(self.tabWidget)
         self.buttonsWidget = QtWidgets.QWidget(Settings)
@@ -156,19 +161,16 @@ class Ui_Settings(object):
         self.buttonsWidgetLayout.addItem(spacerItem6)
         self.apply = QtWidgets.QPushButton(self.buttonsWidget)
         self.apply.setStyleSheet("color: rgb(11, 35, 21);\n"
-"font: 75 9pt \"Noto Sans\";\n"
 "background-color: rgb(229, 229, 229);")
         self.apply.setObjectName("apply")
         self.buttonsWidgetLayout.addWidget(self.apply)
         self.cancel = QtWidgets.QPushButton(self.buttonsWidget)
         self.cancel.setStyleSheet("color: rgb(11, 35, 21);\n"
-"font: 75 9pt \"Noto Sans\";\n"
 "background-color: rgb(229, 229, 229);")
         self.cancel.setObjectName("cancel")
         self.buttonsWidgetLayout.addWidget(self.cancel)
         self.ok = QtWidgets.QPushButton(self.buttonsWidget)
         self.ok.setStyleSheet("color: rgb(11, 35, 21);\n"
-"font: 75 9pt \"Noto Sans\";\n"
 "background-color: rgb(229, 229, 229);")
         self.ok.setObjectName("ok")
         self.buttonsWidgetLayout.addWidget(self.ok)

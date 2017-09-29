@@ -18,7 +18,7 @@ class Ui_RequestAuthentication(object):
         self.requestAuthenticationLayout.setObjectName("requestAuthenticationLayout")
         self.titleLabel = QtWidgets.QLabel(RequestAuthentication)
         self.titleLabel.setAcceptDrops(False)
-        self.titleLabel.setStyleSheet("font: 13pt;")
+        self.titleLabel.setStyleSheet("font: bold;")
         self.titleLabel.setScaledContents(True)
         self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.titleLabel.setWordWrap(True)
@@ -28,7 +28,7 @@ class Ui_RequestAuthentication(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 595, 322))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 595, 328))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.scrollAreaLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.scrollAreaLayout.setObjectName("scrollAreaLayout")
@@ -40,8 +40,8 @@ class Ui_RequestAuthentication(object):
         self.addContactFrameLayout = QtWidgets.QGridLayout(self.addContactFrame)
         self.addContactFrameLayout.setObjectName("addContactFrameLayout")
         self.label = QtWidgets.QLabel(self.addContactFrame)
-        self.label.setStyleSheet("font: 75 12pt \"Noto Sans\";\n"
-"color: rgb(0, 0, 0);")
+        self.label.setStyleSheet("color: rgb(0, 0, 0);\n"
+"font: bold;")
         self.label.setScaledContents(False)
         self.label.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.label.setIndent(0)
@@ -55,7 +55,6 @@ class Ui_RequestAuthentication(object):
         self.requestAuthentication.setSizeIncrement(QtCore.QSize(0, 0))
         self.requestAuthentication.setBaseSize(QtCore.QSize(0, 0))
         self.requestAuthentication.setStyleSheet("color: rgb(11, 35, 21);\n"
-"font: 75 9pt \"Noto Sans\";\n"
 "background-color: rgb(229, 229, 229);")
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/send.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -66,7 +65,6 @@ class Ui_RequestAuthentication(object):
         self.addContact = QtWidgets.QPushButton(self.addContactFrame)
         self.addContact.setAutoFillBackground(False)
         self.addContact.setStyleSheet("color: rgb(11, 35, 21);\n"
-"font: 75 9pt \"Noto Sans\";\n"
 "background-color: rgb(229, 229, 229);")
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap(":/images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)

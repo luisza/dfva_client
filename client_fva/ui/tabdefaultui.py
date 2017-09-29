@@ -19,7 +19,7 @@ class Ui_TabDefault(object):
         spacerItem = QtWidgets.QSpacerItem(20, 139, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.tabDefaultLayout.addItem(spacerItem, 0, 0, 1, 1)
         self.initialMessageLbl = QtWidgets.QLabel(TabDefault)
-        self.initialMessageLbl.setStyleSheet("font: 13pt;")
+        self.initialMessageLbl.setStyleSheet("font: bold;")
         self.initialMessageLbl.setScaledContents(True)
         self.initialMessageLbl.setAlignment(QtCore.Qt.AlignCenter)
         self.initialMessageLbl.setWordWrap(True)
@@ -32,7 +32,6 @@ class Ui_TabDefault(object):
         self.refreshDevices = QtWidgets.QPushButton(TabDefault)
         self.refreshDevices.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.refreshDevices.setStyleSheet("color: rgb(11, 35, 21);\n"
-"font: 75 9pt \"Noto Sans\";\n"
 "background-color: rgb(229, 229, 229);\n"
 "")
         icon = QtGui.QIcon()

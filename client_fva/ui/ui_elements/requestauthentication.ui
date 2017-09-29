@@ -24,7 +24,7 @@ background-color:rgb(216, 230, 225);</string>
       <bool>false</bool>
      </property>
      <property name="styleSheet">
-      <string notr="true">font: 13pt;</string>
+      <string notr="true">font: bold;</string>
      </property>
      <property name="text">
       <string>Solicitar Autenticación</string>
@@ -51,7 +51,7 @@ background-color:rgb(216, 230, 225);</string>
         <x>0</x>
         <y>0</y>
         <width>595</width>
-        <height>322</height>
+        <height>328</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="scrollAreaLayout">
@@ -70,8 +70,8 @@ background-color:rgb(216, 230, 225);</string>
           <item row="0" column="0">
            <widget class="QLabel" name="label">
             <property name="styleSheet">
-             <string notr="true">font: 75 12pt &quot;Noto Sans&quot;;
-color: rgb(0, 0, 0);</string>
+             <string notr="true">color: rgb(0, 0, 0);
+font: bold;</string>
             </property>
             <property name="text">
              <string>Seleccione Contacto</string>
@@ -112,7 +112,6 @@ color: rgb(0, 0, 0);</string>
             </property>
             <property name="styleSheet">
              <string notr="true">color: rgb(11, 35, 21);
-font: 75 9pt &quot;Noto Sans&quot;;
 background-color: rgb(229, 229, 229);</string>
             </property>
             <property name="text">
@@ -137,7 +136,6 @@ background-color: rgb(229, 229, 229);</string>
             </property>
             <property name="styleSheet">
              <string notr="true">color: rgb(11, 35, 21);
-font: 75 9pt &quot;Noto Sans&quot;;
 background-color: rgb(229, 229, 229);</string>
             </property>
             <property name="text">

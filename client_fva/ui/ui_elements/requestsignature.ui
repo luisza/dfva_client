@@ -24,7 +24,7 @@ background-color:rgb(216, 230, 225);</string>
       <bool>false</bool>
      </property>
      <property name="styleSheet">
-      <string notr="true">font: 13pt;</string>
+      <string notr="true">font: bold;</string>
      </property>
      <property name="text">
       <string>Solicitar Firma</string>
@@ -85,8 +85,8 @@ background-color:rgb(216, 230, 225);</string>
           <item row="2" column="0">
            <widget class="QLabel" name="label">
             <property name="styleSheet">
-             <string notr="true">font: 75 10pt &quot;Noto Sans&quot;;
-color: rgb(0, 0, 0);</string>
+             <string notr="true">color: rgb(0, 0, 0);
+font: bold;</string>
             </property>
             <property name="text">
              <string>Archivo</string>
@@ -119,7 +119,6 @@ color: rgb(0, 0, 0);</string>
             </property>
             <property name="styleSheet">
              <string notr="true">color: rgb(11, 35, 21);
-font: 75 9pt &quot;Noto Sans&quot;;
 background-color: rgb(229, 229, 229);</string>
             </property>
             <property name="text">
@@ -151,6 +150,9 @@ background-color: rgb(229, 229, 229);</string>
           </item>
           <item row="4" column="0">
            <widget class="QLineEdit" name="searchContact">
+            <property name="styleSheet">
+             <string notr="true"/>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -162,8 +164,8 @@ background-color: rgb(229, 229, 229);</string>
           <item row="3" column="0">
            <widget class="QLabel" name="label_2">
             <property name="styleSheet">
-             <string notr="true">font: 75 10pt &quot;Noto Sans&quot;;
-color: rgb(0, 0, 0);</string>
+             <string notr="true">color: rgb(0, 0, 0);
+font: bold;</string>
             </property>
             <property name="text">
              <string>Contacto</string>
@@ -189,7 +191,6 @@ color: rgb(0, 0, 0);</string>
             </property>
             <property name="styleSheet">
              <string notr="true">color: rgb(11, 35, 21);
-font: 75 9pt &quot;Noto Sans&quot;;
 background-color: rgb(229, 229, 229);</string>
             </property>
             <property name="text">
@@ -206,6 +207,25 @@ background-color: rgb(229, 229, 229);</string>
        </item>
       </layout>
      </widget>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QProgressBar" name="requestAuthProgressBar">
+     <property name="value">
+      <number>0</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="invertedAppearance">
+      <bool>false</bool>
+     </property>
+     <property name="textDirection">
+      <enum>QProgressBar::BottomToTop</enum>
+     </property>
+     <property name="format">
+      <string>Solicitando...</string>
+     </property>
     </widget>
    </item>
    <item row="3" column="0">
@@ -227,7 +247,6 @@ background-color: rgb(229, 229, 229);</string>
      </property>
      <property name="styleSheet">
       <string notr="true">color: rgb(11, 35, 21);
-font: 75 9pt &quot;Noto Sans&quot;;
 background-color: rgb(229, 229, 229);</string>
      </property>
      <property name="text">
@@ -242,25 +261,6 @@ background-color: rgb(229, 229, 229);</string>
        <width>16</width>
        <height>16</height>
       </size>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QProgressBar" name="requestAuthProgressBar">
-     <property name="value">
-      <number>0</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="invertedAppearance">
-      <bool>false</bool>
-     </property>
-     <property name="textDirection">
-      <enum>QProgressBar::BottomToTop</enum>
-     </property>
-     <property name="format">
-      <string>Solicitando...</string>
      </property>
     </widget>
    </item>

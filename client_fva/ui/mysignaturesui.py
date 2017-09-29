@@ -18,7 +18,7 @@ class Ui_MySignatures(object):
         self.mySignaturesLayout.setObjectName("mySignaturesLayout")
         self.titleLabel = QtWidgets.QLabel(MySignatures)
         self.titleLabel.setAcceptDrops(False)
-        self.titleLabel.setStyleSheet("font: 13pt;")
+        self.titleLabel.setStyleSheet("font: bold;")
         self.titleLabel.setScaledContents(True)
         self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.titleLabel.setWordWrap(True)
