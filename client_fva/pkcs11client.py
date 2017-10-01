@@ -9,7 +9,8 @@ from dateutil.parser import parse
 from pkcs11.constants import Attribute
 from pkcs11.constants import ObjectClass
 import OpenSSL
-
+import platform
+from client_fva import signals
 
 class PKCS11Client:
     slot = None
@@ -23,6 +24,7 @@ class PKCS11Client:
 
         self.settings = kwargs.get('settings', {})
         self.slot = kwargs.get('slot', self.get_slot())
+        self.signal = kwargs.get('signal', None)
 
     def get_slot(self):
         """Obtiene el primer slot (tarjeta) disponible
@@ -41,32 +43,53 @@ class PKCS11Client:
     def get_module_lib(self):
         """Obtiene la biblioteca de comunicación con la tarjeta """
 
-        if 'PKCS11_MODULE' in self.settings:
-            return self.settings['PKCS11_MODULE']
+        if hasattr(self.settings, 'module_path'):
+            return self.settings.module_path
 
         if 'PKCS11_MODULE' in os.environ:
             return os.environ['PKCS11_MODULE']
+        
 
-        if os.path.exists('/usr/lib/libASEP11.so'):
+        
+        if os.path.exists('/usr/lib/libASEP11.so'): # Linux 
             return '/usr/lib/libASEP11.so'
-
-        try:
-            import platform
-            arch = platform.architecture()[0]
-            if arch == '64bit':
-                arch = 'x86_64'
-            else:
-                arch = 'x86'
-
-            BASE_DIR = os.path.dirname(
-                os.path.dirname(os.path.abspath(__file__)))
+        
+        if os.path.exists("/usr/local/lib/libASEP11.dylib"): # macOS
+            return "/usr/local/lib/libASEP11.dylib"
+        
+        # FIXME: Hacer la construcción del path por defecto para windows, sugerencia 
+        """
+        public static String ObtenerDirectorioDeWindows()
+          {
+            String direccionDeWindows = System.getenv("SystemRoot");
+            if ((direccionDeWindows == null) || (direccionDeWindows.equalsIgnoreCase(""))) {
+              direccionDeWindows = System.getenv("WINDIR");
+            }
+            String directorioDeWindows = direccionDeWindows + File.separator + "system32";
+            return directorioDeWindows;
+          }
+        """
+        
+        
+        _os = platform.system().lower()
+        _os_arch = platform.machine()
+        BASE_DIR = os.path.dirname(
+                os.path.dirname(os.path.abspath(__file__)))        
+        if _os == 'linux':
             path = os.path.join(
-                BASE_DIR, 'client_fva/libs/%s/libASEP11.so' % (arch, ))
-            if os.path.exists(path):
-                return path
-        except Exception as e:
-            raise Exception(
-                "Sorry not PKCS11 module found, please use export PKCS11_MODULE='<path>' before call python ")
+                BASE_DIR, 'client_fva/libs/%s/%s/libASEP11.so' % (_os,_os_arch ))
+        elif _os == "darwin":
+            path = os.path.join(BASE_DIR, 'client_fva/libs/macos/libASEP11.dylib' )
+        elif _os == "windows":
+            path =   os.path.join(BASE_DIR, 'client_fva/libs/windows/asepkcs.dll' )          
+        
+            
+        if os.path.exists(path):
+            return path
+        
+        self.signal.send('notify', obj={
+                        'message': "No existe una biblioteca instalada para leer las tarjetas, esto puede ser porque no ha instalado las bibliotecas necesarias o porque el sistema operativo no está soportado"
+                        })
 
     def get_pin(self, pin=None):
         """Obtiene el pin de la tarjeta para iniciar sessión"""
@@ -76,8 +99,16 @@ class PKCS11Client:
 
         if 'PKCS11_PIN' in os.environ:
             return os.environ['PKCS11_PIN']
-        else:  # FIXME: remove this line or send a signal
-            return input("Write your pin: ")
+        else:
+            try:
+                serial = self.get_slot().get_tokens()[0].serial.decode('utf-8')
+            except:
+                serial = 'N/D'
+                # Fixme: aqui debería manejarse mejor
+            respobj = signals.get_signal_response(
+                self.signal.send('pin', obj={
+                        'serial': serial}))
+            return respobj.response['pin']
 
         raise Exception(
             'Sorry PIN is Needed, we will remove this, but for now use export PKCS11_PIN=<pin> before call python')
