@@ -274,7 +274,7 @@ color: rgb(0, 0, 0);</string>
         </widget>
        </item>
        <item row="3" column="0" colspan="2">
-        <widget class="QSpinBox" name="spinBox">
+        <widget class="QSpinBox" name="requestsBeforeError">
          <property name="suffix">
           <string> intentos</string>
          </property>

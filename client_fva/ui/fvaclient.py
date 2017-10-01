@@ -11,6 +11,8 @@ from client_fva.ui.managecontacts import ManageContacts
 from client_fva.ui.managecontactgroups import ManageContactGroups
 from client_fva.ui.tabdefault import TabDefault
 from PyQt5 import QtWidgets, QtGui
+from client_fva.user_settings import UserSettings
+from client_fva.ui.utils import apply_selected_appearance
 
 main_app = None
 fva_client_ui = None
@@ -37,6 +39,11 @@ class FVAClient(Ui_FVAClientUI):
         self.actionManageContacts.triggered.connect(self.open_manage_contacts)
         self.actionManageGroups.triggered.connect(self.open_manage_contact_groups)
         self.close_window = False  # by default window is only minimized
+
+        # load initial app settings
+        self.user_settings = UserSettings()
+        self.user_settings.load()
+        apply_selected_appearance(main_app, self.user_settings)
 
         # TODO - Delete this code because it's for testing
         my_requests_ui = MyRequests(QtWidgets.QWidget(), main_app)
@@ -108,7 +115,7 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_layout(my_signatures_ui.mySignaturesLayout)
 
     def open_settings(self):
-        settings_ui = Settings(QtWidgets.QWidget(), main_app, fva_client_ui)
+        settings_ui = Settings(QtWidgets.QWidget(), main_app, fva_client_ui, self.user_settings)
         self.setup_general_tab_layout(settings_ui.settingsLayout)
 
     def open_request_signature(self):
