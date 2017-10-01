@@ -12,6 +12,37 @@ from client_fva import signals
 
 daemon = True
 class Monitor(PKCS11Client, Thread):
+    """
+    Monitoriza los dispositivos pkcs11 conectados a la computadora.
+    Lanza 2 eventos:
+    
+    * Dispositivo conectado (signals.USB_CONNECTED)
+    * Dispositivo desconectado (signals.USB_DISCONNECTED)
+    
+    Este módulo utiliza blinker para emitir las señales. Un ejemplo de uso puede ser:
+    
+    .. code:: python 
+
+        from client_fva.monitor import Monitor
+        from client_fva import signals
+        class OSDummyClient:
+            def __init__(self):
+                self.client = Monitor()
+                self.client.start()
+                self.client.signal.connect(self.token_information_event)
+
+            def token_information_event(self, sender, **kw):
+                
+                obj = kw['obj']
+                if obj._type == signals.USB_CONNECTED:
+                    print("Conectando ", obj._type)
+                elif obj._type == signals.USB_DISCONNECTED:
+                    print("Desconectando ", obj._type)
+                print(obj.data)
+                return obj
+                
+    No se requiere devolver nada, pero es bueno para seguir con el formato, de otras señales
+    """
     connected_device = {}
     module_lib = None
 
@@ -25,14 +56,14 @@ class Monitor(PKCS11Client, Thread):
         
     def run(self):
         global daemon
-        c=0
         while daemon:
-            print("MOV ", c)
             self.detect_device()
             time.sleep(5)
-            c+=1
+
             
-    def detect_device(self):
+    def detect_device(self, notify_exception=False):
+        """
+        """
         lib = pkcs11.lib(self.module_lib) 
         slots = lib.get_slots()
         tmp_device = []
@@ -45,12 +76,22 @@ class Monitor(PKCS11Client, Thread):
                     tmp_device.append(serial)
                 else:
                     tmp_device.append(serial)
-                    added_device[serial]=slot
-                    self.send_add_signal(slot)
+                    self.slot = slot
+                    person = self.get_identification()
+                    data = {'slot': slot,
+                                          'person': person}
+                    added_device[serial]= data
+                    self.send_add_signal(data)
+            except pkcs11.exceptions.TokenNotRecognised as noToken:
+                if notify_exception:
+                    self.signal.send('notify', obj={
+                        'message': "Un dispositivo ha sido encontrado, pero ninguna tarjeta pudo ser leída, por favor verifique que la tarjeta esté correctamente insertada"
+                        })
             except Exception as e:
-                import sys
-                print(sys.exc_info()[0])
-                
+                if notify_exception:
+                    self.signal.send('notify', obj={
+    'message': "Ha ocurrido un error inesperado leyendo alguno de los dispositivos"
+                        })
 
         self.connected_device.update(added_device)
 
