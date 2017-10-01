@@ -16,13 +16,15 @@ class Settings(Ui_Settings):
         self.ok.clicked.connect(self.okSettings)
 
     def applySettings(self):
-        self.main_app.setStyle(self.theme.currentText())
+        self.main_app.setStyle(self.theme.currentText())  # apply theme
         font = '*{{font-size: {0}pt; font-family: "{1}";}}'.format(self.fontSize.value(), self.fontComboBox.currentText())
+        # apply font size and family
         self.main_app.setStyleSheet(font)
         self.tabWidget.setStyleSheet(font)
+        #
 
     def goToHome(self):
-        self.fva_client_ui.open_sign_validate()
+        self.fva_client_ui.setup_tab_default_layout()
 
     def okSettings(self):
         self.applySettings()

@@ -47,7 +47,7 @@ class Ui_Settings(object):
         self.fontSize.setMaximum(25)
         self.fontSize.setSingleStep(1)
         self.fontSize.setPageStep(12)
-        self.fontSize.setProperty("value", 12)
+        self.fontSize.setProperty("value", 10)
         self.fontSize.setTracking(True)
         self.fontSize.setOrientation(QtCore.Qt.Horizontal)
         self.fontSize.setInvertedAppearance(False)

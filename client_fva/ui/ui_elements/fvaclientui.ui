@@ -102,7 +102,7 @@ background-color:rgb(216, 230, 225);</string>
         <enum>Qt::TabFocus</enum>
        </property>
        <attribute name="title">
-        <string>Dispositivo</string>
+        <string>General</string>
        </attribute>
        <layout class="QGridLayout" name="tab1Layout"/>
       </widget>

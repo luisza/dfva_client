@@ -153,7 +153,7 @@ class Ui_FVAClientUI(object):
     def retranslateUi(self, FVAClientUI):
         _translate = QtCore.QCoreApplication.translate
         FVAClientUI.setWindowTitle(_translate("FVAClientUI", "Cliente FVA"))
-        self.usrSlots.setTabText(self.usrSlots.indexOf(self.tab1), _translate("FVAClientUI", "Dispositivo"))
+        self.usrSlots.setTabText(self.usrSlots.indexOf(self.tab1), _translate("FVAClientUI", "General"))
         self.menuRequests.setTitle(_translate("FVAClientUI", "Solicitar"))
         self.menuContactos.setTitle(_translate("FVAClientUI", "Contactos"))
         self.menuEdit.setTitle(_translate("FVAClientUI", "Editar"))
