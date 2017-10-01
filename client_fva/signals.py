@@ -1,5 +1,4 @@
 '''
-Created on 22 ago. 2017
 
 @author: luis
 '''
@@ -13,6 +12,18 @@ USB_DISCONNECTED = 4
 
 
 class SignalObject(object):
+    '''
+    Canales de comunicación
+    
+    - fva_client: 
+        * notify
+        * monitor_usb
+    
+    - identificacion: 
+        * fva_speaker
+        
+    El canal de identificación corresponde al número de identificación de la persona en cuestión.
+    '''
     _type = None
     data = None
     response = None
@@ -27,3 +38,5 @@ def get_signal_response(signal_response):
     for response in signal_response:
         if response[1] is not None:
             return response[1]
+
+
