@@ -3,9 +3,8 @@ Created on 2 ago. 2017
 
 @author: luis
 '''
+from client_fva.person import PersonClient
 
-
-from clientfva.person import PersonClient
 
 client = PersonClient(person='04-0212-0119')
 client.register()

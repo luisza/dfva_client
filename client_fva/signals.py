@@ -8,6 +8,8 @@ Created on 22 ago. 2017
 PIN_REQUEST = 1
 # Return response =  {'pin': xxx, 'code': xxx, 'rejected': False}
 PIN_CODE_REQUEST = 2
+USB_CONNECTED = 3 
+USB_DISCONNECTED = 4
 
 
 class SignalObject(object):
