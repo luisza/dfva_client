@@ -11,6 +11,10 @@ from pkcs11.constants import ObjectClass
 import OpenSSL
 import platform
 from client_fva import signals
+import logging
+
+logger = logging.getLogger('dfva_client')
+
 
 class PKCS11Client:
     slot = None
@@ -32,9 +36,15 @@ class PKCS11Client:
         """
         if self.slot:
             return self.slot
+        try:
+            lib = pkcs11.lib(self.get_module_lib())
+            slots = lib.get_slots()
+        except Exception as e:
+            self.signal.send('notify', obj={
+                'message': "La biblioteca instalada no funciona para leer las tarjetas, esto puede ser porque no ha instalado las bibliotecas necesarias o porque el sistema operativo no está soportado"
+            })
+            logger.error("Error abriendo dispositivos PKCS11 %r" % (e,))
 
-        lib = pkcs11.lib(self.get_module_lib())
-        slots = lib.get_slots()
         if not slots:
             raise Exception("PKCS11: Slot not found")
         self.slot = slots[0]
@@ -43,21 +53,20 @@ class PKCS11Client:
     def get_module_lib(self):
         """Obtiene la biblioteca de comunicación con la tarjeta """
 
-        if hasattr(self.settings, 'module_path'):
+        if hasattr(self.settings, 'module_path') and self.settings.module_path:
             return self.settings.module_path
 
         if 'PKCS11_MODULE' in os.environ:
             return os.environ['PKCS11_MODULE']
-        
 
-        
-        if os.path.exists('/usr/lib/libASEP11.so'): # Linux 
+        if os.path.exists('/usr/lib/libASEP11.so'):  # Linux
             return '/usr/lib/libASEP11.so'
-        
-        if os.path.exists("/usr/local/lib/libASEP11.dylib"): # macOS
+
+        if os.path.exists("/usr/local/lib/libASEP11.dylib"):  # macOS
             return "/usr/local/lib/libASEP11.dylib"
-        
-        # FIXME: Hacer la construcción del path por defecto para windows, sugerencia 
+
+        # FIXME: Hacer la construcción del path por defecto para windows,
+        # sugerencia
         """
         public static String ObtenerDirectorioDeWindows()
           {
@@ -69,27 +78,27 @@ class PKCS11Client:
             return directorioDeWindows;
           }
         """
-        
-        
+
         _os = platform.system().lower()
         _os_arch = platform.machine()
         BASE_DIR = os.path.dirname(
-                os.path.dirname(os.path.abspath(__file__)))        
+            os.path.dirname(os.path.abspath(__file__)))
         if _os == 'linux':
             path = os.path.join(
-                BASE_DIR, 'client_fva/libs/%s/%s/libASEP11.so' % (_os,_os_arch ))
+                BASE_DIR, 'client_fva/libs/%s/%s/libASEP11.so' % (_os, _os_arch))
         elif _os == "darwin":
-            path = os.path.join(BASE_DIR, 'client_fva/libs/macos/libASEP11.dylib' )
+            path = os.path.join(
+                BASE_DIR, 'client_fva/libs/macos/libASEP11.dylib')
         elif _os == "windows":
-            path =   os.path.join(BASE_DIR, 'client_fva/libs/windows/asepkcs.dll' )          
-        
-            
+            path = os.path.join(
+                BASE_DIR, 'client_fva/libs/windows/asepkcs.dll')
+
         if os.path.exists(path):
             return path
-        
+
         self.signal.send('notify', obj={
-                        'message': "No existe una biblioteca instalada para leer las tarjetas, esto puede ser porque no ha instalado las bibliotecas necesarias o porque el sistema operativo no está soportado"
-                        })
+            'message': "No existe una biblioteca instalada para leer las tarjetas, esto puede ser porque no ha instalado las bibliotecas necesarias o porque el sistema operativo no está soportado"
+        })
 
     def get_pin(self, pin=None):
         """Obtiene el pin de la tarjeta para iniciar sessión"""
@@ -107,7 +116,7 @@ class PKCS11Client:
                 # Fixme: aqui debería manejarse mejor
             respobj = signals.get_signal_response(
                 self.signal.send('pin', obj={
-                        'serial': serial}))
+                    'serial': serial}))
             return respobj.response['pin']
 
         raise Exception(

@@ -12,8 +12,11 @@ class UserSettings:
         self.number_requests_before_fail = 2
         self.save_signed_docs_path = ''
         self.module_path = ''
+        self.reconnection_wait_time = 10  # segundos
+        self.max_pin_fails = 3  # Número máximo de errores al poner el pin
         self.config = configparser.ConfigParser()
-        self.settings_file_path = os.path.join(os.environ.get('HOME'), ".fva_client")
+        self.settings_file_path = os.path.join(
+            os.environ.get('HOME'), ".fva_client")
         self.settings_file_name = "client.conf"
 
     def save(self):
@@ -39,7 +42,8 @@ class UserSettings:
             self.config.write(configfile)
 
     def load(self):
-        self.config.read(os.path.join(self.settings_file_path, self.settings_file_name))
+        self.config.read(os.path.join(
+            self.settings_file_path, self.settings_file_name))
         for section in self.config.sections():
             for key, value in self.config[section].items():
                 try:

@@ -3,6 +3,7 @@ from client_fva.fva_speaker import FVA_client
 from PyQt5 import QtCore, QtGui, QtWidgets
 import time
 from base64 import b64decode
+from client_fva.user_settings import UserSettings
 
 
 class FVAClient(Ui_FVADialog):
@@ -16,7 +17,8 @@ class FVAClient(Ui_FVADialog):
         self.cancel.clicked.connect(self.closeEvent)
         self.submit.clicked.connect(self.send_code)
         self.timeout = 0
-        self.client = FVA_client()
+        self.settings = UserSettings()
+        self.client = FVA_client(settings=self.settings)
         self.client.start()
         self.client.signal.connect(self.request_pin_code)
 

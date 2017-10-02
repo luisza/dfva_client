@@ -13,10 +13,16 @@ from base64 import b64decode, b64encode
 from client_fva.pkcs11client import PKCS11Client
 from pkcs11.mechanisms import Mechanism
 from client_fva import signals
+import logging
+import time
+from client_fva.user_settings import UserSettings
+import pkcs11
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ca_bundle = os.path.join(BASE_DIR, 'libs/certs/ca_bundle.pem')
 from threading import Thread
 from blinker import signal
+
+logger = logging.getLogger('dfva_client')
 
 
 class FVA_Base_client(PKCS11Client):
@@ -27,19 +33,42 @@ class FVA_Base_client(PKCS11Client):
     stop = False
 
     def __init__(self, *args, **kwargs):
+        self.signal = kwargs.get('signal', None)
+        self.settings = kwargs.get('settings', UserSettings())
         PKCS11Client.__init__(self, *args, **kwargs)
         self.identification = self.get_identification()
-        self.signal = signal(self.identification)
+        self.signal = self.signal or signal(self.identification)
 
     def start_the_negotiation(self):
+        count = 0
+        ok = False
+        data = None
+        while not ok and count < self.settings.number_requests_before_fail:
+            try:
+                data = self._request_start_negotiation()
+            except requests.exceptions.ConnectionError:
+                logger.warning(
+                    "Error en requests iniciando negociación de la conexión, puede que no tenga acceso a internet")
+            except Exception as e:
+                logger.error(
+                    "Error iniciando negociación de la conexión %r" % (e, ))
+                # FiXME logging
+            if data:
+                ok = True
+            count += 1
+
+        return data
+
+    def _request_start_negotiation(self):
+
         headers = {
             'User-Agent': 'SignalR (lang=Java; os=linux; version=2.0)'
         }
 
+        # Fixme: poner en settings
         url = "https://www.firmadigital.go.cr/wcfv2/Bccr.Firma.Fva.Hub/signalr/negotiate?clientProtocol=1.4&connectionData=%5B%7B%22name%22%3A%22administradordeclientes%22%7D%5D"
         response = requests.get(url, verify=ca_bundle, headers=headers)
         result = response.json()
-
     # {'ProtocolVersion': '1.4',
     #  'DisconnectTimeout': 30.0,
     #  'ConnectionId': '80b6be12-b116-4180-a45f-1cb6acb3e2cc',
@@ -50,6 +79,7 @@ class FVA_Base_client(PKCS11Client):
     #  'KeepAliveTimeout': 20.0,
     #  'TransportConnectTimeout': 5.0,
     #  'Url': '/wcfv2/Bccr.Firma.Fva.Hub/signalr'}
+        # Fixme: poner en settings
         self.base_url = 'https://www.firmadigital.go.cr' + result['Url']
         self.params = {
             'connectionData':   '[{"name":"administradordeclientes"}]',
@@ -61,6 +91,23 @@ class FVA_Base_client(PKCS11Client):
         return result
 
     def start_the_communication(self, data):
+        count = 0
+        ok = False
+        response = None
+        while not ok and count < self.settings.number_requests_before_fail:
+            try:
+                response = self._start_the_communication(data)
+            except requests.exceptions.ConnectionError:
+                logger.warning(
+                    "Error en requests iniciando la comunicación")
+            except Exception as e:
+                logger.error("Error iniciando conexión %r" % (e, ))
+                # FiXME logging
+            if response is not None:
+                ok = True
+        return response
+
+    def _start_the_communication(self, data):
         certificates = self.get_certificates()
         # url = self.base_url+'/connect'
         url = """https://www.firmadigital.go.cr/%s/connect""" % (data['Url'])
@@ -83,12 +130,14 @@ class FVA_Base_client(PKCS11Client):
                                      verify=ca_bundle,
                                      params=self.params,
                                      stream=True)
-
         return self.response
 
     def start_client(self):
+        logger.info("Iniciando la comunicación con el BCCR")
         data = self.start_the_negotiation()
-        response = self.start_the_communication(data)
+        response = None
+        if data:
+            response = self.start_the_communication(data)
         return response
 
     def process_messages(self, response):
@@ -96,11 +145,15 @@ class FVA_Base_client(PKCS11Client):
             try:
                 data = json.loads(message)
             except:
-                print(message)
+                logger.info(message)
                 continue
             if 'M' in data and data['M']:
                 if "M" in data['M'][0] and data['M'][0]['M'] == "Firme":
-                    self.sign(data)
+                    signed = bool(self.sign(data))
+                    if not signed:
+                        self.signal.send('notify', obj={
+                            'message': "Error al firmar, lo lamentamos por favor vuelva a intentarlo"
+                        })
 
     def read_messages(self, response):
         """
@@ -148,10 +201,17 @@ class FVA_Base_client(PKCS11Client):
         dev["c"] = ""
         if not respobj.response['rejected']:
             dev["c"] = respobj.response['code']
-            dev['b'] = self.get_signed_hash(data['M'][0]['A'][0]['b'],
-                                            pin=respobj.response['pin']).decode()
-            dev['a'] = self.get_signed_hash(data['M'][0]['A'][0]['a'],
-                                            pin=respobj.response['pin']).decode()
+            dev['b'], pin = self.get_signed_hash(data['M'][0]['A'][0]['b'],
+                                                 pin=respobj.response['pin'],
+                                                 data=data).decode()
+            dev['a'], pin = self.get_signed_hash(data['M'][0]['A'][0]['a'],
+                                                 pin=pin,
+                                                 data=data).decode()
+
+            if not all((dev['b'], dev['a'])):
+                logger.errors("Alguna firma incorrecta %r o %r" %
+                              (dev['a'], dev['b']))
+                dev["d"] = 2
         params['A'].append(dev)
 
         url = self.base_url + '/send'
@@ -162,16 +222,57 @@ class FVA_Base_client(PKCS11Client):
         }
 
         body = 'data=' + urllib.parse.quote_plus(json.dumps(params))
-        # FIXME: revisar estado y si algo va mal volver a enviar la
-        # solicitud
-        self.sign_response = requests.post(
-            url, data=body,  verify=ca_bundle,
-            params=self.params, headers=headers)
+        return self.send_signed_data(url, body, headers)
 
-    def get_signed_hash(self, hash, pin=None):
+    def send_signed_data(self, url, body, headers):
+        count = 0
+        ok = False
+        data = None
+        while not ok and count < self.settings.number_requests_before_fail:
+            try:
+                data = requests.post(
+                    url, data=body,  verify=ca_bundle,
+                    params=self.params, headers=headers)
+            except requests.exceptions.ConnectionError:
+                logger.warning(
+                    "Error en requests enviando datos firmados, puede que no tenga acceso a internet")
+            except Exception as e:
+                logger.error(
+                    "Error enviando datos firmados %r" % (e, ))
+            if data:
+                ok = True
+            count += 1
+            # FIXME: Mejorar el manejo de errores de HTTP que podría devolver
+            # data = requests.post(
+        self.sign_response = data
+        return data
+
+    def get_signed_hash(self, _hash, pin=None, data=None):
+        count = 0
+        ok = False
+        response = None
+        while not ok and count < self.settings.max_pin_fails:
+            try:
+                response = self._get_signed_hash(_hash, pin)
+            except pkcs11.exceptions.PinIncorrect:
+                data['message'] = "Error PIN incorrecto, por favor vuelvalo a ingresar"
+                sobj = signals.SignalObject(signals.PIN_REQUEST, data)
+                respobj = signals.get_signal_response(
+                    self.signal.send('fva_speaker', obj=sobj))
+                pin = respobj.response['pin']
+            except Exception as e:
+                logger.error("Error get_signed_hash %r" % (e, ))
+
+            if response:
+                ok = True
+            count += 1
+        return response, pin
+
+    def _get_signed_hash(self, _hash, pin):
+
         certificates = self.get_keys(pin=pin)
         d = certificates['sign']['priv_key'].sign(
-            b64decode(hash), mechanism=Mechanism.SHA256_RSA_PKCS)
+            b64decode(_hash), mechanism=Mechanism.SHA256_RSA_PKCS)
         return b64encode(d)
 
 
@@ -186,8 +287,14 @@ class FVA_client(FVA_Base_client, Thread):
         tryrun = True
         while tryrun:
             data = self.start_client()
-            self.process_messages(data)
+            if data is not None:
+                self.process_messages(data)
+            else:
+                time.sleep(self.settings.reconnection_wait_time)
             tryrun = self.daemon
+
+    def close(self):
+        self.daemon = False
 
 
 class OSDummyClient:
