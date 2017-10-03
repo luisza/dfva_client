@@ -23,12 +23,13 @@ class PKCS11Client:
     info = None
     settings = None
     keys = None
+    identification = None
 
     def __init__(self, *args, **kwargs):
 
         self.settings = kwargs.get('settings', {})
-        self.slot = kwargs.get('slot', self.get_slot())
         self.signal = kwargs.get('signal', None)
+        self.slot = kwargs.get('slot', self.get_slot())
 
     def get_slot(self):
         """Obtiene el primer slot (tarjeta) disponible
@@ -215,8 +216,17 @@ class PKCS11Client:
         return self.keys
 
     def get_identification(self):
-        info = self.get_certificate_info()
-        person = None
+        if self.identification is not None:
+            return self.identification
+
+        info = None
+        try:
+            info = self.get_certificate_info()
+        except pkcs11.exceptions.TokenNotRecognised as e:
+            self.signal.send('notify', obj={
+                'message': "No se puede obtener la identificación de la persona, posiblemente porque la tarjeta está mal conectada"
+            })
+            logger.error("Tarjeta no detectada %r" % (e, ))
         if info:
-            person = info[0]['identification']
-        return person
+            self.identification = info[0]['identification']
+        return self.identification

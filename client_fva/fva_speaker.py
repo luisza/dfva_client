@@ -33,13 +33,19 @@ class FVA_Base_client(PKCS11Client):
     stop = False
 
     def __init__(self, *args, **kwargs):
-        self.signal = kwargs.get('signal', None)
+        self.signal = kwargs.get('signal', signal('dfva_client'))
+        kwargs['signal'] = self.signal
         self.settings = kwargs.get('settings', UserSettings())
+        kwargs['settings'] = self.settings
+
         PKCS11Client.__init__(self, *args, **kwargs)
         self.identification = self.get_identification()
-        self.signal = self.signal or signal(self.identification)
 
     def start_the_negotiation(self):
+        """
+        Hace la negociación del protocolo de comunicación a utilizar
+        """
+
         count = 0
         ok = False
         data = None
@@ -62,11 +68,11 @@ class FVA_Base_client(PKCS11Client):
     def _request_start_negotiation(self):
 
         headers = {
-            'User-Agent': 'SignalR (lang=Java; os=linux; version=2.0)'
+            'User-Agent': self.settings.user_agent
         }
 
         # Fixme: poner en settings
-        url = "https://www.firmadigital.go.cr/wcfv2/Bccr.Firma.Fva.Hub/signalr/negotiate?clientProtocol=1.4&connectionData=%5B%7B%22name%22%3A%22administradordeclientes%22%7D%5D"
+        url = self.settings.bccr_fva_domain + self.settings.bccr_fva_url_negociation
         response = requests.get(url, verify=ca_bundle, headers=headers)
         result = response.json()
     # {'ProtocolVersion': '1.4',
@@ -80,7 +86,7 @@ class FVA_Base_client(PKCS11Client):
     #  'TransportConnectTimeout': 5.0,
     #  'Url': '/wcfv2/Bccr.Firma.Fva.Hub/signalr'}
         # Fixme: poner en settings
-        self.base_url = 'https://www.firmadigital.go.cr' + result['Url']
+        self.base_url = self.settings.bccr_fva_domain + result['Url']
         self.params = {
             'connectionData':   '[{"name":"administradordeclientes"}]',
             'connectionToken': result['ConnectionToken'],
@@ -91,6 +97,10 @@ class FVA_Base_client(PKCS11Client):
         return result
 
     def start_the_communication(self, data):
+        """
+        Inicia la comunicación con el servicio del BCCR
+        """
+
         count = 0
         ok = False
         response = None
@@ -110,7 +120,8 @@ class FVA_Base_client(PKCS11Client):
     def _start_the_communication(self, data):
         certificates = self.get_certificates()
         # url = self.base_url+'/connect'
-        url = """https://www.firmadigital.go.cr/%s/connect""" % (data['Url'])
+        url = self.settings.bccr_fva_domain + \
+            self.settings.bccr_fva_url_connect % (data['Url'])
 
         uname = os.uname()
         headers = {
@@ -122,7 +133,7 @@ class FVA_Base_client(PKCS11Client):
             'IpPrivada': '127.0.0.1',
             'Arquitectura': 'amd64' if uname[4] == 'x86_64' else 'x86',
             'NombreDelHost': uname[1],
-            'User-Agent': 'SignalR (lang=Java; os=linux; version=2.0)',
+            'User-Agent': self.settings.user_agent,
             'Content-Encoding': 'gzip'
         }
 
@@ -133,7 +144,8 @@ class FVA_Base_client(PKCS11Client):
         return self.response
 
     def start_client(self):
-        logger.info("Iniciando la comunicación con el BCCR")
+        logger.info("Iniciando la comunicación con el BCCR de " +
+                    self.identification)
         data = self.start_the_negotiation()
         response = None
         if data:
@@ -141,6 +153,10 @@ class FVA_Base_client(PKCS11Client):
         return response
 
     def process_messages(self, response):
+        """
+        Mientras existan mensajes por leer intenta procesar todo mensaje que venga del
+        BCCR.
+        """
         for message in self.read_messages(response):
             try:
                 data = json.loads(message)
@@ -203,21 +219,25 @@ class FVA_Base_client(PKCS11Client):
             dev["c"] = respobj.response['code']
             dev['b'], pin = self.get_signed_hash(data['M'][0]['A'][0]['b'],
                                                  pin=respobj.response['pin'],
-                                                 data=data).decode()
+                                                 data=data)
             dev['a'], pin = self.get_signed_hash(data['M'][0]['A'][0]['a'],
                                                  pin=pin,
-                                                 data=data).decode()
+                                                 data=data)
 
             if not all((dev['b'], dev['a'])):
-                logger.errors("Alguna firma incorrecta %r o %r" %
-                              (dev['a'], dev['b']))
+                logger.error("Alguna firma incorrecta %r o %r" %
+                             (dev['a'], dev['b']))
                 dev["d"] = 2
+            else:
+                dev['b'] = dev['b'].decode()
+                dev['a'] = dev['a'].decode()
+
         params['A'].append(dev)
 
         url = self.base_url + '/send'
 
         headers = {
-            'User-Agent': 'SignalR (lang=Java; os=linux; version=2.0)',
+            'User-Agent': self.settings.user_agent,
             'Content-Type': 'application/x-www-form-urlencoded'
         }
 
@@ -225,6 +245,18 @@ class FVA_Base_client(PKCS11Client):
         return self.send_signed_data(url, body, headers)
 
     def send_signed_data(self, url, body, headers):
+        """
+        Notifica al BCCR que una firma se ha dado.
+        Intenta tantas veces como **settings.number_requests_before_fail** indique en 
+        caso de error.
+
+        :params:
+
+        url: ruta donde notificar
+        body: mensaje a enviar ya procesado y en formato str
+        headers: Encabezados http adicionales para enviar
+
+        """
         count = 0
         ok = False
         data = None
@@ -248,6 +280,12 @@ class FVA_Base_client(PKCS11Client):
         return data
 
     def get_signed_hash(self, _hash, pin=None, data=None):
+        """
+        Firma el **_hash** suministrado con el **pin** suminstrado por el usuario y utiliza
+        **data** por si el pin es incorrecto.
+
+        Devuelve el hash firmado en base64 como string.
+        """
         count = 0
         ok = False
         response = None
@@ -255,7 +293,8 @@ class FVA_Base_client(PKCS11Client):
             try:
                 response = self._get_signed_hash(_hash, pin)
             except pkcs11.exceptions.PinIncorrect:
-                data['message'] = "Error PIN incorrecto, por favor vuelvalo a ingresar"
+                data['message'] = "Error PIN de %s incorrecto, por favor \
+                vuelvalo a ingresar" % (self.identification,)
                 sobj = signals.SignalObject(signals.PIN_REQUEST, data)
                 respobj = signals.get_signal_response(
                     self.signal.send('fva_speaker', obj=sobj))
@@ -284,17 +323,25 @@ class FVA_client(FVA_Base_client, Thread):
         self.daemon = kwargs.get('daemon', True)
 
     def run(self):
-        tryrun = True
-        while tryrun:
+
+        if self.identification is None:
+            logger.error(
+                "No se puede iniciar FVA_client, obtención de identificación no se realizó adecuadamente")
+            return
+
+        while self.daemon:
             data = self.start_client()
             if data is not None:
                 self.process_messages(data)
             else:
+                logger.info("Esperando para reconectar a " +
+                            self.identification)
                 time.sleep(self.settings.reconnection_wait_time)
-            tryrun = self.daemon
 
     def close(self):
         self.daemon = False
+        self.response.connection.close()
+        logger.info("Terminando FVA_client de " + self.identification)
 
 
 class OSDummyClient:

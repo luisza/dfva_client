@@ -9,11 +9,12 @@ import time
 from datetime import datetime
 from base64 import b64encode, b64decode
 
-from . import Settings
 from .rsa import get_hash_sum, encrypt
 from client_fva.pkcs11client import PKCS11Client
 from client_fva.rsa import decrypt
 from pytz import timezone
+from client_fva.user_settings import UserSettings
+
 
 class PersonClientInterface():
     """
@@ -31,7 +32,7 @@ class PersonClientInterface():
     .. code:: bash
 
         export PKCS11_PIN=<pin>
-        export PKCS11_MODULE='<somepath>/dfva_client/clients/lib/x86_64/libASEP11.so'
+        export PKCS11_MODULE='<somepath>/dfva_client/clients/libs/linux/x86_64/libASEP11.so'
 
     Aunque el cliente puede detectar los módulos y pedirá el pin en la consola, el método de variables de entorno es más rápido.
 
@@ -176,7 +177,7 @@ class PersonBaseClient(PersonClientInterface):
     def _get_time(self):
         cr_timezone = timezone('America/Costa_Rica')
         actual_hour = cr_timezone.localize(datetime.now())
-        return actual_hour.isoformat() #.strftime("%Y-%m-%d %H:%M:%S")
+        return actual_hour.isoformat()  # .strftime("%Y-%m-%d %H:%M:%S")
 
     def authenticate(self, identification, wait=False, algorithm='sha512'):
         data = {
@@ -197,8 +198,8 @@ class PersonBaseClient(PersonClientInterface):
             "data": edata,
         }
         result = self.requests.post(
-            self.settings.FVA_SERVER_URL +
-            self.settings.AUTHENTICATE_PERSON, json=params)
+            self.settings.fva_server_url +
+            self.settings.authenticate_person, json=params)
 
         data = result.json()
         data = self._decrypt(data['data'])
@@ -229,8 +230,8 @@ class PersonBaseClient(PersonClientInterface):
             "data": edata,
         }
         result = self.requests.post(
-            self.settings.FVA_SERVER_URL +
-            self.settings.CHECK_AUTHENTICATE_PERSON % (code,), json=params)
+            self.settings.fva_server_url +
+            self.settings.check_authenticate_person % (code,), json=params)
 
         data = result.json()
         data = self._decrypt(data['data'])
@@ -269,7 +270,7 @@ class PersonBaseClient(PersonClientInterface):
                    'Content-Type': 'application/json'}
 
         result = self.requests.post(
-            self.settings.FVA_SERVER_URL + self.settings.SIGN_PERSON,
+            self.settings.fva_server_url + self.settings.sign_person,
             json=params, headers=headers)
 
         data = result.json()
@@ -301,8 +302,8 @@ class PersonBaseClient(PersonClientInterface):
             "data": edata,
         }
         result = self.requests.post(
-            self.settings.FVA_SERVER_URL +
-            self.settings.CHECK_SIGN_PERSON % (code,), json=params)
+            self.settings.fva_server_url +
+            self.settings.check_sign_person % (code,), json=params)
 
         data = result.json()
         data = self._decrypt(data['data'])
@@ -334,14 +335,14 @@ class PersonBaseClient(PersonClientInterface):
         }
 
         if _format == 'certificate':
-            url = self.settings.VALIDATE_CERTIFICATE
+            url = self.settings.validate_certificate
         else:
-            url = self.settings.VALIDATE_DOCUMENT
+            url = self.settings.validate_document
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json'}
 
         result = self.requests.post(
-            self.settings.FVA_SERVER_URL + url, json=params, headers=headers)
+            self.settings.fva_server_url + url, json=params, headers=headers)
 
         data = result.json()
         data = self._decrypt(data['data'])
@@ -367,8 +368,8 @@ class PersonBaseClient(PersonClientInterface):
             "data": edata,
         }
         result = self.requests.post(
-            self.settings.FVA_SERVER_URL +
-            self.settings.SUSCRIPTOR_CONNECTED, json=params)
+            self.settings.fva_server_url +
+            self.settings.suscriptor_connected, json=params)
 
         data = result.json()
         dev = False
@@ -382,9 +383,9 @@ class OSPersonClient(PersonBaseClient):
              file_path=None, is_base64=False,
              algorithm='sha512', wait=False):
 
-        if _format not in self.settings.SUPPORTED_SIGN_FORMAT:
+        if _format not in self.settings.supported_sign_format:
             raise Exception("Format not supported only %s" %
-                            (",".join(self.settings.SUPPORTED_SIGN_FORMAT)))
+                            (",".join(self.settings.supported_sign_format)))
 
         if file_path is None and document is None:
             raise Exception("Document or file_path must be set")
@@ -416,9 +417,9 @@ class OSPersonClient(PersonBaseClient):
                  is_base64=False,
                  _format='certificate'):
 
-        if _format not in self.settings.SUPPORTED_VALIDATE_FORMAT:
+        if _format not in self.settings.supported_validate_format:
             raise Exception("Format not supported only %s" %
-                            (",".join(self.settings.SUPPORTED_VALIDATE_FORMAT)))
+                            (",".join(self.settings.supported_validate_format)))
 
         if file_path is None and document is None:
             raise Exception("Document or file_path must be set")
@@ -447,8 +448,8 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
     def __init__(self, *args, **kwargs):
 
         self.requests = kwargs.get('request_client', requests)
-        self.wait_time = kwargs.get('wait_time', 10)
-        self.settings = kwargs.get('settings', Settings())
+        self.settings = kwargs.get('settings', UserSettings())
+        self.wait_time = self.settings.check_wait_time
         PKCS11Client.__init__(self, *args, **kwargs)
 
         self.person = self.get_person()
@@ -519,8 +520,8 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
         }
 
         result = self.requests.post(
-            self.settings.FVA_SERVER_URL +
-            self.settings.LOGIN_PERSON, json=params)
+            self.settings.fva_server_url +
+            self.settings.login_person, json=params)
         data = result.json()
         self.key_token = b64decode(data['token'])
         return data
