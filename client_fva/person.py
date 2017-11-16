@@ -237,7 +237,7 @@ class PersonBaseClient(PersonClientInterface):
         data = self._decrypt(data['data'])
         return data
 
-    def sign(self, identification, document, resume, _format="xml",
+    def sign(self, identification, document, resume, _format="xml_cofirma",
              file_path=None, is_base64=False,
              algorithm='sha512', wait=False):
         if not is_base64:
@@ -379,7 +379,7 @@ class PersonBaseClient(PersonClientInterface):
 
 
 class OSPersonClient(PersonBaseClient):
-    def sign(self, identification, document, resume, _format="xml",
+    def sign(self, identification, document, resume, _format="xml_cofirma",
              file_path=None, is_base64=False,
              algorithm='sha512', wait=False):
 

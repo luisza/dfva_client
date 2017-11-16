@@ -33,9 +33,9 @@ class UserSettings:
         self.validate_document = '/validate/person_document/'
         self.suscriptor_connected = '/validate/person_suscriptor_connected/'
         self.login_person = '/login/'
-        self.supported_sign_format = ['xml', 'odf', 'msoffice']
+        self.supported_sign_format = ['xml_cofirma', 'xml_contrafirma','odf', 'msoffice']
         self.supported_validate_format = [
-            'certificate', 'xml', 'odf', 'msoffice']
+            'certificate', 'cofirma', 'contrafirma', 'odf', 'msoffice']
         # Cuanto se espera para verificar si una autenticación o firma se llevó
         # a cabo
         self.check_wait_time = 10
@@ -89,6 +89,7 @@ class UserSettings:
 
         with open(os.path.join(self.settings_file_path, self.settings_file_name), "w") as configfile:
             self.config.write(configfile)
+        os.chmod(os.path.join(self.settings_file_path, self.settings_file_name), stat.S_IRWXU)
 
     def load(self):
         self.config.read(os.path.join(
