@@ -3,18 +3,23 @@ Created on 30 sep. 2017
 
 @author: luisza
 '''
-from threading import Thread
+from PyQt5.QtCore import QRunnable, pyqtSlot, pyqtSignal, QObject
 from client_fva.pkcs11client import PKCS11Client
 import time
 import pkcs11
-from blinker import signal
+#from blinker import signal
 from client_fva import signals
 import logging
 logger = logging.getLogger('dfva_client')
 daemon = True
 
 
-class Monitor(PKCS11Client, Thread):
+class WorkerObject(QObject):
+    result = pyqtSignal(str, signals.SignalObject)
+
+
+
+class Monitor(PKCS11Client, QRunnable):
     """
     Monitoriza los dispositivos pkcs11 conectados a la computadora.
     Lanza 2 eventos:
@@ -54,9 +59,11 @@ class Monitor(PKCS11Client, Thread):
 
         self.settings = kwargs.get('settings', {})
         self.module_lib = self.get_module_lib()
-        self.signal = kwargs.get('signal', signal('fva_client'))
-        Thread.__init__(self)
+        #self.signal = kwargs.get('signal', signal('fva_client'))
+        QRunnable.__init__(self)
+        self.signals = WorkerObject()
 
+    @pyqtSlot()
     def run(self):
         global daemon
         logger.info("Iniciando monitor")
@@ -103,12 +110,12 @@ class Monitor(PKCS11Client, Thread):
                     self.send_add_signal(data)
             except pkcs11.exceptions.TokenNotRecognised as noToken:
                 if notify_exception:
-                    self.signal.send('notify', obj={
+                    self.signals.result.emit('notify', {
                         'message': "Un dispositivo ha sido encontrado, pero ninguna tarjeta pudo ser leída, por favor verifique que la tarjeta esté correctamente insertada"
                     })
             except Exception as e:
                 if notify_exception:
-                    self.signal.send('notify', obj={
+                    self.signals.result.emit('notify',  {
                         'message': "Ha ocurrido un error inesperado leyendo alguno de los dispositivos"
                     })
 
@@ -123,12 +130,12 @@ class Monitor(PKCS11Client, Thread):
     def send_add_signal(self, data):
         sobj = signals.SignalObject(signals.USB_CONNECTED, data)
         logger.info("Tarjeta conectada %s" % (data['person'],))
-        self.signal.send('monitor_usb', obj=sobj)
+        self.signals.result.emit('monitor_usb', sobj)
 
     def send_removed_signal(self, data):
         sobj = signals.SignalObject(signals.USB_DISCONNECTED, data)
         logger.info("Tarjeta desconectada %s" % (data['person'],))
-        self.signal.send('monitor_usb', obj=sobj)
+        self.signals.result.emit('monitor_usb', sobj)
 
     def close(self):
         global daemon
