@@ -1,16 +1,17 @@
-from client_fva.ui_example.fvadialog import Ui_FVADialog
+
 from client_fva.fva_speaker import FVA_client
 from PyQt5 import QtCore, QtGui, QtWidgets
 import time
 from base64 import b64decode
 from client_fva.user_settings import UserSettings
+from client_fva.ui.fvadialogui import Ui_FVADialog
 
 
-class FVAClient(Ui_FVADialog):
+class FVASpeakerClient(Ui_FVADialog):
     rejected = False
     operation_finished = False
 
-    def __init__(self, dialog):
+    def __init__(self, dialog, slot):
         Ui_FVADialog.__init__(self)
         self.dialog = dialog
         self.setupUi(dialog)
@@ -18,7 +19,7 @@ class FVAClient(Ui_FVADialog):
         self.submit.clicked.connect(self.send_code)
         self.timeout = 0
         self.settings = UserSettings()
-        self.client = FVA_client(settings=self.settings)
+        self.client = FVA_client(settings=self.settings, slot=slot)
         self.client.start()
         self.client.signal.connect(self.request_pin_code)
 
@@ -72,7 +73,7 @@ def run():
     import sys
     app = QtWidgets.QApplication(sys.argv)
     FVADialog = QtWidgets.QDialog()
-    ui = FVAClient(FVADialog)
+    ui = FVASpeakerClient(FVADialog)
     # ui.setupUi(FVADialog)
     # FVADialog.show()
     sys.exit(app.exec_())

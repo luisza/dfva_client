@@ -5,14 +5,14 @@ from client_fva.ui.myrequests import MyRequests
 from client_fva import signals
 
 import logging
+from client_fva.ui.fvadialog import  FVASpeakerClient
 logger = logging.getLogger('dfva_client')
 
 class TabManager(QObject):
 
     def __init__(self, controller, main_app):
         super(TabManager, self).__init__()
-        
-        
+        self.speakers={}
         self.controller=controller
         self.main_app=main_app
         
@@ -33,7 +33,11 @@ class TabManager(QObject):
 
     def create_tab(self, name, slot):
         my_requests_ui = MyRequests(QtWidgets.QWidget(), self.main_app)
-        self.controller.usrSlots.insertTab(self.controller.usrSlots.count(), my_requests_ui.widget, name)
+        FVADialog = QtWidgets.QDialog()
+        ui = FVASpeakerClient(FVADialog, slot)
+        position = self.controller.usrSlots.count()
+        self.speakers[name]=ui
+        self.controller.usrSlots.insertTab(position, my_requests_ui.widget, name)
         self.controller.set_enabled_specific_menu_actions(True)
 
     def remove_tab(self, name, slot):
@@ -45,7 +49,8 @@ class TabManager(QObject):
                 break
         if index>=0:
             self.controller.usrSlots.removeTab(index)
-
+            self.speakers[name].closeEvent(None)
+            del self.speakers[name]
         if self.controller.usrSlots.count() <= 1: 
             self.controller.set_enabled_specific_menu_actions(False)
 
