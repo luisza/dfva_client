@@ -13,7 +13,7 @@ class UserSettings:
         self.save_signed_docs_path = ''
         self.module_path = ''
         # Necesita agregar en interfaz
-        self.reconnection_wait_time = 10  # segundos
+        self.reconnection_wait_time = 40  # segundos
         self.max_pin_fails = 3  # Número máximo de errores al poner el pin
 
         # No necesita agregar a interfaz

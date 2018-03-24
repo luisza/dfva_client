@@ -55,14 +55,14 @@ class FVA_Base_client(PKCS11Client):
             except requests.exceptions.ConnectionError:
                 logger.warning(
                     "Error en requests iniciando negociación de la conexión, puede que no tenga acceso a internet")
+                count += 1
             except Exception as e:
                 logger.error(
                     "Error iniciando negociación de la conexión %r" % (e, ))
-                # FiXME logging
+                count += 1
             if data:
                 ok = True
-            count += 1
-
+            
         return data
 
     def _request_start_negotiation(self):
@@ -110,8 +110,10 @@ class FVA_Base_client(PKCS11Client):
             except requests.exceptions.ConnectionError:
                 logger.warning(
                     "Error en requests iniciando la comunicación")
+                count += 1
             except Exception as e:
                 logger.error("Error iniciando conexión %r" % (e, ))
+                count += 1
                 # FiXME logging
             if response is not None:
                 ok = True
@@ -147,10 +149,10 @@ class FVA_Base_client(PKCS11Client):
         logger.info("Iniciando la comunicación con el BCCR de " +
                     self.identification)
         data = self.start_the_negotiation()
-        response = None
+        self.response = None
         if data:
-            response = self.start_the_communication(data)
-        return response
+            self.response = self.start_the_communication(data)
+        return self.response
 
     def process_messages(self, response):
         """
@@ -260,6 +262,7 @@ class FVA_Base_client(PKCS11Client):
         count = 0
         ok = False
         data = None
+        
         while not ok and count < self.settings.number_requests_before_fail:
             try:
                 data = requests.post(
@@ -320,7 +323,7 @@ class FVA_client(FVA_Base_client, Thread):
 
         FVA_Base_client.__init__(self, *args, **kwargs)
         Thread.__init__(self)
-        self.daemon = kwargs.get('daemon', True)
+        self.internal_daemon = kwargs.get('daemon', True)
 
     def run(self):
 
@@ -329,7 +332,7 @@ class FVA_client(FVA_Base_client, Thread):
                 "No se puede iniciar FVA_client, obtención de identificación no se realizó adecuadamente")
             return
 
-        while self.daemon:
+        while self.internal_daemon:
             data = self.start_client()
             if data is not None:
                 self.process_messages(data)
@@ -339,7 +342,7 @@ class FVA_client(FVA_Base_client, Thread):
                 time.sleep(self.settings.reconnection_wait_time)
 
     def close(self):
-        self.daemon = False
+        self.internal_daemon = False
         self.response.connection.close()
         logger.info("Terminando FVA_client de " + self.identification)
 
