@@ -15,9 +15,14 @@ import logging
 import datetime
 logger = logging.getLogger('dfva_client')
 
+import io
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import AES, PKCS1_OAEP
+
+
 class Token:
     serial=None
-    def __init__(serial):
+    def __init__(self, serial):
         self.serial = serial
     
 
@@ -31,15 +36,15 @@ class Slot:
 class B:
     pass
 
-class PKCS11Exception:
-    TokenNotRecognised = B()
+class PKCS11Exception(Exception):
+    TokenNotRecognised = Exception
 
 class dummypkcs11:
     exceptions=PKCS11Exception()
 
-    def lib(self):
+    def lib(self, mod):
         class A:
-            def get_slot(self):
+            def get_slots(self):
                 """Obtiene el primer slot (tarjeta) disponible
                 .. warning:: Solo usar en pruebas y mejorar la forma como se capta
                 """
@@ -49,12 +54,28 @@ class dummypkcs11:
 
 class PrivateKey:
     dirpath = None
+    key_length=2048
 
-    def __init__(dirpath):
-        self.dirpath=dirpath 
-    def sign(self, data):
-        pass
-        
+    def __init__(self, dirpath):
+        self.dirpath=dirpath
+ 
+    def sign(self, message):
+        key = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, open(self.dirpath).read())
+        return OpenSSL.crypto.sign(key, message, "sha512")
+
+    def decrypt(self, message):
+        file_in = io.BytesIO(message)
+        file_in.seek(0)
+        private_key = RSA.import_key(open(self.dirpath).read())
+
+        enc_session_key, nonce, tag, ciphertext = \
+           [ file_in.read(x) for x in (private_key.size_in_bytes(), 16, 16, -1) ]
+
+        # Decrypt the session key with the public RSA key
+        cipher_rsa = PKCS1_OAEP.new(private_key)
+        session_key = cipher_rsa.decrypt(enc_session_key)
+ 
+        return session_key
 
 class PKCS11Client:
     slot = None
@@ -78,7 +99,7 @@ class PKCS11Client:
 
     def get_module_lib(self):
         """Obtiene la biblioteca de comunicación con la tarjeta """
-         return '/usr/lib/libASEP11.so'
+        return '/usr/lib/libASEP11.so'
 
 
     def get_pin(self, pin=None):
@@ -91,16 +112,20 @@ class PKCS11Client:
         """
         return None
 
-    def read_public_from_disc(dirpath):
-        x509 = OpenSSL.crypto.load_certificate(
-                    OpenSSL.crypto.FILETYPE_ASN1, open(dirpath).read())
-        return OpenSSL.crypto.dump_publickey(OpenSSL.crypto.FILETYPE_PEM, x509.get_pubkey())
+    def read_public_from_disc(self, dirpath):
+        #x509 = OpenSSL.crypto.load_certificate(
+        #            OpenSSL.crypto.FILETYPE_ASN1, open(dirpath).read())
+        #return OpenSSL.crypto.dump_publickey(OpenSSL.crypto.FILETYPE_PEM, x509.get_pubkey())
+        return open(dirpath, 'rb').read()
 
-    def read_certificate_from_disc(dirpath)
-        x509 = OpenSSL.crypto.load_certificate(
-                    OpenSSL.crypto.FILETYPE_ASN1, open(dirpath).read())
-        return OpenSSL.crypto.dump_certificate(
-                    OpenSSL.crypto.FILETYPE_PEM, x509)
+    def read_certificate_from_disc(self, dirpath):
+#        x509 = OpenSSL.crypto.load_certificate(
+#                    OpenSSL.crypto.FILETYPE_ASN1, open(dirpath).read())
+#        return OpenSSL.crypto.dump_certificate(
+#                    OpenSSL.crypto.FILETYPE_PEM, x509)
+
+        return open(dirpath, 'rb').read()
+
 
     def get_certificates(self):
         if self.certificates:
@@ -137,10 +162,10 @@ class PKCS11Client:
     def get_keys(self, pin=None):
         """Extrae los certificados dentro del dispositivo y los guarda de forma estructurada para simplificar el acceso"""
 
-        self.keys = {'sign': {'pub_key': read_public_from_disc('certs/sign.crt'), 
+        self.keys = {'sign': {'pub_key': self.read_public_from_disc('certs/sign.crt'), 
     'priv_key': PrivateKey('certs/sign.key')}, 
 
-    'authentication': {'pub_key': read_public_from_disc('certs/auth.crt'), 
+    'authentication': {'pub_key': self.read_public_from_disc('certs/auth.crt'), 
     'priv_key': PrivateKey('certs/auth.key')}
 
 }

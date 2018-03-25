@@ -4,9 +4,9 @@ Created on 2 ago. 2017
 @author: luis
 '''
 from client_fva.person import PersonClient
+from client_fva.user_settings import UserSettings
 
-
-client = PersonClient(person='04-0212-0119')
+client = PersonClient(settings=UserSettings())
 client.register()
 client.authenticate('04-0212-0119')
 

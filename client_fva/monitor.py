@@ -4,15 +4,15 @@ Created on 30 sep. 2017
 @author: luisza
 '''
 from PyQt5.QtCore import QRunnable, pyqtSlot, pyqtSignal, QObject
-from client_fva.pkcs11client import PKCS11Client
+from client_fva.pkcs11client import PKCS11Client, dummypkcs11
 import time
-import pkcs11
-#from blinker import signal
+from blinker import signal
 from client_fva import signals
 import logging
 logger = logging.getLogger('dfva_client')
 daemon = True
 
+pkcs11=dummypkcs11()
 
 class WorkerObject(QObject):
     result = pyqtSignal(str, signals.SignalObject)
@@ -59,7 +59,7 @@ class Monitor(PKCS11Client, QRunnable):
 
         self.settings = kwargs.get('settings', {})
         self.module_lib = self.get_module_lib()
-        #self.signal = kwargs.get('signal', signal('fva_client'))
+        self.signal = kwargs.get('signal', signal('fva_client'))
         QRunnable.__init__(self)
         self.signals = WorkerObject()
 
@@ -109,11 +109,13 @@ class Monitor(PKCS11Client, QRunnable):
                     added_device[serial] = data
                     self.send_add_signal(data)
             except pkcs11.exceptions.TokenNotRecognised as noToken:
+                print(noToken)
                 if notify_exception:
                     self.signals.result.emit('notify', {
                         'message': "Un dispositivo ha sido encontrado, pero ninguna tarjeta pudo ser leída, por favor verifique que la tarjeta esté correctamente insertada"
                     })
             except Exception as e:
+                print(e)
                 if notify_exception:
                     self.signals.result.emit('notify',  {
                         'message': "Ha ocurrido un error inesperado leyendo alguno de los dispositivos"
