@@ -1,5 +1,6 @@
 import configparser
 import os
+import stat
 
 
 class UserSettings:
@@ -108,7 +109,7 @@ class UserSettings:
                     pass
 
     # This method above make settings to work as dict
-    # but only accept attributes that are described in __init_()
+    # but only accept attributes that are described in __init__()
     def __getitem__(self, key):
         if hasattr(self, key):
             return getattr(self, key)
