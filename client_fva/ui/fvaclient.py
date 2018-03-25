@@ -2,6 +2,7 @@ import sys
 from client_fva.ui.fvaclientui import Ui_FVAClientUI
 from client_fva.ui.myrequests import MyRequests
 from client_fva.ui.mysignatures import MySignatures
+from client_fva.ui.tab_manager import TabManager
 from client_fva.ui.tabdefault import TabDefault
 from client_fva.ui.settings import Settings
 from client_fva.ui.requestsignature import RequestSignature
@@ -9,7 +10,6 @@ from client_fva.ui.requestauthentication import RequestAuthentication
 from client_fva.ui.signvalidate import SignValidate
 from client_fva.ui.managecontacts import ManageContacts
 from client_fva.ui.managecontactgroups import ManageContactGroups
-from client_fva.ui.tabdefault import TabDefault
 from PyQt5 import QtWidgets, QtGui
 from client_fva.user_settings import UserSettings
 from client_fva.ui.utils import apply_selected_appearance
@@ -45,14 +45,17 @@ class FVAClient(Ui_FVAClientUI):
         self.user_settings.load()
         apply_selected_appearance(main_app, self.user_settings)
 
+        self.tabmanager=TabManager(self, main_app)
+
         # TODO - Delete this code because it's for testing
-        my_requests_ui = MyRequests(QtWidgets.QWidget(), main_app)
-        self.usrSlots.insertTab(self.usrSlots.count(), my_requests_ui.widget, "test")
-        self.set_enabled_specific_menu_actions(True)
+        #my_requests_ui = MyRequests(QtWidgets.QWidget(), main_app)
+        #self.usrSlots.insertTab(self.usrSlots.count(), my_requests_ui.widget, "test")
+        #self.set_enabled_specific_menu_actions(True)
 
     def closeEvent(self, event):
         if self.close_window:
             event.accept()
+            self.tabmanager.close()
         else:
             event.ignore()
             self.hide()
@@ -97,6 +100,7 @@ class FVAClient(Ui_FVAClientUI):
 
     def exit(self):
         self.close_window = True
+        self.tabmanager.close()
         self.main_window.close()
 
     def toggle(self, reason):
