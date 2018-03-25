@@ -140,7 +140,6 @@ background-color:rgb(216, 230, 225);</string>
      <string>Contactos</string>
     </property>
     <addaction name="actionManageContacts"/>
-    <addaction name="actionManageGroups"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -217,18 +216,6 @@ background-color:rgb(216, 230, 225);</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
-   </property>
-  </action>
-  <action name="actionManageGroups">
-   <property name="icon">
-    <iconset resource="resources.qrc">
-     <normaloff>:/images/manage_groups.png</normaloff>:/images/manage_groups.png</iconset>
-   </property>
-   <property name="text">
-    <string>Administrar Grupos</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+G</string>
    </property>
   </action>
   <action name="actionPreferences">
