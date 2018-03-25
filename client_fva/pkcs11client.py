@@ -15,7 +15,6 @@ import logging
 import datetime
 logger = logging.getLogger('dfva_client')
 
-
 class Token:
     serial=None
     def __init__(serial):
@@ -28,6 +27,25 @@ class Slot:
     
     def get_token(self):
         return Token(self.serial)        
+
+class B:
+    pass
+
+class PKCS11Exception:
+    TokenNotRecognised = B()
+
+class dummypkcs11:
+    exceptions=PKCS11Exception()
+
+    def lib(self):
+        class A:
+            def get_slot(self):
+                """Obtiene el primer slot (tarjeta) disponible
+                .. warning:: Solo usar en pruebas y mejorar la forma como se capta
+                """
+                return [Slot(b'446015340194853967119918706694137765024581677'), 
+                        Slot(b'446015340196629408544548422120241811584796718')]
+        return A()
 
 class PrivateKey:
     dirpath = None
