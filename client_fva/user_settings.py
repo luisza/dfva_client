@@ -34,9 +34,9 @@ class UserSettings:
         self.validate_document = '/validate/person_document/'
         self.suscriptor_connected = '/validate/person_suscriptor_connected/'
         self.login_person = '/login/'
-        self.supported_sign_format = ['xml_cofirma', 'xml_contrafirma','odf', 'msoffice']
+        self.supported_sign_format = ['xml_cofirma', 'xml_contrafirma','odf', 'msoffice', 'pdf']
         self.supported_validate_format = [
-            'certificate', 'cofirma', 'contrafirma', 'odf', 'msoffice']
+            'certificate', 'cofirma', 'contrafirma', 'odf', 'msoffice', 'pdf']
         # Cuanto se espera para verificar si una autenticación o firma se llevó
         # a cabo
         self.check_wait_time = 10
