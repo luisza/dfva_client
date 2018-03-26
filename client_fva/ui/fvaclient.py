@@ -9,7 +9,6 @@ from client_fva.ui.requestsignature import RequestSignature
 from client_fva.ui.requestauthentication import RequestAuthentication
 from client_fva.ui.signvalidate import SignValidate
 from client_fva.ui.managecontacts import ManageContacts
-from client_fva.ui.managecontactgroups import ManageContactGroups
 from PyQt5 import QtWidgets, QtGui
 from client_fva.ui.tabdefault import TabDefault
 from client_fva.user_settings import UserSettings
