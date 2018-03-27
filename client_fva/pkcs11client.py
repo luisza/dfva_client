@@ -49,7 +49,8 @@ class dummypkcs11:
                 .. warning:: Solo usar en pruebas y mejorar la forma como se capta
                 """
                 return [Slot(b'446015340194853967119918706694137765024581677'), 
-                        Slot(b'446015340196629408544548422120241811584796718')]
+#                        Slot(b'446015340196629408544548422120241811584796718')
+                        ]
         return A()
 
 class PrivateKey:
@@ -95,7 +96,8 @@ class PKCS11Client:
         .. warning:: Solo usar en pruebas y mejorar la forma como se capta
         """
         return [Slot(b'446015340194853967119918706694137765024581677'), 
-                Slot(b'446015340196629408544548422120241811584796718')]
+    #                Slot(b'446015340196629408544548422120241811584796718')
+                ]
 
     def get_module_lib(self):
         """Obtiene la biblioteca de comunicación con la tarjeta """
