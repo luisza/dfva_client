@@ -66,3 +66,13 @@ class GroupModel(QSqlQueryModel):
         self.tableview.setColumnHidden(ID, True)
         # self.tableview.resizeColumnsToContents()
         self.tableview.horizontalHeader().setStretchLastSection(True)
+
+    def deleteGroup(self, row):
+        id = self.data(self.index(row, 0))
+        query = QSqlQuery(self.db)
+        query.prepare("delete from groups where id = ?")
+        query.addBindValue(id)
+        if not query.exec_():
+            print(query.lastError().text())
+
+        self.refresh()

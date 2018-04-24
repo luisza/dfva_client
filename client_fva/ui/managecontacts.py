@@ -1,6 +1,6 @@
 from client_fva.ui.managecontactsui import Ui_ManageContacts
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QInputDialog, QLineEdit
+from PyQt5.QtWidgets import QInputDialog, QLineEdit, QMenu
 from client_fva.models.Group import GroupModel
 from client_fva.ui.contactAddDialog import AddContactDialog
 from client_fva.models.Contact import ContactModel
@@ -43,6 +43,17 @@ class ManageContacts(Ui_ManageContacts):
         self.groupsTableView.setSelectionBehavior(
             QtWidgets.QTableView.SelectRows)
         self.groups_model.refresh()
+        self.groupsTableView.contextMenuEvent = self.contextGroupMenuEvent
+
+    def contextGroupMenuEvent(self, pos):
+        if self.groupsTableView.selectionModel().selection().indexes():
+            for i in self.groupsTableView.selectionModel().selection().indexes():
+                row, column = i.row(), i.column()
+            menu = QMenu()
+            deleAction = menu.addAction("Delete")
+            action = menu.exec_(self.groupsTableView.mapToGlobal(pos.pos()))
+            if action == deleAction:
+                self.deleteGroupAction(row, column)
 
     def initialize_and_populate_contacts(self):
         self.contactsTableView.setModel(self.contacts_model)
@@ -51,6 +62,17 @@ class ManageContacts(Ui_ManageContacts):
         self.contactsTableView.setSelectionBehavior(
             QtWidgets.QTableView.SelectRows)
         self.contacts_model.refresh()
+        self.contactsTableView.contextMenuEvent = self.contextContactMenuEvent
+
+    def contextContactMenuEvent(self, pos):
+        if self.contactsTableView.selectionModel().selection().indexes():
+            for i in self.contactsTableView.selectionModel().selection().indexes():
+                row, column = i.row(), i.column()
+            menu = QMenu()
+            deleAction = menu.addAction("Delete")
+            action = menu.exec_(self.contactsTableView.mapToGlobal(pos.pos()))
+            if action == deleAction:
+                self.deleteContactAction(row, column)
 
     def groupSelected(self):
         index = self.groupsTableView.currentIndex()
@@ -82,6 +104,9 @@ class ManageContacts(Ui_ManageContacts):
             print(text)
             self.groups_model.addGroup(text)
 
+    def deleteGroupAction(self, row, column):
+        self.groups_model.deleteGroup(row)
+
     def addContactDB(self):
 
         firstname, lastname, identification, ok = AddContactDialog.new_contact(
@@ -89,3 +114,6 @@ class ManageContacts(Ui_ManageContacts):
         if ok:
             group = self.get_last_group()
             self.contacts_model.addContact(firstname, lastname, identification)
+
+    def deleteContactAction(self, row, column):
+        self.contacts_model.deleteContact(row)
