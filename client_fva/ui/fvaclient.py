@@ -40,24 +40,28 @@ class FVAClient(Ui_FVAClientUI):
         self.actionMyRequests.triggered.connect(self.open_my_requests)
         self.actionMySignatures.triggered.connect(self.open_my_signatures)
         self.actionPreferences.triggered.connect(self.open_settings)
-        self.actionRequestSignature.triggered.connect(self.open_request_signature)
-        self.actionRequestAuthentication.triggered.connect(self.open_request_authentication)
+        self.actionRequestSignature.triggered.connect(
+            self.open_request_signature)
+        self.actionRequestAuthentication.triggered.connect(
+            self.open_request_authentication)
         self.actionSignAuthenticate.triggered.connect(self.open_sign_validate)
         self.actionManageContacts.triggered.connect(self.open_manage_contacts)
         self.close_window = False  # by default window is only minimized
         self.db = None
-        self.current_user = 1  # TODO - CREATE METHODS TO POPULATE CURRENT USER ACCORDING TO TAB SO IT'S NOT 1 ALWAYS
+        # TODO - CREATE METHODS TO POPULATE CURRENT USER ACCORDING TO TAB SO
+        # IT'S NOT 1 ALWAYS
+        self.current_user = 1
 
         # load initial app settings
         self.user_settings = UserSettings()
         self.user_settings.load()
         apply_selected_appearance(main_app, self.user_settings)
-        self.tabmanager=TabManager(self, main_app)
+        self.tabmanager = TabManager(self, main_app)
 
         # TODO - Delete this code because it's for testing
         #my_requests_ui = MyRequests(QtWidgets.QWidget(), main_app)
         #self.usrSlots.insertTab(self.usrSlots.count(), my_requests_ui.widget, "test")
-        #self.set_enabled_specific_menu_actions(True)
+        # self.set_enabled_specific_menu_actions(True)
 
     def closeEvent(self, event):
         if self.close_window:
@@ -68,7 +72,8 @@ class FVAClient(Ui_FVAClientUI):
             self.hide()
 
     def setup_tray_icon(self):
-        self.trayIcon = QtWidgets.QSystemTrayIcon(QtGui.QIcon(":/images/icon.png"), self.main_window)
+        self.trayIcon = QtWidgets.QSystemTrayIcon(
+            QtGui.QIcon(":/images/icon.png"), self.main_window)
         self.trayIconMenu = menu = QtWidgets.QMenu()
         self.trayIconOpenAction = menu.addAction("Abrir")
         self.trayIconOpenAction.triggered.connect(self.show)
@@ -86,13 +91,15 @@ class FVAClient(Ui_FVAClientUI):
                                               "esta opción.")
         else:
             tab = self.usrSlots.currentWidget()
-            QtWidgets.QWidget().setLayout(tab.layout())  # cleans current tab layout so a new one can be assigned
+            # cleans current tab layout so a new one can be assigned
+            QtWidgets.QWidget().setLayout(tab.layout())
             tab.setLayout(new_layout)
 
     def setup_general_tab_layout(self, new_layout):
         tab = self.tab1
         self.usrSlots.setCurrentIndex(DEFAULT_TAB_INDEX)  # move to general tab
-        QtWidgets.QWidget().setLayout(tab.layout())  # cleans current tab layout so a new one can be assigned
+        # cleans current tab layout so a new one can be assigned
+        QtWidgets.QWidget().setLayout(tab.layout())
         tab.setLayout(new_layout)
 
     def setup_tab_default_layout(self):
@@ -126,7 +133,8 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_layout(my_signatures_ui.mySignaturesLayout)
 
     def open_settings(self):
-        settings_ui = Settings(QtWidgets.QWidget(), main_app, fva_client_ui, self.user_settings)
+        settings_ui = Settings(QtWidgets.QWidget(),
+                               main_app, fva_client_ui, self.user_settings)
         self.setup_general_tab_layout(settings_ui.settingsLayout)
 
     def open_request_signature(self):
@@ -134,15 +142,18 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_layout(request_signature_ui.requestSignatureLayout)
 
     def open_request_authentication(self):
-        request_authentication_ui = RequestAuthentication(QtWidgets.QWidget(), main_app)
-        self.setup_tab_layout(request_authentication_ui.requestAuthenticationLayout)
+        request_authentication_ui = RequestAuthentication(
+            QtWidgets.QWidget(), main_app)
+        self.setup_tab_layout(
+            request_authentication_ui.requestAuthenticationLayout)
 
     def open_sign_validate(self):
         sign_validate_ui = SignValidate(QtWidgets.QWidget(), main_app)
         self.setup_tab_layout(sign_validate_ui.signValidateLayout)
 
     def open_manage_contacts(self):
-        manage_contacts_ui = ManageContacts(QtWidgets.QWidget(), main_app, self.db, self.current_user)
+        manage_contacts_ui = ManageContacts(
+            QtWidgets.QWidget(), main_app, self.db, self.current_user)
         self.setup_tab_layout(manage_contacts_ui.manageContactsLayout)
 
     def set_enabled_specific_menu_actions(self, enabled):
