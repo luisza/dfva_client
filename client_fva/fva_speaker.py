@@ -37,7 +37,7 @@ class FVA_Base_client(PKCS11Client):
         kwargs['signal'] = self.signal
         self.settings = kwargs.get('settings', UserSettings())
         kwargs['settings'] = self.settings
-
+        self.response = None
         PKCS11Client.__init__(self, *args, **kwargs)
         self.identification = self.get_identification()
 
@@ -320,7 +320,7 @@ class FVA_client(FVA_Base_client, Thread):
 
         FVA_Base_client.__init__(self, *args, **kwargs)
         Thread.__init__(self)
-        self.daemon = kwargs.get('daemon', True)
+        self.internal_daemon = kwargs.get('daemon', True)
 
     def run(self):
 
@@ -329,18 +329,25 @@ class FVA_client(FVA_Base_client, Thread):
                 "No se puede iniciar FVA_client, obtención de identificación no se realizó adecuadamente")
             return
 
-        while self.daemon:
+        while self.internal_daemon:
             data = self.start_client()
-            if data is not None:
-                self.process_messages(data)
-            else:
-                logger.info("Esperando para reconectar a " +
-                            self.identification)
-                time.sleep(self.settings.reconnection_wait_time)
+            # start client could spend a lot of time connecting
+            # and daemon could be close until client connect
+            # so check again or threads can run forever
+            if self.internal_daemon:
+                if data is not None:
+                    self.process_messages(data)
+                else:
+                    logger.info("Esperando para reconectar a " +
+                                self.identification)
+                    time.sleep(self.settings.reconnection_wait_time)
+            elif data is not None and self.response is not None:
+                self.response.connection.close()
 
     def close(self):
-        self.daemon = False
-        self.response.connection.close()
+        self.internal_daemon = False
+        if self.response:
+            self.response.connection.close()
         logger.info("Terminando FVA_client de " + self.identification)
 
 

@@ -116,6 +116,7 @@ class FVAClient(Ui_FVAClientUI):
         self.close_window = True
         self.tabmanager.close()
         self.main_window.close()
+        sys.exit()
 
     def toggle(self, reason):
         if reason == QtWidgets.QSystemTrayIcon.DoubleClick:

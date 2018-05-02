@@ -3,7 +3,7 @@ Created on 30 sep. 2017
 
 @author: luisza
 '''
-from PyQt5.QtCore import QRunnable, pyqtSlot, pyqtSignal, QObject
+from PyQt5.QtCore import QRunnable, pyqtSlot, pyqtSignal, QObject, QMutex
 from client_fva.pkcs11client import PKCS11Client
 import time
 import pkcs11
@@ -11,12 +11,22 @@ import pkcs11
 from client_fva import signals
 import logging
 logger = logging.getLogger('dfva_client')
-daemon = True
+
+from smartcard.CardMonitoring import CardMonitor, CardObserver
+
+
+class DfvaCardObserver(CardObserver):
+    def __init__(self, *args, **kwargs):
+        self.eventmanager = kwargs.pop('eventmanager')
+        super(DfvaCardObserver, self).__init__(*args, **kwargs)
+
+    def update(self, observable, actions):
+        (addedcards, removedcards) = actions
+        self.eventmanager.detect_device()
 
 
 class WorkerObject(QObject):
     result = pyqtSignal(str, signals.SignalObject)
-
 
 
 class Monitor(PKCS11Client, QRunnable):
@@ -62,14 +72,19 @@ class Monitor(PKCS11Client, QRunnable):
         #self.signal = kwargs.get('signal', signal('fva_client'))
         QRunnable.__init__(self)
         self.signals = WorkerObject()
+        self.setAutoDelete(True)
+        self.cardmonitor = None
+        self.cardobserver = None
+        self.mutex = QMutex()
 
     @pyqtSlot()
     def run(self):
-        global daemon
         logger.info("Iniciando monitor")
-        while daemon:
-            self.detect_device()
-            time.sleep(5)
+        self.cardmonitor = CardMonitor()
+        self.cardobserver = DfvaCardObserver(eventmanager=self)
+        self.cardmonitor.addObserver(self.cardobserver)
+        while True:
+            time.sleep(3000)
 
     def get_slots(self):
         slots = []
@@ -92,6 +107,7 @@ class Monitor(PKCS11Client, QRunnable):
         usando detect_device( notify_exception=True) para que envíe notificaciones 
         de los errores presentados al detectar las tarjetas.
         """
+        self.mutex.lock()
         tmp_device = []
         added_device = {}
         slots = self.get_slots()
@@ -126,6 +142,7 @@ class Monitor(PKCS11Client, QRunnable):
                 self.send_removed_signal(
                     self.connected_device[connected_serial])
                 self.connected_device.pop(connected_serial)
+        self.mutex.unlock()
 
     def send_add_signal(self, data):
         sobj = signals.SignalObject(signals.USB_CONNECTED, data)
@@ -138,6 +155,10 @@ class Monitor(PKCS11Client, QRunnable):
         self.signals.result.emit('monitor_usb', sobj)
 
     def close(self):
-        global daemon
-        daemon = False
         logger.info("Terminando monitor")
+        if self.cardmonitor and self.cardmonitor.countObservers() <= 0:
+            self.cardmonitor.rmthread.stopEvent.set()
+            self.cardmonitor = None
+        if self.cardmonitor and self.cardobserver:
+            self.cardmonitor.deleteObserver(self.cardobserver)
+            self.cardobserver = None

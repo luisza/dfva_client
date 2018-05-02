@@ -20,6 +20,7 @@ class FVASpeakerClient(Ui_FVADialog):
         self.timeout = 0
         self.settings = UserSettings()
         self.client = FVA_client(settings=self.settings, slot=slot)
+        self.client.daemon = True
         self.client.start()
         self.client.signal.connect(self.request_pin_code)
 
