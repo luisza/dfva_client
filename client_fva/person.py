@@ -456,7 +456,7 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
 
         if self.person is None:
             raise Exception(
-                "Person can not be created, sorry read certificates fail")
+                "Person cannot be created, sorry read certificates failed")
 
         #self.session = self.get_session()
         #self.certificates = self.get_certificates()
