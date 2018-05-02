@@ -3,6 +3,7 @@ from client_fva.ui.fvaclientui import Ui_FVAClientUI
 from client_fva.ui.myrequests import MyRequests
 from client_fva.ui.mysignatures import MySignatures
 from client_fva.ui.tab_manager import TabManager
+from client_fva.ui.tabdefault import TabDefault
 from client_fva.ui.settings import Settings
 from client_fva.ui.requestsignature import RequestSignature
 from client_fva.ui.requestauthentication import RequestAuthentication
@@ -10,7 +11,6 @@ from client_fva.ui.signvalidate import SignValidate
 from client_fva.ui.managecontacts import ManageContacts
 from PyQt5 import QtWidgets, QtGui
 from client_fva.ui.tabdefault import TabDefault
-
 from client_fva.user_settings import UserSettings
 from client_fva.ui.utils import apply_selected_appearance
 from client_fva.database import createDB
@@ -47,12 +47,15 @@ class FVAClient(Ui_FVAClientUI):
         self.actionSignAuthenticate.triggered.connect(self.open_sign_validate)
         self.actionManageContacts.triggered.connect(self.open_manage_contacts)
         self.close_window = False  # by default window is only minimized
+        self.db = None
+        # TODO - CREATE METHODS TO POPULATE CURRENT USER ACCORDING TO TAB SO
+        # IT'S NOT 1 ALWAYS
+        self.current_user = 1
 
         # load initial app settings
         self.user_settings = UserSettings()
         self.user_settings.load()
         apply_selected_appearance(main_app, self.user_settings)
-
         self.tabmanager = TabManager(self, main_app)
 
         # TODO - Delete this code because it's for testing
@@ -149,7 +152,8 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_layout(sign_validate_ui.signValidateLayout)
 
     def open_manage_contacts(self):
-        manage_contacts_ui = ManageContacts(QtWidgets.QWidget(), main_app)
+        manage_contacts_ui = ManageContacts(
+            QtWidgets.QWidget(), main_app, self.db, self.current_user)
         self.setup_tab_layout(manage_contacts_ui.manageContactsLayout)
 
     def set_enabled_specific_menu_actions(self, enabled):
@@ -166,7 +170,8 @@ def run():
     global fva_client_ui
     fva_client_ui = FVAClient(QtWidgets.QMainWindow())
     fva_client_ui.show()
-    if not createDB():
+    ok, fva_client_ui.db = createDB()
+    if not ok:
         QtWidgets.QMessageBox.critical(None, "Error en la Base de Datos",
                                        "Hubo un problema cargando la base de datos, por favor intente más tarde o "
                                        "contacte un administrador.")
