@@ -5,13 +5,16 @@ Created on 21 ago. 2017
 '''
 import pkcs11
 import os
-from dateutil.parser import parse
 from pkcs11.constants import Attribute
 from pkcs11.constants import ObjectClass
-import OpenSSL
 import platform
 from client_fva import signals
 import logging
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from cryptography.x509.oid import NameOID, ExtensionOID
+
 
 logger = logging.getLogger('dfva_client')
 
@@ -42,7 +45,9 @@ class PKCS11Client:
             slots = lib.get_slots()
         except Exception as e:
             self.signal.send('notify', obj={
-                'message': "La biblioteca instalada no funciona para leer las tarjetas, esto puede ser porque no ha instalado las bibliotecas necesarias o porque el sistema operativo no está soportado"
+                'message': "La biblioteca instalada no funciona para leer las \
+                tarjetas, porque no ha instalado las bibliotecas\
+                necesarias o porque el sistema operativo no está soportado"
             })
             logger.error("Error abriendo dispositivos PKCS11 %r" % (e,))
 
@@ -98,7 +103,9 @@ class PKCS11Client:
             return path
 
         self.signal.send('notify', obj={
-            'message': "No existe una biblioteca instalada para leer las tarjetas, esto puede ser porque no ha instalado las bibliotecas necesarias o porque el sistema operativo no está soportado"
+            'message': "No existe una biblioteca instalada para leer las \
+            tarjetas, esto puede ser porque no ha instalado las bibliotecas \
+            necesarias o porque el sistema operativo no está soportado"
         })
 
     def get_pin(self, pin=None):
@@ -121,7 +128,8 @@ class PKCS11Client:
             return respobj.response['pin']
 
         raise Exception(
-            'Sorry PIN is Needed, we will remove this, but for now use export PKCS11_PIN=<pin> before call python')
+            'Sorry PIN is Needed, we will remove this, but for now use export \
+            PKCS11_PIN=<pin> before call python')
 
     def get_session(self, pin=None):
         """Obtiene o inicializa una sessión para el uso de la tarjeta.
@@ -142,52 +150,80 @@ class PKCS11Client:
         slot = self.get_slot()
         certs = []
         token = slot.get_token()
+        self.certificates = {}
         with token.open() as session:
             for cert in session.get_objects({
                     Attribute.CLASS: ObjectClass.CERTIFICATE}):
-                x509 = OpenSSL.crypto.load_certificate(
-                    OpenSSL.crypto.FILETYPE_ASN1, cert[Attribute.VALUE])
-                certs.append(OpenSSL.crypto.dump_certificate(
-                    OpenSSL.crypto.FILETYPE_PEM, x509))
+                cert = x509.load_der_x509_certificate(cert[Attribute.VALUE],
+                                                      default_backend())
 
-        # FIXME: not positional extraction
-        self.certificates = {
-            'authentication': certs[0],
-            'sign': certs[1]
-        }
+                exkey = cert.extensions.get_extension_for_oid(
+                    ExtensionOID.EXTENDED_KEY_USAGE)
+                if exkey and exkey.value._usages[
+                        0].dotted_string == '1.3.6.1.5.5.7.3.2':
+                    key = 'authentication'
+                else:
+                    key = 'sign'
+                self.certificates[key] = cert.public_bytes(
+                    serialization.Encoding.PEM)
+
         return self.certificates
 
     def get_certificate_info(self):
 
-        info = []
+        info = {}
         slot = self.get_slot()
         token = slot.get_token()
         with token.open() as session:
             for cert in session.get_objects({
                     Attribute.CLASS: ObjectClass.CERTIFICATE}):
-                x509 = OpenSSL.crypto.load_certificate(
-                    OpenSSL.crypto.FILETYPE_ASN1, cert[Attribute.VALUE])
-                subject = x509.get_subject()
-                name = "%s %s" % (subject.GN, subject.SN)
-                identification = subject.serialNumber
+
+                cert = x509.load_der_x509_certificate(cert[Attribute.VALUE],
+                                                      default_backend())
+
+                GN = cert.subject.get_attributes_for_oid(
+                    NameOID.GIVEN_NAME)[0].value
+                SN = cert.subject.get_attributes_for_oid(NameOID.SURNAME)[
+                    0].value
+                O = cert.subject.get_attributes_for_oid(
+                    NameOID.ORGANIZATION_NAME)[0].value
+                OU = cert.subject.get_attributes_for_oid(
+                    NameOID.ORGANIZATIONAL_UNIT_NAME)[0].value
+                C = cert.subject.get_attributes_for_oid(
+                    NameOID.COUNTRY_NAME)[0].value
+
+                CN = cert.subject.get_attributes_for_oid(
+                    NameOID.COMMON_NAME)[0].value
+                name = "%s %s" % (GN,  SN)
+                identification = cert.subject.get_attributes_for_oid(
+                    NameOID.SERIAL_NUMBER)[0].value
                 person = {
                     'name': name.title(),
                     'identification': identification.replace("CPF-", ''),
-                    'type': subject.O,
-                    'organization': subject.OU,
-                    'country': subject.C,
-                    'commonName': subject.commonName,
-                    'serialNumber': subject.serialNumber,
-                    'cert_serialnumber': x509.get_serial_number(),
-                    'cert_start': parse(x509.get_notBefore()),
-                    'cert_expire': parse(x509.get_notAfter())
+                    'type': O,
+                    'organization': OU,
+                    'country':  C,
+                    'commonName': CN,
+                    'serialNumber': identification,
+                    'cert_serialnumber': str(cert.serial_number),
+                    'cert_start': cert.not_valid_before,
+                    'cert_expire': cert.not_valid_after
                 }
-                info.append(person)
+                exkey = cert.extensions.get_extension_for_oid(
+                    ExtensionOID.EXTENDED_KEY_USAGE)
+                if exkey and exkey.value._usages[
+                        0].dotted_string == '1.3.6.1.5.5.7.3.2':
+                    key = 'authentication'
+                else:
+                    key = 'sign'
+
+                info[key] = person
 
         return info
 
     def get_keys(self, pin=None):
-        """Extrae los certificados dentro del dispositivo y los guarda de forma estructurada para simplificar el acceso"""
+        """Extrae los certificados dentro del dispositivo y los guarda de forma 
+        estructurada para simplificar el acceso"""
 
         if self.keys is None:
 
@@ -195,23 +231,27 @@ class PKCS11Client:
             session = self.get_session(pin=pin)
             certs = list(session.get_objects({
                 Attribute.CLASS: ObjectClass.CERTIFICATE}))
-            for cert in certs:
-                x509 = OpenSSL.crypto.load_certificate(
-                    OpenSSL.crypto.FILETYPE_ASN1, cert[Attribute.VALUE])
-                objs = {
-                    'pub_key': OpenSSL.crypto.dump_publickey(
-                        OpenSSL.crypto.FILETYPE_PEM, x509.get_pubkey()),
-                    'priv_key': list(session.get_objects({Attribute.CLASS: ObjectClass.PRIVATE_KEY,
-                                                          Attribute.LABEL: cert[3]}))[0]
-                }
+            for certificate in certs:
 
-                subject = x509.get_subject()
-                if 'AUTENTICACION' in subject.CN:
-                    self.keys['authentication'] = objs
-                elif 'FIRMA' in subject.CN:
-                    self.keys['sign'] = objs
+                cert = x509.load_der_x509_certificate(
+                    certificate[Attribute.VALUE],
+                    default_backend())
+                exkey = cert.extensions.get_extension_for_oid(
+                    ExtensionOID.EXTENDED_KEY_USAGE)
+                if exkey and exkey.value._usages[
+                        0].dotted_string == '1.3.6.1.5.5.7.3.2':
+                    key = 'authentication'
                 else:
-                    print("ERROR:", objs)
+                    key = 'sign'
+
+                self.keys[key] = {
+                    'pub_key': cert.public_key().public_bytes(
+                        serialization.Encoding.PEM,
+                        serialization.PublicFormat.PKCS1),
+                    'priv_key': list(session.get_objects(
+                        {Attribute.CLASS: ObjectClass.PRIVATE_KEY,
+                         Attribute.LABEL: certificate[3]}))[0]
+                }
 
         return self.keys
 
@@ -228,5 +268,5 @@ class PKCS11Client:
             })
             logger.error("Tarjeta no detectada %r" % (e, ))
         if info:
-            self.identification = info[0]['identification']
+            self.identification = info['authentication']['identification']
         return self.identification
