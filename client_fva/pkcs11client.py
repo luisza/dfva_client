@@ -3,10 +3,8 @@ Created on 21 ago. 2017
 
 @author: luis
 '''
-import pkcs11
+import PyKCS11
 import os
-from pkcs11.constants import Attribute
-from pkcs11.constants import ObjectClass
 import platform
 from client_fva import signals
 import logging
@@ -17,6 +15,27 @@ from cryptography.x509.oid import NameOID, ExtensionOID
 
 
 logger = logging.getLogger('dfva_client')
+
+
+class PrivateKey:
+    def __init__(self, key, session):
+        self._key = key
+        self._session = session
+
+    def decrypt(self, ciphertext):
+        mechanism = PyKCS11.Mechanism(PyKCS11.CKM_SHA1_RSA_PKCS, None)
+        mech = PyKCS11.RSAOAEPMechanism(
+            PyKCS11.CKM_SHA_1, PyKCS11.CKG_MGF1_SHA1)
+        decrypted = bytes(
+            bytearray(self._session.decrypt(privKey, ciphertext, mech)))
+        return decrypted
+
+    def sign(data):
+
+        mechanism = PyKCS11.Mechanism(PyKCS11.CKM_SHA1_RSA_PKCS, None)
+        signature = self._session.sign(self._key, data, mechanism)
+        signature = bytes(bytearray(signature))
+        return signature
 
 
 class PKCS11Client:
@@ -33,6 +52,8 @@ class PKCS11Client:
         self.settings = kwargs.get('settings', {})
         self.signal = kwargs.get('signal', None)
         self.slot = kwargs.get('slot', self.get_slot())
+        self.pkcs11 = PyKCS11.PyKCS11Lib()
+        self.certificate_info = None
 
     def get_slot(self):
         """Obtiene el primer slot (tarjeta) disponible
@@ -41,8 +62,8 @@ class PKCS11Client:
         if self.slot:
             return self.slot
         try:
-            lib = pkcs11.lib(self.get_module_lib())
-            slots = lib.get_slots()
+            self.pkcs11.load(self.get_module_lib())
+            slots = self.pkcs11.getSlotList()
         except Exception as e:
             self.signal.send('notify', obj={
                 'message': "La biblioteca instalada no funciona para leer las \
@@ -138,8 +159,10 @@ class PKCS11Client:
         # Fixme: Verificar si la sessión está activa y si no lo está entonces
         # volver a iniciarla
         if self.session is None:
-            self.token = self.slot.get_token()
-            self.session = self.token.open(user_pin=self.get_pin(pin=pin))
+            slot = self.get_slot()
+            self.token = self.pkcs11.getTokenInfo(slot)
+            self.session = self.pkcs11.openSession(slot)
+            self.session.login(self.get_pin(pin=pin))
             return self.session
         return self.session
 
@@ -149,109 +172,110 @@ class PKCS11Client:
 
         slot = self.get_slot()
         certs = []
-        token = slot.get_token()
+        token = self.pkcs11.getTokenInfo(slot)
         self.certificates = {}
-        with token.open() as session:
-            for cert in session.get_objects({
-                    Attribute.CLASS: ObjectClass.CERTIFICATE}):
-                cert = x509.load_der_x509_certificate(cert[Attribute.VALUE],
-                                                      default_backend())
+        session = self.pkcs11.openSession(slot)
 
-                exkey = cert.extensions.get_extension_for_oid(
-                    ExtensionOID.EXTENDED_KEY_USAGE)
-                if exkey and exkey.value._usages[
-                        0].dotted_string == '1.3.6.1.5.5.7.3.2':
-                    key = 'authentication'
-                else:
-                    key = 'sign'
-                self.certificates[key] = cert.public_bytes(
-                    serialization.Encoding.PEM)
+        for cert in objs = session.findObjects([(PyKCS11.CKA_CLASS,
+                                                 PyKCS11.CKO_CERTIFICATE)]):
 
+            certdata = session.getAttributeValue(objs[0], [PyKCS11.CKA_VALUE])
+            cert = x509.load_der_x509_certificate(
+                bytes(bytearray(certdata[0])),
+                default_backend())
+
+            exkey = cert.extensions.get_extension_for_oid(
+                ExtensionOID.EXTENDED_KEY_USAGE)
+            if exkey and exkey.value._usages[
+                    0].dotted_string == '1.3.6.1.5.5.7.3.2':
+                key = 'authentication'
+            else:
+                key = 'sign'
+            self.certificates[key] = cert.public_bytes(
+                serialization.Encoding.PEM)
+        session.logout()
+        session.closeSession()
         return self.certificates
 
     def get_certificate_info(self):
+        if self.certificate_info:
+            return self.certificate_info
 
-        info = {}
-        slot = self.get_slot()
-        token = slot.get_token()
-        with token.open() as session:
-            for cert in session.get_objects({
-                    Attribute.CLASS: ObjectClass.CERTIFICATE}):
+        self.certificate_info = {}
+        certs = self.get_certificates()
+        for key, certpem in certs.items():
+            cert = x509.load_pem_x509_certificate(certpem,
+                                                  default_backend())
+            GN = cert.subject.get_attributes_for_oid(
+                NameOID.GIVEN_NAME)[0].value
+            SN = cert.subject.get_attributes_for_oid(NameOID.SURNAME)[
+                0].value
+            O = cert.subject.get_attributes_for_oid(
+                NameOID.ORGANIZATION_NAME)[0].value
+            OU = cert.subject.get_attributes_for_oid(
+                NameOID.ORGANIZATIONAL_UNIT_NAME)[0].value
+            C = cert.subject.get_attributes_for_oid(
+                NameOID.COUNTRY_NAME)[0].value
 
-                cert = x509.load_der_x509_certificate(cert[Attribute.VALUE],
-                                                      default_backend())
+            CN = cert.subject.get_attributes_for_oid(
+                NameOID.COMMON_NAME)[0].value
+            name = "%s %s" % (GN,  SN)
+            identification = cert.subject.get_attributes_for_oid(
+                NameOID.SERIAL_NUMBER)[0].value
+            person = {
+                'name': name.title(),
+                'identification': identification.replace("CPF-", ''),
+                'type': O,
+                'organization': OU,
+                'country':  C,
+                'commonName': CN,
+                'serialNumber': identification,
+                'cert_serialnumber': str(cert.serial_number),
+                'cert_start': cert.not_valid_before,
+                'cert_expire': cert.not_valid_after
+            }
+            self.certificate_info[key] = person
 
-                GN = cert.subject.get_attributes_for_oid(
-                    NameOID.GIVEN_NAME)[0].value
-                SN = cert.subject.get_attributes_for_oid(NameOID.SURNAME)[
-                    0].value
-                O = cert.subject.get_attributes_for_oid(
-                    NameOID.ORGANIZATION_NAME)[0].value
-                OU = cert.subject.get_attributes_for_oid(
-                    NameOID.ORGANIZATIONAL_UNIT_NAME)[0].value
-                C = cert.subject.get_attributes_for_oid(
-                    NameOID.COUNTRY_NAME)[0].value
-
-                CN = cert.subject.get_attributes_for_oid(
-                    NameOID.COMMON_NAME)[0].value
-                name = "%s %s" % (GN,  SN)
-                identification = cert.subject.get_attributes_for_oid(
-                    NameOID.SERIAL_NUMBER)[0].value
-                person = {
-                    'name': name.title(),
-                    'identification': identification.replace("CPF-", ''),
-                    'type': O,
-                    'organization': OU,
-                    'country':  C,
-                    'commonName': CN,
-                    'serialNumber': identification,
-                    'cert_serialnumber': str(cert.serial_number),
-                    'cert_start': cert.not_valid_before,
-                    'cert_expire': cert.not_valid_after
-                }
-                exkey = cert.extensions.get_extension_for_oid(
-                    ExtensionOID.EXTENDED_KEY_USAGE)
-                if exkey and exkey.value._usages[
-                        0].dotted_string == '1.3.6.1.5.5.7.3.2':
-                    key = 'authentication'
-                else:
-                    key = 'sign'
-
-                info[key] = person
-
-        return info
+        return self.certificate_info
 
     def get_keys(self, pin=None):
         """Extrae los certificados dentro del dispositivo y los guarda de forma 
         estructurada para simplificar el acceso"""
 
         if self.keys is None:
-
-            self.keys = {}
+            self.keys = {
+                'authentication': {
+                    'pub_key': None,
+                    'priv_key': None
+                },
+                'sign': {
+                    'pub_key': None,
+                    'priv_key': None
+                },
+            }
             session = self.get_session(pin=pin)
-            certs = list(session.get_objects({
-                Attribute.CLASS: ObjectClass.CERTIFICATE}))
-            for certificate in certs:
+            certs = self.get_certificates()
+            objkeys = session.findObjects([(PyKCS11.CKA_CLASS,
+                                            PyKCS11.CKO_PRIVATE_KEY)])
+            objpublickeys = session.findObjects(
+                [(PyKCS11.CKA_CLASS, PyKCS11.CKO_PUBLIC_KEY)])
 
-                cert = x509.load_der_x509_certificate(
-                    certificate[Attribute.VALUE],
-                    default_backend())
-                exkey = cert.extensions.get_extension_for_oid(
-                    ExtensionOID.EXTENDED_KEY_USAGE)
-                if exkey and exkey.value._usages[
-                        0].dotted_string == '1.3.6.1.5.5.7.3.2':
-                    key = 'authentication'
-                else:
-                    key = 'sign'
+            for pubkey in objpublickeys:
+                label = session.getAttributeValue(
+                    pubkey, [PyKCS11.CKA_LABEL])[0]
+                if label == 'LlaveDeAutenticacion':
+                    self.keys['authentication']['pub_key'] = pubkey
+                elif label == 'LlaveDeFirma':
+                    self.keys['sign']['pub_key'] = pubkey
 
-                self.keys[key] = {
-                    'pub_key': cert.public_key().public_bytes(
-                        serialization.Encoding.PEM,
-                        serialization.PublicFormat.PKCS1),
-                    'priv_key': list(session.get_objects(
-                        {Attribute.CLASS: ObjectClass.PRIVATE_KEY,
-                         Attribute.LABEL: certificate[3]}))[0]
-                }
+            for key in objkeys:
+                label = session.getAttributeValue(
+                    key, [PyKCS11.CKA_LABEL])[0]
+                if label == 'LlaveDeAutenticacion':
+                    self.keys['authentication']['priv_key'] = PrivateKey(
+                        key, session)
+                elif label == 'LlaveDeFirma':
+                    self.keys['sign']['priv_key'] = PrivateKey(key, session)
 
         return self.keys
 
@@ -262,7 +286,8 @@ class PKCS11Client:
         info = None
         try:
             info = self.get_certificate_info()
-        except pkcs11.exceptions.TokenNotRecognised as e:
+        except Exception as e:
+            # FIXME: set a correct type of exception
             self.signal.send('notify', obj={
                 'message': "No se puede obtener la identificación de la persona, posiblemente porque la tarjeta está mal conectada"
             })
@@ -270,3 +295,33 @@ class PKCS11Client:
         if info:
             self.identification = info['authentication']['identification']
         return self.identification
+
+    def pksc11_sign(data, key='sign', pin=None):
+        mechanism = PyKCS11.Mechanism(PyKCS11.CKM_SHA1_RSA_PKCS, None)
+        certs = self.get_keys(pin=pin)
+        session = self.get_session(pin=pin)
+        privKey = certs[key]['priv_key'].key()
+        mechanism = PyKCS11.Mechanism(PyKCS11.CKM_SHA1_RSA_PKCS, None)
+        signature = session.sign(privKey, data, mechanism)
+        signature = bytes(bytearray(signature))
+        return signature
+
+    def pkcs11_decrypt(data, key='authentication', pin=None):
+        certs = self.get_keys(pin=pin)
+        session = self.get_session(pin=pin)
+        privKey = certs[key]['priv_key'].key()
+        mechanism = PyKCS11.Mechanism(PyKCS11.CKM_SHA1_RSA_PKCS, None)
+        mech = PyKCS11.RSAOAEPMechanism(
+            PyKCS11.CKM_SHA_1, PyKCS11.CKG_MGF1_SHA1)
+        decrypted = bytes(
+            bytearray(session.decrypt(privKey, ciphertext, mech)))
+        return decrypted
+
+    def close():
+        if self.session:
+            self.session.logout()
+            self.session.closeSession()
+            self.session = None
+            self.keys = None
+            self.certificate_info = None
+            self.certificates = None

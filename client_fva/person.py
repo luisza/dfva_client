@@ -478,9 +478,7 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
             self.register()
 
         keys = self.get_keys()
-        key_token = keys['authentication']['priv_key'].decrypt(
-            self.key_token)
-
+        key_token = keys['authentication']['priv_key'].decrypt(self.key_token)
         return key_token
 
     def _encrypt(self, str_data, etype='authenticate'):
@@ -492,6 +490,7 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
         keys = self.get_keys()
         keytoken = self.get_key_token()
         signed_token = keys[etype]['priv_key'].sign(keytoken)
+
         return encrypt(keytoken, signed_token, str_data)
 
     def _decrypt(self, str_data):
@@ -527,8 +526,8 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
         return data
 
     def unregister(self):
-        if self.session:
-            self.session.close()
+        self.close()
+        self.key_token = None
 
 
 PersonClient = PKCS11PersonClient
