@@ -21,21 +21,31 @@ class PrivateKey:
     def __init__(self, key, session):
         self._key = key
         self._session = session
+        self.key_length = self.get_key_length()
 
     def decrypt(self, ciphertext):
         mechanism = PyKCS11.Mechanism(PyKCS11.CKM_SHA1_RSA_PKCS, None)
         mech = PyKCS11.RSAOAEPMechanism(
             PyKCS11.CKM_SHA_1, PyKCS11.CKG_MGF1_SHA1)
         decrypted = bytes(
-            bytearray(self._session.decrypt(privKey, ciphertext, mech)))
+            bytearray(self._session.decrypt(self._key, ciphertext, mech)))
         return decrypted
 
-    def sign(data):
+    def sign(self, data):
 
-        mechanism = PyKCS11.Mechanism(PyKCS11.CKM_SHA1_RSA_PKCS, None)
+        mechanism = PyKCS11.Mechanism(PyKCS11.CKM_SHA512_RSA_PKCS, None)
         signature = self._session.sign(self._key, data, mechanism)
         signature = bytes(bytearray(signature))
         return signature
+
+    def get_key_length(self):
+        moduslen = len(bytes(bytearray(
+            self._session.getAttributeValue(self._key,
+                                            [PyKCS11.CKA_MODULUS])[0])))
+        return moduslen*8
+
+    def key(self):
+        return self._key
 
 
 class PKCS11Client:
@@ -51,8 +61,9 @@ class PKCS11Client:
 
         self.settings = kwargs.get('settings', {})
         self.signal = kwargs.get('signal', None)
-        self.slot = kwargs.get('slot', self.get_slot())
         self.pkcs11 = PyKCS11.PyKCS11Lib()
+        self.slot = kwargs.get('slot', self.get_slot())
+
         self.certificate_info = None
 
     def get_slot(self):
@@ -61,6 +72,7 @@ class PKCS11Client:
         """
         if self.slot:
             return self.slot
+        slots = None
         try:
             self.pkcs11.load(self.get_module_lib())
             slots = self.pkcs11.getSlotList()
@@ -176,10 +188,10 @@ class PKCS11Client:
         self.certificates = {}
         session = self.pkcs11.openSession(slot)
 
-        for cert in objs = session.findObjects([(PyKCS11.CKA_CLASS,
-                                                 PyKCS11.CKO_CERTIFICATE)]):
+        for cert in session.findObjects([(PyKCS11.CKA_CLASS,
+                                          PyKCS11.CKO_CERTIFICATE)]):
 
-            certdata = session.getAttributeValue(objs[0], [PyKCS11.CKA_VALUE])
+            certdata = session.getAttributeValue(cert, [PyKCS11.CKA_VALUE])
             cert = x509.load_der_x509_certificate(
                 bytes(bytearray(certdata[0])),
                 default_backend())
@@ -317,7 +329,7 @@ class PKCS11Client:
             bytearray(session.decrypt(privKey, ciphertext, mech)))
         return decrypted
 
-    def close():
+    def close(self):
         if self.session:
             self.session.logout()
             self.session.closeSession()

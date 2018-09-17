@@ -279,7 +279,8 @@ class PersonBaseClient(PersonClientInterface):
             while not data['received_notification']:
                 time.sleep(self.wait_time)
                 data = self.check_sign(
-                    identification, data['code'], algorithm=algorithm)
+                    identification, data['id_transaction'],
+                    algorithm=algorithm)
 
         return data
 
@@ -319,6 +320,7 @@ class PersonBaseClient(PersonClientInterface):
             'person': self.person,
             'document': document,
             'request_datetime': self._get_time(),
+            'format': _format
         }
 
         str_data = json.dumps(data)
@@ -449,6 +451,7 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
 
         self.requests = kwargs.get('request_client', requests)
         self.settings = kwargs.get('settings', UserSettings())
+        kwargs['settings'] = self.settings
         self.wait_time = self.settings.check_wait_time
         PKCS11Client.__init__(self, *args, **kwargs)
 
