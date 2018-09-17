@@ -12,7 +12,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.x509.oid import NameOID, ExtensionOID
-
+from blinker import signal
 
 logger = logging.getLogger('dfva_client')
 
@@ -58,12 +58,11 @@ class PKCS11Client:
     identification = None
 
     def __init__(self, *args, **kwargs):
-
+        self.slots = None
         self.settings = kwargs.get('settings', {})
-        self.signal = kwargs.get('signal', None)
+        self.signal = kwargs.get('signal', signal('fva_client'))
         self.pkcs11 = PyKCS11.PyKCS11Lib()
         self.slot = kwargs.get('slot', self.get_slot())
-
         self.certificate_info = None
 
     def get_slot(self):
@@ -72,22 +71,31 @@ class PKCS11Client:
         """
         if self.slot:
             return self.slot
-        slots = None
-        try:
-            self.pkcs11.load(self.get_module_lib())
-            slots = self.pkcs11.getSlotList()
-        except Exception as e:
-            self.signal.send('notify', obj={
-                'message': "La biblioteca instalada no funciona para leer las \
-                tarjetas, porque no ha instalado las bibliotecas\
-                necesarias o porque el sistema operativo no está soportado"
-            })
-            logger.error("Error abriendo dispositivos PKCS11 %r" % (e,))
-
+        slots = self.get_slots()
         if not slots:
             raise Exception("PKCS11: Slot not found")
         self.slot = slots[0]
         return self.slot
+
+    def get_slots(self):
+        """Obtiene el primer slot (tarjeta) disponible
+        .. warning:: Solo usar en pruebas y mejorar la forma como se capta
+        """
+        if self.slots is not None:
+            return self.slots
+        try:
+            self.pkcs11.load(self.get_module_lib())
+            self.slots = self.pkcs11.getSlotList()
+        except Exception as e:
+            self.signal.send('notify', obj={
+                'message': "La biblioteca instalada no funciona para leer \
+                las tarjetas, esto puede ser porque no ha instalado \
+                las bibliotecas necesarias o porque el sistema operativo \
+                no está soportado"
+            })
+            logger.error("Error abriendo dispositivos PKCS11 %r" % (e,))
+            return []
+        return self.slots
 
     def get_module_lib(self):
         """Obtiene la biblioteca de comunicación con la tarjeta """
@@ -301,7 +309,8 @@ class PKCS11Client:
         except Exception as e:
             # FIXME: set a correct type of exception
             self.signal.send('notify', obj={
-                'message': "No se puede obtener la identificación de la persona, posiblemente porque la tarjeta está mal conectada"
+                'message': "No se puede obtener la identificación de la persona\
+                , posiblemente porque la tarjeta está mal conectada"
             })
             logger.error("Tarjeta no detectada %r" % (e, ))
         if info:

@@ -325,7 +325,6 @@ class PersonBaseClient(PersonClientInterface):
         }
 
         str_data = json.dumps(data)
-        # print(str_data)
         edata = self._encrypt(str_data, etype='sign')
         hashsum = get_hash_sum(edata,  algorithm)
         edata = edata.decode()
