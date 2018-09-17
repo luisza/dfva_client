@@ -207,7 +207,8 @@ class PersonBaseClient(PersonClientInterface):
             while not data['received_notification']:
                 time.sleep(self.wait_time)
                 data = self.check_autenticate(
-                    identification, data['code'], algorithm=algorithm)
+                    identification, data['id_transaction'],
+                    algorithm=algorithm)
 
         return data
 
