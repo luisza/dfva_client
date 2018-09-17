@@ -18,30 +18,32 @@ logger = logging.getLogger('dfva_client')
 
 
 class PrivateKey:
-    def __init__(self, key, session):
+    def __init__(self, key, client):
         self._key = key
-        self._session = session
+        self._client = client
         self.key_length = self.get_key_length()
 
     def decrypt(self, ciphertext):
+        session = self._client.get_session()
         mechanism = PyKCS11.Mechanism(PyKCS11.CKM_SHA1_RSA_PKCS, None)
         mech = PyKCS11.RSAOAEPMechanism(
             PyKCS11.CKM_SHA_1, PyKCS11.CKG_MGF1_SHA1)
         decrypted = bytes(
-            bytearray(self._session.decrypt(self._key, ciphertext, mech)))
+            bytearray(session.decrypt(self._key, ciphertext, mech)))
         return decrypted
 
     def sign(self, data):
-
+        session = self._client.get_session()
         mechanism = PyKCS11.Mechanism(PyKCS11.CKM_SHA512_RSA_PKCS, None)
-        signature = self._session.sign(self._key, data, mechanism)
+        signature = session.sign(self._key, data, mechanism)
         signature = bytes(bytearray(signature))
         return signature
 
     def get_key_length(self):
+        session = self._client.get_session()
         moduslen = len(bytes(bytearray(
-            self._session.getAttributeValue(self._key,
-                                            [PyKCS11.CKA_MODULUS])[0])))
+            session.getAttributeValue(self._key,
+                                      [PyKCS11.CKA_MODULUS])[0])))
         return moduslen*8
 
     def key(self):
@@ -172,13 +174,24 @@ class PKCS11Client:
             'Sorry PIN is Needed, we will remove this, but for now use export \
             PKCS11_PIN=<pin> before call python')
 
+    def is_session_active(self, session):
+        dev = False
+        try:
+            info = session.getSessionInfo()
+            if info.state == 1:
+                dev = True
+        except PyKCS11.PyKCS11Error as e:
+            dev = False
+        return dev
+
     def get_session(self, pin=None):
         """Obtiene o inicializa una sessión para el uso de la tarjeta.
         .. warning:: Ojo cachear la session y revisar si está activa
         """
         # Fixme: Verificar si la sessión está activa y si no lo está entonces
         # volver a iniciarla
-        if self.session is None:
+
+        if self.session is None or not self.is_session_active(self.session):
             slot = self.get_slot()
             self.token = self.pkcs11.getTokenInfo(slot)
             self.session = self.pkcs11.openSession(slot)
@@ -293,9 +306,9 @@ class PKCS11Client:
                     key, [PyKCS11.CKA_LABEL])[0]
                 if label == 'LlaveDeAutenticacion':
                     self.keys['authentication']['priv_key'] = PrivateKey(
-                        key, session)
+                        key, self)
                 elif label == 'LlaveDeFirma':
-                    self.keys['sign']['priv_key'] = PrivateKey(key, session)
+                    self.keys['sign']['priv_key'] = PrivateKey(key, self)
 
         return self.keys
 
@@ -340,7 +353,8 @@ class PKCS11Client:
 
     def close(self):
         if self.session:
-            self.session.logout()
+            if self.is_session_active(self.session):
+                self.session.logout()
             self.session.closeSession()
             self.session = None
             self.keys = None
