@@ -18,7 +18,7 @@ import time
 from client_fva.user_settings import UserSettings
 import pkcs11
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ca_bundle = os.path.join(BASE_DIR, 'libs/certs/ca_bundle.pem')
+ca_bundle = os.path.join(BASE_DIR, 'certs/ca_bundle.pem')
 from threading import Thread
 from blinker import signal
 
