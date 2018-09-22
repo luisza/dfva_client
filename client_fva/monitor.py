@@ -86,19 +86,6 @@ class Monitor(PKCS11Client, QRunnable):
         while True:
             time.sleep(3000)
 
-    def get_slots(self):
-        slots = []
-        if self.lib is None:
-            try:
-                self.lib = pkcs11.lib(self.module_lib)
-            except Exception as e:
-                self.signal.send('notify', obj={
-                    'message': "La biblioteca instalada no funciona para leer las tarjetas, esto puede ser porque no ha instalado las bibliotecas necesarias o porque el sistema operativo no está soportado"
-                })
-                logger.error("Error abriendo dispositivos PKCS11 %r" % (e,))
-        if self.lib:
-            slots = self.lib.get_slots()
-        return slots
 
     def detect_device(self, notify_exception=False):
         """
@@ -113,18 +100,20 @@ class Monitor(PKCS11Client, QRunnable):
         slots = self.get_slots()
         for slot in slots:
             try:
-                serial = slot.get_token().serial.decode("utf-8")
+                self.slot = slot
+                serial = self.get_serial_name()
                 if serial in self.connected_device:
                     tmp_device.append(serial)
                 else:
                     tmp_device.append(serial)
-                    self.slot = slot
+
+                    self.cached = False
                     person = self.get_identification()
                     data = {'slot': slot,
                             'person': person}
                     added_device[serial] = data
                     self.send_add_signal(data)
-            except pkcs11.exceptions.TokenNotRecognised as noToken:
+            except Exception as noToken:
                 if notify_exception:
                     self.signals.result.emit('notify', {
                         'message': "Un dispositivo ha sido encontrado, pero ninguna tarjeta pudo ser leída, por favor verifique que la tarjeta esté correctamente insertada"

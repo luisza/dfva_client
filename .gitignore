@@ -106,3 +106,4 @@ ENV/
 .idea/
 
 #client_fva/libs/certs/
+dfva_client.db

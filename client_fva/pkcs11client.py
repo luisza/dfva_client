@@ -66,6 +66,7 @@ class PKCS11Client:
         self.pkcs11 = PyKCS11.PyKCS11Lib()
         self.slot = kwargs.get('slot', self.get_slot())
         self.certificate_info = None
+        self.cached = True
 
     def get_slot(self):
         """Obtiene el primer slot (tarjeta) disponible
@@ -98,6 +99,10 @@ class PKCS11Client:
             logger.error("Error abriendo dispositivos PKCS11 %r" % (e,))
             return []
         return self.slots
+
+    def get_serial_name(self):
+        slot = self.get_slot()
+
 
     def get_module_lib(self):
         """Obtiene la biblioteca de comunicación con la tarjeta """
@@ -200,7 +205,7 @@ class PKCS11Client:
         return self.session
 
     def get_certificates(self):
-        if self.certificates:
+        if self.certificates and self.cached:
             return self.certificates
 
         slot = self.get_slot()
@@ -231,7 +236,7 @@ class PKCS11Client:
         return self.certificates
 
     def get_certificate_info(self):
-        if self.certificate_info:
+        if self.certificate_info and self.cached:
             return self.certificate_info
 
         self.certificate_info = {}
@@ -313,7 +318,7 @@ class PKCS11Client:
         return self.keys
 
     def get_identification(self):
-        if self.identification is not None:
+        if self.identification is not None and self.cached:
             return self.identification
 
         info = None
