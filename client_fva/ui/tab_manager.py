@@ -24,7 +24,7 @@ class TabManager(QObject):
         logger.info("Multithreading with maximum %d threads" %
                     self.threadpool.maxThreadCount())
         self.monitor = Monitor()
-        self.monitor.signals.result.connect(self.token_information_event)
+        signals.connect('monitor_usb', self.token_information_event)
 
         self.threadpool.start(self.monitor)
 
@@ -43,7 +43,7 @@ class TabManager(QObject):
             self.card_information.setEditTriggers(
                 QtWidgets.QAbstractItemView.NoEditTriggers)  # make it readonly
             # set row count
-            self.card_information.setRowCount(1)
+            self.card_information.setRowCount(0)
             # set column count
             self.card_information.setColumnCount(5)
             self.card_information.setHorizontalHeaderItem(
@@ -60,10 +60,9 @@ class TabManager(QObject):
             #headers = self.card_information.horizontalHeader()
             # headers.setResizeMode(QtWidgets.QtHeaderView.ResizeToContents)
 
-        certs = fvaspeaker.client.get_certificate_info()
-
+        certs = fvaspeaker.client.pkcs11client.get_certificate_info()
         if certs:
-            cert = certs[0]
+            cert = certs['authentication']
             self.card_information.insertRow(self.card_information.rowCount())
             self.card_information.setItem(
                 self.card_count, 0, QTableWidgetItem(name))
@@ -77,12 +76,14 @@ class TabManager(QObject):
                 self.card_count, 4, QTableWidgetItem(cert['type']))
             self.card_count += 1
             self.card_information.resizeColumnsToContents()
+        else:
+            self.card_information.setRowCount(0)
 
     def create_tab(self, name, slot):
         print("create tab", name)
         my_requests_ui = MyRequests(QtWidgets.QWidget(), self.main_app)
         FVADialog = QtWidgets.QDialog()
-        ui = FVASpeakerClient(FVADialog, slot)
+        ui = FVASpeakerClient(FVADialog, slot, name)
         position = self.controller.usrSlots.count()
         self.speakers[name] = ui
         self.controller.usrSlots.insertTab(
