@@ -1,21 +1,34 @@
-
-from client_fva.fva_speaker import FVA_client
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSlot, QRunnable, QThreadPool
 import time
 from base64 import b64decode
-from client_fva.user_settings import UserSettings
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QRunnable, QThreadPool, pyqtSlot
+
+from client_fva import fva_speaker, signals
+from client_fva.fva_speaker import FVA_client
 from client_fva.ui.fvadialogui import Ui_FVADialog
-from client_fva import signals
+from client_fva.user_settings import UserSettings
 
 
-class FVASpeakerClient(Ui_FVADialog, QRunnable):
+class Timer(QRunnable):
+    def __init__(self, fvaspeaker):
+        self.fva_speaker = fvaspeaker
+        QRunnable.__init__(self)
+
+    @pyqtSlot()
+    def run(self):
+        while not self.fva_speaker.operation_finished:
+            time.sleep(1)
+            self.fva_speaker.on_timer()
+
+
+class FVASpeakerClient(Ui_FVADialog, ):
     rejected = False
     operation_finished = False
 
     def __init__(self, dialog, slot, identification):
         Ui_FVADialog.__init__(self)
-        QRunnable.__init__(self)
+
         self.dialog = dialog
         self.setupUi(dialog)
         self.cancel.clicked.connect(self.closeEvent)
@@ -27,29 +40,36 @@ class FVASpeakerClient(Ui_FVADialog, QRunnable):
                                  identification=identification)
         self.client.daemon = True
         self.client.start()
-        signals.connect('pin', self.request_pin_code)
         signals.connect('fva_speaker', self.request_pin_code)
-        self.mutex = QtCore.QMutex()
         self.threadpool = QThreadPool()
+        self.timer = None
+        self.obj = None
 
     def closeEvent(self, event):
-        print("Closing")
+        logger.info("Reject fva speaker dialog")
         self.rejected = True
         self.operation_finished = True
-        self.mutex.unlock()
         self.dialog.hide()
+        self.notify()
 
     def send_code(self, event):
-        print("Signing")
+        logger.info("Signing fva speaker dialog")
         self.rejected = False
         self.operation_finished = True
-        self.mutex.unlock()
         self.dialog.hide()
+        self.notify()
+
+    def notify(self):
+        self.obj.response['pin'] = self.pin.text()
+        self.obj.response['code'] = self.code.text()
+        self.obj.response['rejected'] = self.rejected
+        signals.receive(self.obj, notify=True)
 
     def request_pin_code(self, sender, obj):
-        #print("request pin", sender, obj)
+        logger.info("Request fva speaker dialog %r" %
+                    obj.data['M'][0]['A'][0]['c'])
         #obj = kw['obj']
-
+        self.obj = obj
         self.pin.setText('')
         self.code.setText('')
 
@@ -61,12 +81,8 @@ class FVASpeakerClient(Ui_FVADialog, QRunnable):
         self.image.setPixmap(pixmap)
         self.dialog.show()
         self.timeout = int(obj.data['M'][0]['A'][0]['f'])
-        self.threadpool.start(self)
-        self.mutex.lock()
-        obj.response['pin'] = self.pin.text()
-        obj.response['code'] = self.code.text()
-        obj.response['rejected'] = self.rejected
-        signals.receive(obj, notify=True)
+        self.timer = Timer(self)
+        self.threadpool.start(self.timer)
 
     def on_timer(self):
         self.timeout -= 1
@@ -76,13 +92,7 @@ class FVASpeakerClient(Ui_FVADialog, QRunnable):
             self.rejected = True
             self.operation_finished = True
             self.dialog.hide()
-            self.mutex.unlock()
-
-    @pyqtSlot()
-    def run(self):
-        while not self.operation_finished:
-            time.sleep(1)
-            self.on_timer()
+            self.notify()
 
 
 def run():

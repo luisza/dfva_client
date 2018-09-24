@@ -34,9 +34,13 @@ class PrivateKey:
             bytearray(session.decrypt(self._key, ciphertext, mech)))
         return decrypted
 
-    def sign(self, data):
-        session = self._client.get_session()
-        mechanism = PyKCS11.Mechanism(PyKCS11.CKM_SHA512_RSA_PKCS, None)
+    def sign(self, data, using='sha512'):
+        if using == 'sha512':
+            mechanism = PyKCS11.Mechanism(PyKCS11.CKM_SHA512_RSA_PKCS, None)
+        elif using == 'sha256':
+            mechanism = PyKCS11.Mechanism(PyKCS11.CKM_SHA256_RSA_PKCS, None)
+
+        session = self._client.get_session()        
         signature = session.sign(self._key, data, mechanism)
         signature = bytes(bytearray(signature))
         return signature

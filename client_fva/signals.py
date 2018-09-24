@@ -107,12 +107,10 @@ objs = {}
 
 def receive(obj, notify=False):
     if notify:
-        objs[obj.sid] = obj
         obj.mutex.unlock()
-        print(">>> ", repr(obj.response))
     else:
+        print("Entrada: ", obj.sid, objs)
         obj.mutex.lock()
-        print(objs)
-        obj = objs[obj.sid]
-        print("<<< ", repr(obj.response))
+        obj.mutex.lock()
+        obj.mutex.unlock()
     return obj

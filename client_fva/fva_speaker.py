@@ -290,8 +290,7 @@ class FVA_Base_client(object):
         response = None
         while not ok and count < self.settings.max_pin_fails:
             try:
-                print("sign: ", _hash, pin)
-                #response = self._get_signed_hash(_hash, pin)
+                response = self._get_signed_hash(_hash, pin)
             # Fixme manejar mejor este error
             except PyKCS11.PyKCS11Error:
                 data['message'] = "Error PIN de %s incorrecto, por favor \
@@ -311,7 +310,7 @@ class FVA_Base_client(object):
 
         certificates = self.pkcs11client.get_keys(pin=pin)
         d = certificates['sign']['priv_key'].sign(
-            b64decode(_hash))
+            b64decode(_hash), using='sha256')
         return b64encode(d)
 
 
