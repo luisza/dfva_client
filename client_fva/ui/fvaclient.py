@@ -64,6 +64,8 @@ class FVAClient(Ui_FVAClientUI):
         # self.set_enabled_specific_menu_actions(True)
 
     def closeEvent(self, event):
+        if not self.user_settings.hide_on_close:
+            self.close_window = True
         if self.close_window:
             event.accept()
             self.tabmanager.close()

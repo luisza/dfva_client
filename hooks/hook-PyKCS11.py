@@ -1,11 +1,11 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Copyright (c) 2005-2018, PyInstaller Development Team.
 #
 # Distributed under the terms of the GNU General Public License with exception
 # for distributing bootloader.
 #
 # The full license is in the file COPYING.txt, distributed with this software.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 """
 Hook for PyCryptodome library: https://pypi.python.org/pypi/pycryptodome
@@ -41,18 +41,15 @@ from PyInstaller.utils.hooks import get_module_file_attribute
 binaries = []
 binary_module_names = [
     'PyKCS11',      # First in the list
-  
+
 ]
 
 try:
     for module_name in binary_module_names:
         m_dir = os.path.dirname(get_module_file_attribute(module_name))
-        print("#"*5,m_dir)
         for ext in EXTENSION_SUFFIXES:
             module_bin = glob.glob(os.path.join(m_dir, '_*%s' % ext))
-            print("Module BIN:", module_bin)
             for f in module_bin:
-                print("F: ", f, os.sep)
                 binaries.append((f, module_name.replace('.', os.sep)))
 except ImportError:
     # Do nothing for PyCrypto (Crypto.Math does not exist there)

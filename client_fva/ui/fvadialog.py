@@ -8,6 +8,8 @@ from client_fva import fva_speaker, signals
 from client_fva.fva_speaker import FVA_client
 from client_fva.ui.fvadialogui import Ui_FVADialog
 from client_fva.user_settings import UserSettings
+import logging
+logger = logging.getLogger('dfva_client')
 
 
 class Timer(QRunnable):
@@ -50,7 +52,8 @@ class FVASpeakerClient(Ui_FVADialog, ):
         self.rejected = True
         self.operation_finished = True
         self.dialog.hide()
-        self.notify()
+        if event is not None:
+            self.notify()
 
     def send_code(self, event):
         logger.info("Signing fva speaker dialog")
