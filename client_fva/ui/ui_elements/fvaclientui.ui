@@ -33,7 +33,7 @@
     <normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset>
   </property>
   <property name="windowOpacity">
-   <double>-1.000000000000000</double>
+   <double>1.000000000000000</double>
   </property>
   <property name="toolButtonStyle">
    <enum>Qt::ToolButtonTextBesideIcon</enum>
@@ -128,6 +128,10 @@ background-color:rgb(216, 230, 225);</string>
    <property name="nativeMenuBar">
     <bool>false</bool>
    </property>
+   <property name="styleSheet">
+    <string notr="true">QMenu::item{color:rgb(76, 118, 82);
+background-color:rgb(216, 230, 225);}</string>
+   </property>
    <widget class="QMenu" name="menuRequests">
     <property name="title">
      <string>Solicitar</string>
@@ -155,7 +159,7 @@ background-color:rgb(216, 230, 225);</string>
     <addaction name="actionMyRequests"/>
     <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menuFrima">
+   <widget class="QMenu" name="menuFirma">
     <property name="title">
      <string>Mis Documentos</string>
     </property>
@@ -164,7 +168,7 @@ background-color:rgb(216, 230, 225);</string>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuRequests"/>
-   <addaction name="menuFrima"/>
+   <addaction name="menuFirma"/>
    <addaction name="menuContactos"/>
   </widget>
   <action name="actionRequestSignature">

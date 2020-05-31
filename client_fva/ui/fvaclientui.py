@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_elements/fvaclientui.ui'
+# Form implementation generated from reading ui file 'client_fva/ui/ui_elements/fvaclientui.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.14.2
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_FVAClientUI(object):
     def setupUi(self, FVAClientUI):
@@ -23,6 +25,7 @@ class Ui_FVAClientUI(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         FVAClientUI.setWindowIcon(icon)
+        FVAClientUI.setWindowOpacity(1.0)
         FVAClientUI.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         FVAClientUI.setAnimated(True)
         FVAClientUI.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
@@ -64,10 +67,10 @@ class Ui_FVAClientUI(object):
         FVAClientUI.setCentralWidget(self.centralWidget)
         self.menuBar = QtWidgets.QMenuBar(FVAClientUI)
         self.menuBar.setEnabled(True)
-        self.menuBar.setStyleSheet("QMenu::item {color:rgb(76, 118, 82); background-color:rgb(216, 230, 225);}")
         self.menuBar.setGeometry(QtCore.QRect(0, 0, 638, 23))
         self.menuBar.setAcceptDrops(False)
         self.menuBar.setNativeMenuBar(False)
+        self.menuBar.setStyleSheet("QMenu::item{color:rgb(76, 118, 82); background-color:rgb(216, 230, 225);}")
         self.menuBar.setObjectName("menuBar")
         self.menuRequests = QtWidgets.QMenu(self.menuBar)
         self.menuRequests.setObjectName("menuRequests")
@@ -168,8 +171,8 @@ class Ui_FVAClientUI(object):
         self.actionExit.setShortcut(_translate("FVAClientUI", "Ctrl+Q"))
         self.actionSignAuthenticate.setText(_translate("FVAClientUI", "Firmar - Autenticar"))
         self.actionSignAuthenticate.setShortcut(_translate("FVAClientUI", "Ctrl+D"))
-
 from . import resources_rc
+
 
 if __name__ == "__main__":
     import sys
@@ -179,4 +182,3 @@ if __name__ == "__main__":
     ui.setupUi(FVAClientUI)
     FVAClientUI.show()
     sys.exit(app.exec_())
-
