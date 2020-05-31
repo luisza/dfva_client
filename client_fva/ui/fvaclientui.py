@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_elements/fvaclientui.ui'
+# Form implementation generated from reading ui file 'client_fva/ui/ui_elements/fvaclientui.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.14.2
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_FVAClientUI(object):
     def setupUi(self, FVAClientUI):
@@ -23,7 +25,7 @@ class Ui_FVAClientUI(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         FVAClientUI.setWindowIcon(icon)
-        FVAClientUI.setWindowOpacity(-1.0)
+        FVAClientUI.setWindowOpacity(1.0)
         FVAClientUI.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         FVAClientUI.setAnimated(True)
         FVAClientUI.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
@@ -42,8 +44,7 @@ class Ui_FVAClientUI(object):
         sizePolicy.setHeightForWidth(self.usrSlots.sizePolicy().hasHeightForWidth())
         self.usrSlots.setSizePolicy(sizePolicy)
         self.usrSlots.setAutoFillBackground(False)
-        self.usrSlots.setStyleSheet("color:rgb(76, 118, 82);\n"
-"background-color:rgb(216, 230, 225);")
+        self.usrSlots.setStyleSheet("color:rgb(76, 118, 82); background-color:rgb(216, 230, 225);")
         self.usrSlots.setTabPosition(QtWidgets.QTabWidget.North)
         self.usrSlots.setTabShape(QtWidgets.QTabWidget.Rounded)
         self.usrSlots.setElideMode(QtCore.Qt.ElideMiddle)
@@ -69,6 +70,7 @@ class Ui_FVAClientUI(object):
         self.menuBar.setGeometry(QtCore.QRect(0, 0, 638, 23))
         self.menuBar.setAcceptDrops(False)
         self.menuBar.setNativeMenuBar(False)
+        self.menuBar.setStyleSheet("QMenu::item{color:rgb(76, 118, 82); background-color:rgb(216, 230, 225);}")
         self.menuBar.setObjectName("menuBar")
         self.menuRequests = QtWidgets.QMenu(self.menuBar)
         self.menuRequests.setObjectName("menuRequests")
@@ -78,8 +80,8 @@ class Ui_FVAClientUI(object):
         self.menuEdit.setObjectName("menuEdit")
         self.menuFile = QtWidgets.QMenu(self.menuBar)
         self.menuFile.setObjectName("menuFile")
-        self.menuFrima = QtWidgets.QMenu(self.menuBar)
-        self.menuFrima.setObjectName("menuFrima")
+        self.menuFirma = QtWidgets.QMenu(self.menuBar)
+        self.menuFirma.setObjectName("menuFirma")
         FVAClientUI.setMenuBar(self.menuBar)
         self.actionRequestSignature = QtWidgets.QAction(FVAClientUI)
         icon1 = QtGui.QIcon()
@@ -133,11 +135,11 @@ class Ui_FVAClientUI(object):
         self.menuFile.addAction(self.actionMySignatures)
         self.menuFile.addAction(self.actionMyRequests)
         self.menuFile.addAction(self.actionExit)
-        self.menuFrima.addAction(self.actionSignAuthenticate)
+        self.menuFirma.addAction(self.actionSignAuthenticate)
         self.menuBar.addAction(self.menuFile.menuAction())
         self.menuBar.addAction(self.menuEdit.menuAction())
         self.menuBar.addAction(self.menuRequests.menuAction())
-        self.menuBar.addAction(self.menuFrima.menuAction())
+        self.menuBar.addAction(self.menuFirma.menuAction())
         self.menuBar.addAction(self.menuContactos.menuAction())
 
         self.retranslateUi(FVAClientUI)
@@ -152,7 +154,7 @@ class Ui_FVAClientUI(object):
         self.menuContactos.setTitle(_translate("FVAClientUI", "Contactos"))
         self.menuEdit.setTitle(_translate("FVAClientUI", "Editar"))
         self.menuFile.setTitle(_translate("FVAClientUI", "Archivo"))
-        self.menuFrima.setTitle(_translate("FVAClientUI", "Mis Documentos"))
+        self.menuFirma.setTitle(_translate("FVAClientUI", "Mis Documentos"))
         self.actionRequestSignature.setText(_translate("FVAClientUI", "Firma"))
         self.actionRequestSignature.setShortcut(_translate("FVAClientUI", "Ctrl+F"))
         self.actionRequestAuthentication.setText(_translate("FVAClientUI", "Autenticación"))
@@ -169,8 +171,8 @@ class Ui_FVAClientUI(object):
         self.actionExit.setShortcut(_translate("FVAClientUI", "Ctrl+Q"))
         self.actionSignAuthenticate.setText(_translate("FVAClientUI", "Firmar - Autenticar"))
         self.actionSignAuthenticate.setShortcut(_translate("FVAClientUI", "Ctrl+D"))
-
 from . import resources_rc
+
 
 if __name__ == "__main__":
     import sys
@@ -180,4 +182,3 @@ if __name__ == "__main__":
     ui.setupUi(FVAClientUI)
     FVAClientUI.show()
     sys.exit(app.exec_())
-
