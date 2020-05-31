@@ -6,9 +6,9 @@ import stat
 class UserSettings:
 
     def __init__(self):
-        self.font_size = 10
+        self.font_size = 12
         self.font_family = 'Noto Sans'
-        self.theme = 'GTK+'
+        self.theme = 'Fusion'
         self.save_password_in_manager = False
         self.number_requests_before_fail = 2
         self.save_signed_docs_path = ''
@@ -37,8 +37,7 @@ class UserSettings:
         self.supported_sign_format = ['xml_cofirma', 'xml_contrafirma','odf', 'msoffice']
         self.supported_validate_format = [
             'certificate', 'cofirma', 'contrafirma', 'odf', 'msoffice']
-        # Cuanto se espera para verificar si una autenticación o firma se llevó
-        # a cabo
+        # Cuánto se espera para verificar si una autenticación o firma se llevó a cabo
         self.check_wait_time = 10
 
         self.config = configparser.ConfigParser()
