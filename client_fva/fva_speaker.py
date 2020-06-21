@@ -4,42 +4,39 @@ Created on 17 ago. 2017
 @author: luis
 '''
 
-import requests
-import os
-from client_fva.rsa import pem_to_base64
 import json
+import logging
+import os
+import time
 import urllib
 from base64 import b64decode, b64encode
-from client_fva.pkcs11client import PKCS11Client
-from pkcs11.mechanisms import Mechanism
+import PyKCS11
+import requests
+
 from client_fva import signals
-import logging
-import time
+from client_fva.pkcs11client import PKCS11Client
+from client_fva.rsa import pem_to_base64
 from client_fva.user_settings import UserSettings
-import pkcs11
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ca_bundle = os.path.join(BASE_DIR, 'libs/certs/ca_bundle.pem')
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ca_bundle = os.path.join(BASE_DIR, 'certs/ca_bundle.pem')
 from threading import Thread
-from blinker import signal
 
 logger = logging.getLogger('dfva_client')
 
 
-class FVA_Base_client(PKCS11Client):
-    info = None
-    certificates = None
-    session = None
-    slot = None
+class FVA_Base_client(object):
     stop = False
+    pkcs11client = None
 
     def __init__(self, *args, **kwargs):
-        self.signal = kwargs.get('signal', signal('dfva_client'))
-        kwargs['signal'] = self.signal
         self.settings = kwargs.get('settings', UserSettings())
+        self.pkcs11client = kwargs.get('pkcs11client', None)
         kwargs['settings'] = self.settings
-
-        PKCS11Client.__init__(self, *args, **kwargs)
-        self.identification = self.get_identification()
+        self.response = None
+        if self.pkcs11client is None:
+            self.pkcs11client = PKCS11Client(*args, **kwargs)
+        self.identification = self.pkcs11client.get_identification()
 
     def start_the_negotiation(self):
         """
@@ -118,7 +115,7 @@ class FVA_Base_client(PKCS11Client):
         return response
 
     def _start_the_communication(self, data):
-        certificates = self.get_certificates()
+        certificates = self.pkcs11client.get_certificates()
         # url = self.base_url+'/connect'
         url = self.settings.bccr_fva_domain + \
             self.settings.bccr_fva_url_connect % (data['Url'])
@@ -154,8 +151,8 @@ class FVA_Base_client(PKCS11Client):
 
     def process_messages(self, response):
         """
-        Mientras existan mensajes por leer intenta procesar todo mensaje que venga del
-        BCCR.
+        Mientras existan mensajes por leer intenta procesar todo mensaje que 
+        venga del BCCR.
         """
         for message in self.read_messages(response):
             try:
@@ -167,9 +164,12 @@ class FVA_Base_client(PKCS11Client):
                 if "M" in data['M'][0] and data['M'][0]['M'] == "Firme":
                     signed = bool(self.sign(data))
                     if not signed:
-                        self.signal.send('notify', obj={
-                            'message': "Error al firmar, lo lamentamos por favor vuelva a intentarlo"
-                        })
+                        signals.send('notify', signals.SignalObject(
+                            signals.NOTIFTY_ERROR,
+                            {'message':   "Error al firmar, lo lamentamos \
+                            por favor vuelva a intentarlo"
+                             })
+                        )
 
     def read_messages(self, response):
         """
@@ -208,8 +208,7 @@ class FVA_Base_client(PKCS11Client):
 
         }
         sobj = signals.SignalObject(signals.PIN_CODE_REQUEST, data)
-        respobj = signals.get_signal_response(
-            self.signal.send('fva_speaker', obj=sobj))
+        respobj = signals.receive(signals.send('fva_speaker', sobj))
 
         dev = {}
         dev["e"] = data['M'][0]['A'][0]['g']
@@ -292,12 +291,12 @@ class FVA_Base_client(PKCS11Client):
         while not ok and count < self.settings.max_pin_fails:
             try:
                 response = self._get_signed_hash(_hash, pin)
-            except pkcs11.exceptions.PinIncorrect:
+            # Fixme manejar mejor este error
+            except PyKCS11.PyKCS11Error:
                 data['message'] = "Error PIN de %s incorrecto, por favor \
                 vuelvalo a ingresar" % (self.identification,)
                 sobj = signals.SignalObject(signals.PIN_REQUEST, data)
-                respobj = signals.get_signal_response(
-                    self.signal.send('fva_speaker', obj=sobj))
+                respobj = signals.receive(signals.send('fva_speaker', sobj))
                 pin = respobj.response['pin']
             except Exception as e:
                 logger.error("Error get_signed_hash %r" % (e, ))
@@ -309,9 +308,9 @@ class FVA_Base_client(PKCS11Client):
 
     def _get_signed_hash(self, _hash, pin):
 
-        certificates = self.get_keys(pin=pin)
+        certificates = self.pkcs11client.get_keys(pin=pin)
         d = certificates['sign']['priv_key'].sign(
-            b64decode(_hash), mechanism=Mechanism.SHA256_RSA_PKCS)
+            b64decode(_hash), using='sha256')
         return b64encode(d)
 
 
@@ -320,7 +319,7 @@ class FVA_client(FVA_Base_client, Thread):
 
         FVA_Base_client.__init__(self, *args, **kwargs)
         Thread.__init__(self)
-        self.daemon = kwargs.get('daemon', True)
+        self.internal_daemon = kwargs.get('daemon', True)
 
     def run(self):
 
@@ -329,18 +328,25 @@ class FVA_client(FVA_Base_client, Thread):
                 "No se puede iniciar FVA_client, obtención de identificación no se realizó adecuadamente")
             return
 
-        while self.daemon:
+        while self.internal_daemon:
             data = self.start_client()
-            if data is not None:
-                self.process_messages(data)
-            else:
-                logger.info("Esperando para reconectar a " +
-                            self.identification)
-                time.sleep(self.settings.reconnection_wait_time)
+            # start client could spend a lot of time connecting
+            # and daemon could be close until client connect
+            # so check again or threads can run forever
+            if self.internal_daemon:
+                if data is not None:
+                    self.process_messages(data)
+                else:
+                    logger.info("Esperando para reconectar a " +
+                                self.identification)
+                    time.sleep(self.settings.reconnection_wait_time)
+            elif data is not None and self.response is not None:
+                self.response.connection.close()
 
     def close(self):
-        self.daemon = False
-        self.response.connection.close()
+        self.internal_daemon = False
+        if self.response:
+            self.response.connection.close()
         logger.info("Terminando FVA_client de " + self.identification)
 
 
@@ -348,7 +354,7 @@ class OSDummyClient:
     def __init__(self):
         self.client = FVA_client()
         self.client.start()
-        self.client.signal.connect(self.request_pin_code)
+        signals.connect('pin', self.request_pin_code)
 
     def request_pin_code(self, sender, **kw):
         obj = kw['obj']
@@ -358,7 +364,7 @@ class OSDummyClient:
         obj.response['pin'] = input('Insert your pin: ')
         obj.response['code'] = input('Insert the code: ')
         obj.response['rejected'] = False
-        return obj
+        signals.receive(obj, notify=True)
 
 
 """

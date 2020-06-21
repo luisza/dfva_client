@@ -203,11 +203,12 @@ class PersonBaseClient(PersonClientInterface):
 
         data = result.json()
         data = self._decrypt(data['data'])
+        id_transaction = data['id_transaction']
         if wait:
             while not data['received_notification']:
                 time.sleep(self.wait_time)
                 data = self.check_autenticate(
-                    identification, data['id_transaction'],
+                    identification, id_transaction,
                     algorithm=algorithm)
 
         return data
@@ -276,13 +277,12 @@ class PersonBaseClient(PersonClientInterface):
 
         data = result.json()
         data = self._decrypt(data['data'])
+        id_transaction = data['id_transaction']
         if wait:
             while not data['received_notification']:
                 time.sleep(self.wait_time)
                 data = self.check_sign(
-                    identification, data['id_transaction'],
-                    algorithm=algorithm)
-
+                    identification, id_transaction, algorithm=algorithm)
         return data
 
     def check_sign(self, identification, code, algorithm='sha512'):
@@ -323,6 +323,8 @@ class PersonBaseClient(PersonClientInterface):
             'request_datetime': self._get_time(),
             'format': _format
         }
+        if _format != 'certificate':
+            data['format'] = _format
 
         str_data = json.dumps(data)
         edata = self._encrypt(str_data, etype='sign')

@@ -3,18 +3,47 @@ Created on 30 sep. 2017
 
 @author: luisza
 '''
-from threading import Thread
-from client_fva.pkcs11client import PKCS11Client
-import time
-import pkcs11
-from blinker import signal
-from client_fva import signals
 import logging
+import time
+
+from PyQt5.QtCore import QMutex, QObject, QRunnable, pyqtSignal, pyqtSlot
+
+from client_fva import pkcs11client, signals
+from client_fva.pkcs11client import PKCS11Client
+from client_fva.user_settings import UserSettings
+from smartcard.CardMonitoring import CardMonitor, CardObserver
+from smartcard.ReaderMonitoring import ReaderMonitor, ReaderObserver
+
 logger = logging.getLogger('dfva_client')
-daemon = True
 
 
-class Monitor(PKCS11Client, Thread):
+class DFVAReaderObserver(ReaderObserver):
+    def __init__(self, *args, **kwargs):
+        self.eventmanager = kwargs.pop('eventmanager')
+        super(DFVAReaderObserver, self).__init__(*args, **kwargs)
+
+    def update(self, observable, actions):
+        (addedreaders, removedreaders) = actions
+        logger.debug("Added readers %r" % addedreaders)
+        logger.debug("Removed readers %r" % removedreaders)
+        self.eventmanager.detect_device()
+
+
+class DfvaCardObserver(CardObserver):
+    def __init__(self, *args, **kwargs):
+        self.eventmanager = kwargs.pop('eventmanager')
+        super(DfvaCardObserver, self).__init__(*args, **kwargs)
+
+    def update(self, observable, actions):
+        (addedcards, removedcards) = actions
+        self.eventmanager.detect_device()
+
+
+class WorkerObject(QObject):
+    result = pyqtSignal(str, signals.SignalObject)
+
+
+class Monitor(QRunnable):
     """
     Monitoriza los dispositivos pkcs11 conectados a la computadora.
     Lanza 2 eventos:
@@ -47,36 +76,34 @@ class Monitor(PKCS11Client, Thread):
     No se requiere devolver nada, pero es bueno para seguir con el formato, de otras señales
     """
     connected_device = {}
-    module_lib = None
     lib = None
 
     def __init__(self, *args, **kwargs):
+        self.settings = kwargs.get('settings', UserSettings())
+        kwargs['settings'] = self.settings
+        kwargs['cached'] = False
+        self.pkcs11client = PKCS11Client(*args, **kwargs)
 
-        self.settings = kwargs.get('settings', {})
-        self.module_lib = self.get_module_lib()
-        self.signal = kwargs.get('signal', signal('fva_client'))
-        Thread.__init__(self)
+        #self.signal = kwargs.get('signal', signal('fva_client'))
+        QRunnable.__init__(self)
 
+        self.setAutoDelete(True)
+        self.cardmonitor = None
+        self.cardobserver = None
+        self.mutex = QMutex()
+
+    @pyqtSlot()
     def run(self):
-        global daemon
         logger.info("Iniciando monitor")
-        while daemon:
-            self.detect_device()
-            time.sleep(5)
+        self.readermonitor = ReaderMonitor()
+        self.cardmonitor = CardMonitor()
+        self.cardobserver = DfvaCardObserver(eventmanager=self)
+        self.readerobserver = DFVAReaderObserver(eventmanager=self)
+        self.cardmonitor.addObserver(self.cardobserver)
+        self.readermonitor.addObserver(self.readerobserver)
 
-    def get_slots(self):
-        slots = []
-        if self.lib is None:
-            try:
-                self.lib = pkcs11.lib(self.module_lib)
-            except Exception as e:
-                self.signal.send('notify', obj={
-                    'message': "La biblioteca instalada no funciona para leer las tarjetas, esto puede ser porque no ha instalado las bibliotecas necesarias o porque el sistema operativo no está soportado"
-                })
-                logger.error("Error abriendo dispositivos PKCS11 %r" % (e,))
-        if self.lib:
-            slots = self.lib.get_slots()
-        return slots
+        while True:
+            time.sleep(self.settings.wait_for_scan_new_device)
 
     def detect_device(self, notify_exception=False):
         """
@@ -85,30 +112,34 @@ class Monitor(PKCS11Client, Thread):
         usando detect_device( notify_exception=True) para que envíe notificaciones 
         de los errores presentados al detectar las tarjetas.
         """
+        logger.debug("Monitor: detect device")
+        self.mutex.lock()
         tmp_device = []
         added_device = {}
-        slots = self.get_slots()
-        for slot in slots:
+        for tokeninfo in self.pkcs11client.get_tokens_information():
+            slot = tokeninfo['slot']
             try:
-                serial = slot.get_token().serial.decode("utf-8")
+                self.slot = slot
+                serial = tokeninfo['serial']
                 if serial in self.connected_device:
                     tmp_device.append(serial)
                 else:
                     tmp_device.append(serial)
-                    self.slot = slot
-                    person = self.get_identification()
+
+                    self.pkcs11client.cached = False
+                    person = self.pkcs11client.get_identification()
                     data = {'slot': slot,
                             'person': person}
                     added_device[serial] = data
                     self.send_add_signal(data)
-            except pkcs11.exceptions.TokenNotRecognised as noToken:
+            except Exception as noToken:
                 if notify_exception:
-                    self.signal.send('notify', obj={
+                    signals.send('notify', {
                         'message': "Un dispositivo ha sido encontrado, pero ninguna tarjeta pudo ser leída, por favor verifique que la tarjeta esté correctamente insertada"
                     })
             except Exception as e:
                 if notify_exception:
-                    self.signal.send('notify', obj={
+                    signals.result.emit('notify',  {
                         'message': "Ha ocurrido un error inesperado leyendo alguno de los dispositivos"
                     })
 
@@ -119,18 +150,23 @@ class Monitor(PKCS11Client, Thread):
                 self.send_removed_signal(
                     self.connected_device[connected_serial])
                 self.connected_device.pop(connected_serial)
+        self.mutex.unlock()
 
     def send_add_signal(self, data):
         sobj = signals.SignalObject(signals.USB_CONNECTED, data)
         logger.info("Tarjeta conectada %s" % (data['person'],))
-        self.signal.send('monitor_usb', obj=sobj)
+        signals.send('monitor_usb', sobj)
 
     def send_removed_signal(self, data):
         sobj = signals.SignalObject(signals.USB_DISCONNECTED, data)
         logger.info("Tarjeta desconectada %s" % (data['person'],))
-        self.signal.send('monitor_usb', obj=sobj)
+        signals.send('monitor_usb', sobj)
 
     def close(self):
-        global daemon
-        daemon = False
         logger.info("Terminando monitor")
+        if self.cardmonitor and self.cardmonitor.countObservers() <= 0:
+            self.cardmonitor.rmthread.stopEvent.set()
+            self.cardmonitor = None
+        if self.cardmonitor and self.cardobserver:
+            self.cardmonitor.deleteObserver(self.cardobserver)
+            self.cardobserver = None
