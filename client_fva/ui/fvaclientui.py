@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'client_fva/ui/ui_elements/fvaclientui.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.2
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_FVAClientUI(object):
     def setupUi(self, FVAClientUI):
@@ -44,7 +42,8 @@ class Ui_FVAClientUI(object):
         sizePolicy.setHeightForWidth(self.usrSlots.sizePolicy().hasHeightForWidth())
         self.usrSlots.setSizePolicy(sizePolicy)
         self.usrSlots.setAutoFillBackground(False)
-        self.usrSlots.setStyleSheet("color:rgb(76, 118, 82); background-color:rgb(216, 230, 225);")
+        self.usrSlots.setStyleSheet("color:rgb(76, 118, 82);\n"
+"background-color:rgb(216, 230, 225);")
         self.usrSlots.setTabPosition(QtWidgets.QTabWidget.North)
         self.usrSlots.setTabShape(QtWidgets.QTabWidget.Rounded)
         self.usrSlots.setElideMode(QtCore.Qt.ElideMiddle)
@@ -67,10 +66,11 @@ class Ui_FVAClientUI(object):
         FVAClientUI.setCentralWidget(self.centralWidget)
         self.menuBar = QtWidgets.QMenuBar(FVAClientUI)
         self.menuBar.setEnabled(True)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 638, 23))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 638, 24))
         self.menuBar.setAcceptDrops(False)
+        self.menuBar.setStyleSheet("QMenu::item{color:rgb(76, 118, 82);\n"
+"background-color:rgb(216, 230, 225);}")
         self.menuBar.setNativeMenuBar(False)
-        self.menuBar.setStyleSheet("QMenu::item{color:rgb(76, 118, 82); background-color:rgb(216, 230, 225);}")
         self.menuBar.setObjectName("menuBar")
         self.menuRequests = QtWidgets.QMenu(self.menuBar)
         self.menuRequests.setObjectName("menuRequests")
@@ -128,12 +128,16 @@ class Ui_FVAClientUI(object):
         self.actionSignAuthenticate = QtWidgets.QAction(FVAClientUI)
         self.actionSignAuthenticate.setIcon(icon1)
         self.actionSignAuthenticate.setObjectName("actionSignAuthenticate")
+        self.actionBitacoras = QtWidgets.QAction(FVAClientUI)
+        self.actionBitacoras.setIcon(icon4)
+        self.actionBitacoras.setObjectName("actionBitacoras")
         self.menuRequests.addAction(self.actionRequestSignature)
         self.menuRequests.addAction(self.actionRequestAuthentication)
         self.menuContactos.addAction(self.actionManageContacts)
         self.menuEdit.addAction(self.actionPreferences)
         self.menuFile.addAction(self.actionMySignatures)
         self.menuFile.addAction(self.actionMyRequests)
+        self.menuFile.addAction(self.actionBitacoras)
         self.menuFile.addAction(self.actionExit)
         self.menuFirma.addAction(self.actionSignAuthenticate)
         self.menuBar.addAction(self.menuFile.menuAction())
@@ -171,8 +175,10 @@ class Ui_FVAClientUI(object):
         self.actionExit.setShortcut(_translate("FVAClientUI", "Ctrl+Q"))
         self.actionSignAuthenticate.setText(_translate("FVAClientUI", "Firmar - Autenticar"))
         self.actionSignAuthenticate.setShortcut(_translate("FVAClientUI", "Ctrl+D"))
-from . import resources_rc
+        self.actionBitacoras.setText(_translate("FVAClientUI", "Bitacoras"))
+        self.actionBitacoras.setShortcut(_translate("FVAClientUI", "Ctrl+L"))
 
+from . import resources_rc
 
 if __name__ == "__main__":
     import sys
@@ -182,3 +188,4 @@ if __name__ == "__main__":
     ui.setupUi(FVAClientUI)
     FVAClientUI.show()
     sys.exit(app.exec_())
+

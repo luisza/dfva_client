@@ -119,18 +119,18 @@ background-color:rgb(216, 230, 225);</string>
      <x>0</x>
      <y>0</y>
      <width>638</width>
-     <height>23</height>
+     <height>24</height>
     </rect>
    </property>
    <property name="acceptDrops">
     <bool>false</bool>
    </property>
-   <property name="nativeMenuBar">
-    <bool>false</bool>
-   </property>
    <property name="styleSheet">
     <string notr="true">QMenu::item{color:rgb(76, 118, 82);
 background-color:rgb(216, 230, 225);}</string>
+   </property>
+   <property name="nativeMenuBar">
+    <bool>false</bool>
    </property>
    <widget class="QMenu" name="menuRequests">
     <property name="title">
@@ -157,6 +157,7 @@ background-color:rgb(216, 230, 225);}</string>
     </property>
     <addaction name="actionMySignatures"/>
     <addaction name="actionMyRequests"/>
+    <addaction name="actionBitacoras"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuFirma">
@@ -286,6 +287,18 @@ background-color:rgb(216, 230, 225);}</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+D</string>
+   </property>
+  </action>
+  <action name="actionBitacoras">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/configure_module.png</normaloff>:/images/configure_module.png</iconset>
+   </property>
+   <property name="text">
+    <string>Bitacoras</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
    </property>
   </action>
  </widget>
