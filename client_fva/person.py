@@ -207,8 +207,8 @@ class PersonBaseClient(PersonClientInterface):
         if wait:
             while not data['received_notification']:
                 time.sleep(self.wait_time)
-                data = self.check_autenticate(
-                    identification, id_transaction, algorithm=algorithm)
+                data = self.check_autenticate(identification, id_transaction, algorithm=algorithm)
+
 
         return data
 
@@ -281,8 +281,7 @@ class PersonBaseClient(PersonClientInterface):
             while not data['received_notification']:
                 print(data)
                 time.sleep(self.wait_time)
-                data = self.check_sign(
-                    identification, id_transaction, algorithm=algorithm)
+                data = self.check_sign(identification, id_transaction, algorithm=algorithm)
 
         return data
 
@@ -322,12 +321,12 @@ class PersonBaseClient(PersonClientInterface):
             'person': self.person,
             'document': document,
             'request_datetime': self._get_time(),
+            'format': _format
         }
         if _format != 'certificate':
             data['format'] = _format
 
         str_data = json.dumps(data)
-        # print(str_data)
         edata = self._encrypt(str_data, etype='sign')
         hashsum = get_hash_sum(edata,  algorithm)
         edata = edata.decode()
@@ -454,6 +453,7 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
 
         self.requests = kwargs.get('request_client', requests)
         self.settings = kwargs.get('settings', UserSettings())
+        kwargs['settings'] = self.settings
         self.wait_time = self.settings.check_wait_time
         PKCS11Client.__init__(self, *args, **kwargs)
 
@@ -483,9 +483,7 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
             self.register()
 
         keys = self.get_keys()
-        key_token = keys['authentication']['priv_key'].decrypt(
-            self.key_token)
-
+        key_token = keys['authentication']['priv_key'].decrypt(self.key_token)
         return key_token
 
     def _encrypt(self, str_data, etype='authenticate'):
@@ -497,6 +495,7 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
         keys = self.get_keys()
         keytoken = self.get_key_token()
         signed_token = keys[etype]['priv_key'].sign(keytoken)
+
         return encrypt(keytoken, signed_token, str_data)
 
     def _decrypt(self, str_data):
@@ -532,8 +531,8 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
         return data
 
     def unregister(self):
-        if self.session:
-            self.session.close()
+        self.close()
+        self.key_token = None
 
 
 PersonClient = PKCS11PersonClient

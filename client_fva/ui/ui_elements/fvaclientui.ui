@@ -33,7 +33,7 @@
     <normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset>
   </property>
   <property name="windowOpacity">
-   <double>-1.000000000000000</double>
+   <double>1.000000000000000</double>
   </property>
   <property name="toolButtonStyle">
    <enum>Qt::ToolButtonTextBesideIcon</enum>
@@ -119,11 +119,15 @@ background-color:rgb(216, 230, 225);</string>
      <x>0</x>
      <y>0</y>
      <width>638</width>
-     <height>23</height>
+     <height>24</height>
     </rect>
    </property>
    <property name="acceptDrops">
     <bool>false</bool>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QMenu::item{color:rgb(76, 118, 82);
+background-color:rgb(216, 230, 225);}</string>
    </property>
    <property name="nativeMenuBar">
     <bool>false</bool>
@@ -153,9 +157,10 @@ background-color:rgb(216, 230, 225);</string>
     </property>
     <addaction name="actionMySignatures"/>
     <addaction name="actionMyRequests"/>
+    <addaction name="actionBitacoras"/>
     <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menuFrima">
+   <widget class="QMenu" name="menuFirma">
     <property name="title">
      <string>Mis Documentos</string>
     </property>
@@ -164,7 +169,7 @@ background-color:rgb(216, 230, 225);</string>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuRequests"/>
-   <addaction name="menuFrima"/>
+   <addaction name="menuFirma"/>
    <addaction name="menuContactos"/>
   </widget>
   <action name="actionRequestSignature">
@@ -282,6 +287,18 @@ background-color:rgb(216, 230, 225);</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+D</string>
+   </property>
+  </action>
+  <action name="actionBitacoras">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/configure_module.png</normaloff>:/images/configure_module.png</iconset>
+   </property>
+   <property name="text">
+    <string>Bitacoras</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
    </property>
   </action>
  </widget>

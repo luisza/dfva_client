@@ -1,14 +1,30 @@
 import configparser
 import os
 import stat
-
+import logging
 
 class UserSettings:
+    __instance = None
+
+    @staticmethod
+    def getInstance():
+        """ Static access method. """
+        if UserSettings.__instance == None:
+            UserSettings()
+        return UserSettings.__instance
 
     def __init__(self):
-        self.font_size = 10
+
+        if UserSettings.__instance != None:
+            raise Exception("UserSettings class is a singleton!")
+        else:
+            UserSettings.__instance = self
+
+        self.logging_level = logging.DEBUG
+        self.logging_formater = '%(levelname)s - %(message)s'
+        self.font_size = 12
         self.font_family = 'Noto Sans'
-        self.theme = 'GTK+'
+        self.theme = 'Fusion'
         self.save_password_in_manager = False
         self.number_requests_before_fail = 2
         self.save_signed_docs_path = ''
@@ -16,7 +32,7 @@ class UserSettings:
         # Necesita agregar en interfaz
         self.reconnection_wait_time = 40  # segundos
         self.max_pin_fails = 3  # Número máximo de errores al poner el pin
-
+        self.hide_on_close = False
         # No necesita agregar a interfaz
 
         self.bccr_fva_domain = 'https://www.firmadigital.go.cr'
@@ -34,11 +50,11 @@ class UserSettings:
         self.validate_document = '/validate/person_document/'
         self.suscriptor_connected = '/validate/person_suscriptor_connected/'
         self.login_person = '/login/'
-        self.supported_sign_format = ['xml_cofirma', 'xml_contrafirma','odf', 'msoffice', 'pdf']
-        self.supported_validate_format = [
-            'certificate', 'cofirma', 'contrafirma', 'odf', 'msoffice', 'pdf']
-        # Cuanto se espera para verificar si una autenticación o firma se llevó
-        # a cabo
+
+        self.supported_sign_format = ['xml_cofirma', 'xml_contrafirma', 'odf', 'msoffice', 'pdf']
+        self.supported_validate_format = ['certificate', 'cofirma', 'contrafirma', 'odf', 'msoffice', 'pdf']
+        # Cuánto se espera para verificar si una autenticación o firma se llevó a cabo
+
         self.check_wait_time = 10
 
         self.config = configparser.ConfigParser()
@@ -46,11 +62,15 @@ class UserSettings:
             os.environ.get('HOME'), ".fva_client")
         self.settings_file_name = "client.conf"
 
+        # Tiempo de espera no activa del hilo
+        self.wait_for_scan_new_device = 3000
+
     def save(self):
         self.config['APPEARANCE'] = {
             'font_size': self.font_size,
             'font_family': self.font_family,
-            'theme': self.theme
+            'theme': self.theme,
+            'hide_on_close': self.hide_on_close
         }
         self.config['SECURITY'] = {
             'save_password_in_manager': self.save_password_in_manager,
@@ -58,10 +78,6 @@ class UserSettings:
             'save_signed_docs_path': self.save_signed_docs_path,
             'reconnection_wait_time': self.reconnection_wait_time,
             'max_pin_fails': self.max_pin_fails
-        }
-
-        self.config['MODULE'] = {
-            'module_path': self.module_path
         }
 
         self.config['BCCR_FVA'] = {
@@ -84,13 +100,19 @@ class UserSettings:
             'supported_validate_format': ",".join(self.supported_validate_format),
             'check_wait_time': self.check_wait_time
         }
+        self.config['DEVICES'] = {
+            'wait_for_scan_new_device': self.wait_for_scan_new_device,
+            'module_path': self.module_path
+
+        }
         # create settings folder if it doesn't exist
         if not os.path.exists(self.settings_file_path):
             os.mkdir(self.settings_file_path)
 
         with open(os.path.join(self.settings_file_path, self.settings_file_name), "w") as configfile:
             self.config.write(configfile)
-        os.chmod(os.path.join(self.settings_file_path, self.settings_file_name), stat.S_IRWXU)
+        os.chmod(os.path.join(self.settings_file_path,
+                              self.settings_file_name), stat.S_IRWXU)
 
     def load(self):
         self.config.read(os.path.join(
