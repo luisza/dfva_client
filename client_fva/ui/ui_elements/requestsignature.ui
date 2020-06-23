@@ -66,7 +66,7 @@ background-color:rgb(216, 230, 225);</string>
         <x>0</x>
         <y>0</y>
         <width>598</width>
-        <height>251</height>
+        <height>255</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="scrollAreaLayout">
@@ -106,7 +106,7 @@ font: bold;</string>
            </widget>
           </item>
           <item row="4" column="0" colspan="3">
-           <widget class="QListWidget" name="filesWidget">
+           <widget class="SignListWidget" name="filesWidget">
             <property name="acceptDrops">
              <bool>true</bool>
             </property>
@@ -266,6 +266,13 @@ background-color: rgb(229, 229, 229);</string>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SignListWidget</class>
+   <extends>QListWidget</extends>
+   <header>client_fva/ui/custom_components/signlistwidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources.qrc"/>
  </resources>

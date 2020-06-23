@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_elements/requestsignature.ui'
+# Form implementation generated from reading ui file 'client_fva/ui/ui_elements/requestsignature.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -33,7 +33,7 @@ class Ui_RequestSignature(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 598, 251))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 598, 255))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.scrollAreaLayout = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
         self.scrollAreaLayout.setObjectName("scrollAreaLayout")
@@ -52,7 +52,7 @@ class Ui_RequestSignature(object):
         self.label.setIndent(0)
         self.label.setObjectName("label")
         self.filesFrameLayout.addWidget(self.label, 2, 0, 1, 1)
-        self.filesWidget = QtWidgets.QListWidget(self.filesFrame)
+        self.filesWidget = SignListWidget(self.filesFrame)
         self.filesWidget.setAcceptDrops(True)
         self.filesWidget.setObjectName("filesWidget")
         self.filesFrameLayout.addWidget(self.filesWidget, 4, 0, 1, 3)
@@ -134,6 +134,7 @@ class Ui_RequestSignature(object):
         self.requestAuthProgressBar.setFormat(_translate("RequestSignature", "Solicitando..."))
         self.requestSignature.setText(_translate("RequestSignature", "Solicitar Firma"))
 
+from client_fva.ui.custom_components.signlistwidget import SignListWidget
 from . import resources_rc
 
 if __name__ == "__main__":
