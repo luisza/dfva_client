@@ -6,6 +6,7 @@ import stat
 class UserSettings:
 
     def __init__(self):
+        # setup by the user in the application settings
         self.font_size = 12
         self.font_family = 'Noto Sans'
         self.theme = 'Fusion'
@@ -13,12 +14,11 @@ class UserSettings:
         self.number_requests_before_fail = 2
         self.save_signed_docs_path = ''
         self.module_path = ''
-        # Necesita agregar en interfaz
-        self.reconnection_wait_time = 40  # segundos
-        self.max_pin_fails = 3  # Número máximo de errores al poner el pin
-        self.hide_on_close = False
-        # No necesita agregar a interfaz
+        self.hide_on_close = True  # by default window is only minimized
 
+        # managed directly by us, not setup by the user
+        self.max_pin_fails = 3  # max number of errors when input the pin
+        self.reconnection_wait_time = 40  # seconds
         self.bccr_fva_domain = 'https://www.firmadigital.go.cr'
         self.bccr_fva_url_negociation = "/wcfv2/Bccr.Firma.Fva.Hub/signalr/negotiate?clientProtocol=1.4&connectionData=%5B%7B%22name%22%3A%22administradordeclientes%22%7D%5D"
         self.bccr_fva_url_connect = "/%s/connect"
@@ -34,28 +34,26 @@ class UserSettings:
         self.validate_document = '/validate/person_document/'
         self.suscriptor_connected = '/validate/person_suscriptor_connected/'
         self.login_person = '/login/'
-        self.supported_sign_format = [
-            'xml_cofirma', 'xml_contrafirma', 'odf', 'msoffice', 'pdf']
+        self.supported_sign_format = ['xml_cofirma', 'xml_contrafirma', 'odf', 'msoffice', 'pdf']
         self.supported_validate_format = ['certificate', 'cofirma', 'contrafirma', 'odf', 'msoffice', 'pdf']
-        # Cuánto se espera para verificar si una autenticación o firma se llevó a cabo
+        # how much time to wait before the verification of the status of the sign or authentication request
         self.check_wait_time = 10
 
         self.config = configparser.ConfigParser()
-        self.settings_file_path = os.path.join(
-            os.environ.get('HOME'), ".fva_client")
+        self.settings_file_path = os.path.join(os.environ.get('HOME'), ".fva_client")
         self.settings_file_name = "client.conf"
 
-        # Tiempo de espera no activa del hilo
+        # non-active wait time for the thread
         self.wait_for_scan_new_device = 3000
 
     def save(self):
         self.config['APPEARANCE'] = {
             'font_size': self.font_size,
             'font_family': self.font_family,
-            'theme': self.theme,
-            'hide_on_close': self.hide_on_close
+            'theme': self.theme
         }
         self.config['SECURITY'] = {
+            'hide_on_close': self.hide_on_close,
             'save_password_in_manager': self.save_password_in_manager,
             'number_requests_before_fail': self.number_requests_before_fail,
             'save_signed_docs_path': self.save_signed_docs_path,
@@ -113,8 +111,7 @@ class UserSettings:
                 except Exception as e:
                     pass
 
-    # This method above make settings to work as dict
-    # but only accept attributes that are described in __init__()
+    # methods to make the settings class to work like a dict, it only accepts those attributes setup in the __init__
     def __getitem__(self, key):
         if hasattr(self, key):
             return getattr(self, key)

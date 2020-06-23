@@ -3,7 +3,6 @@ from client_fva.ui.fvaclientui import Ui_FVAClientUI
 from client_fva.ui.myrequests import MyRequests
 from client_fva.ui.mysignatures import MySignatures
 from client_fva.ui.tab_manager import TabManager
-from client_fva.ui.tabdefault import TabDefault
 from client_fva.ui.settings import Settings
 from client_fva.ui.requestsignature import RequestSignature
 from client_fva.ui.requestauthentication import RequestAuthentication
@@ -36,20 +35,19 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_default_layout()
         self.set_enabled_specific_menu_actions(False)
         self.main_window.closeEvent = self.closeEvent
-        self.actionExit.triggered.connect(self.hide)
+        self.actionExit.triggered.connect(self.main_window.close)
         self.actionMyRequests.triggered.connect(self.open_my_requests)
         self.actionMySignatures.triggered.connect(self.open_my_signatures)
         self.actionPreferences.triggered.connect(self.open_settings)
-        self.actionRequestSignature.triggered.connect(
-            self.open_request_signature)
-        self.actionRequestAuthentication.triggered.connect(
-            self.open_request_authentication)
+        self.actionRequestSignature.triggered.connect(self.open_request_signature)
+        self.actionRequestAuthentication.triggered.connect(self.open_request_authentication)
         self.actionSignAuthenticate.triggered.connect(self.open_sign_validate)
         self.actionManageContacts.triggered.connect(self.open_manage_contacts)
         self.close_window = False  # by default window is only minimized
+        self.force_exit = False  # the exit button was pressed (from the tray icon) so we need to exit it all
         self.db = None
-        # TODO - CREATE METHODS TO POPULATE CURRENT USER ACCORDING TO TAB SO
-        # IT'S NOT 1 ALWAYS
+
+        # TODO - CREATE METHODS TO POPULATE CURRENT USER ACCORDING TO TAB SO IT'S NOT 1 ALWAYS
         self.current_user = 1
 
         # load initial app settings
@@ -64,18 +62,19 @@ class FVAClient(Ui_FVAClientUI):
         # self.set_enabled_specific_menu_actions(True)
 
     def closeEvent(self, event):
-        if not self.user_settings.hide_on_close:
-            self.close_window = True
-        if self.close_window:
+        # it will minimize or close it depending on what the user setup in their settings - if the user selected exit
+        # from the tray icon then it will be closed no matter what
+        self.close_window = not self.user_settings.hide_on_close
+        if self.close_window or self.force_exit:
             event.accept()
             self.tabmanager.close()
+            sys.exit(1)
         else:
             event.ignore()
             self.hide()
 
     def setup_tray_icon(self):
-        self.trayIcon = QtWidgets.QSystemTrayIcon(
-            QtGui.QIcon(":/images/icon.png"), self.main_window)
+        self.trayIcon = QtWidgets.QSystemTrayIcon(QtGui.QIcon(":/images/icon.png"), self.main_window)
         self.trayIconMenu = menu = QtWidgets.QMenu()
         self.trayIconOpenAction = menu.addAction("Abrir")
         self.trayIconOpenAction.triggered.connect(self.show)
@@ -115,10 +114,8 @@ class FVAClient(Ui_FVAClientUI):
         self.main_window.hide()
 
     def exit(self):
-        self.close_window = True
-        self.tabmanager.close()
+        self.force_exit = True
         self.main_window.close()
-        sys.exit()
 
     def toggle(self, reason):
         if reason == QtWidgets.QSystemTrayIcon.DoubleClick:
