@@ -268,8 +268,7 @@ class PKCS11Client:
 
                 exkey = cert.extensions.get_extension_for_oid(
                     ExtensionOID.EXTENDED_KEY_USAGE)
-                if exkey and exkey.value._usages[
-                        0].dotted_string == '1.3.6.1.5.5.7.3.2':
+                if exkey and any([x.dotted_string == '1.3.6.1.5.5.7.3.2' for x in exkey.value._usages]):
                     key = 'authentication'
                 else:
                     key = 'sign'

@@ -39,7 +39,7 @@ class UserSettings:
         self.supported_validate_format = ['certificate', 'cofirma', 'contrafirma', 'odf', 'msoffice', 'pdf']
         # Cuánto se espera para verificar si una autenticación o firma se llevó a cabo
         self.check_wait_time = 10
-
+        self.start_fva_bccr_client = False
         self.config = configparser.ConfigParser()
         self.settings_file_path = os.path.join(
             os.environ.get('HOME'), ".fva_client")

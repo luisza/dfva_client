@@ -39,8 +39,11 @@ class FVASpeakerClient(Ui_FVADialog, ):
         self.settings = UserSettings()
         self.client = FVA_client(settings=self.settings,
                                  slot=slot,
-                                 identification=identification)
-        self.client.daemon = True
+                                 identification=identification,
+                                 daemon=self.settings.start_fva_bccr_client
+                                 )
+
+
         self.client.start()
         signals.connect('fva_speaker', self.request_pin_code)
         self.threadpool = QThreadPool()
