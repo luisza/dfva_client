@@ -1,6 +1,6 @@
 import logging
 
-from user_settings import UserSettings
+from client_fva.user_settings import UserSettings
 from .core import Handler
 from .gui import LoggingDialog
 

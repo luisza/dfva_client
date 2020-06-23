@@ -16,7 +16,7 @@ from client_fva.ui.utils import apply_selected_appearance
 from client_fva.database import createDB
 import logging
 
-from fva_logging import get_loggin_window, configure_settings
+from  client_fva.fva_logging import get_loggin_window, configure_settings
 
 logger = logging.getLogger('dfva_client')
 main_app = None
