@@ -79,7 +79,7 @@ class Monitor(QRunnable):
     lib = None
 
     def __init__(self, *args, **kwargs):
-        self.settings = kwargs.get('settings', UserSettings())
+        self.settings = kwargs.get('settings', UserSettings.getInstance())
         kwargs['settings'] = self.settings
         kwargs['cached'] = False
         self.pkcs11client = PKCS11Client(*args, **kwargs)

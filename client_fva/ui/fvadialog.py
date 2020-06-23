@@ -36,7 +36,7 @@ class FVASpeakerClient(Ui_FVADialog, ):
         self.cancel.clicked.connect(self.closeEvent)
         self.submit.clicked.connect(self.send_code)
         self.timeout = 0
-        self.settings = UserSettings()
+        self.settings = UserSettings.getInstance()
         self.client = FVA_client(settings=self.settings,
                                  slot=slot,
                                  identification=identification,

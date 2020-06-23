@@ -30,7 +30,7 @@ class FVA_Base_client(object):
     pkcs11client = None
 
     def __init__(self, *args, **kwargs):
-        self.settings = kwargs.get('settings', UserSettings())
+        self.settings = kwargs.get('settings', UserSettings.getInstance())
         self.pkcs11client = kwargs.get('pkcs11client', None)
         kwargs['settings'] = self.settings
         self.response = None

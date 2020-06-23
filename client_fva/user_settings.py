@@ -1,12 +1,26 @@
 import configparser
 import os
 import stat
-
+import logging
 
 class UserSettings:
+    __instance = None
+
+    @staticmethod
+    def getInstance():
+        """ Static access method. """
+        if UserSettings.__instance == None:
+            UserSettings()
+        return UserSettings.__instance
 
     def __init__(self):
-        # setup by the user in the application settings
+        if UserSettings.__instance != None:
+            raise Exception("UserSettings class is a singleton!")
+        else:
+            UserSettings.__instance = self
+
+        self.logging_level = logging.DEBUG
+        self.logging_formater = '%(levelname)s - %(message)s'
         self.font_size = 12
         self.font_family = 'Noto Sans'
         self.theme = 'Fusion'

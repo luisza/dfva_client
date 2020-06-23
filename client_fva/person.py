@@ -452,7 +452,7 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
     def __init__(self, *args, **kwargs):
 
         self.requests = kwargs.get('request_client', requests)
-        self.settings = kwargs.get('settings', UserSettings())
+        self.settings = kwargs.get('settings', UserSettings.getInstance())
         kwargs['settings'] = self.settings
         self.wait_time = self.settings.check_wait_time
         PKCS11Client.__init__(self, *args, **kwargs)

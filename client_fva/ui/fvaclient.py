@@ -15,6 +15,8 @@ from client_fva.ui.utils import apply_selected_appearance
 from client_fva.database import createDB
 import logging
 
+from  client_fva.fva_logging import get_loggin_window, configure_settings
+
 logger = logging.getLogger('dfva_client')
 main_app = None
 fva_client_ui = None
@@ -23,7 +25,7 @@ DEFAULT_TAB_INDEX = 0
 
 class FVAClient(Ui_FVAClientUI):
 
-    def __init__(self, main_window):
+    def __init__(self, main_window, usersettings=None):
         Ui_FVAClientUI.__init__(self)
         self.main_window = main_window
         self.setupUi(main_window)
@@ -38,6 +40,7 @@ class FVAClient(Ui_FVAClientUI):
         self.actionExit.triggered.connect(self.main_window.close)
         self.actionMyRequests.triggered.connect(self.open_my_requests)
         self.actionMySignatures.triggered.connect(self.open_my_signatures)
+        self.actionBitacoras.triggered.connect(self.open_logging_window)
         self.actionPreferences.triggered.connect(self.open_settings)
         self.actionRequestSignature.triggered.connect(self.open_request_signature)
         self.actionRequestAuthentication.triggered.connect(self.open_request_authentication)
@@ -51,8 +54,7 @@ class FVAClient(Ui_FVAClientUI):
         self.current_user = 1
 
         # load initial app settings
-        self.user_settings = UserSettings()
-        self.user_settings.load()
+        self.user_settings = usersettings
         apply_selected_appearance(main_app, self.user_settings)
         self.tabmanager = TabManager(self, main_app)
 
@@ -156,6 +158,12 @@ class FVAClient(Ui_FVAClientUI):
             QtWidgets.QWidget(), main_app, self.db, self.current_user)
         self.setup_tab_layout(manage_contacts_ui.manageContactsLayout)
 
+    def open_logging_window(self):
+
+        logging_window = get_loggin_window()
+        logging_window.show()
+        logging_window.raise_()
+
     def set_enabled_specific_menu_actions(self, enabled):
         slot_specific_actions = [self.actionMySignatures, self.actionMyRequests, self.actionRequestSignature,
                                  self.actionRequestAuthentication, self.actionSignAuthenticate,
@@ -168,8 +176,12 @@ def run():
     global main_app
     main_app = QtWidgets.QApplication(sys.argv)
     global fva_client_ui
-    fva_client_ui = FVAClient(QtWidgets.QMainWindow())
+    user_settings = UserSettings.getInstance()
+    user_settings.load()
+    configure_settings(user_settings)
+    fva_client_ui = FVAClient(QtWidgets.QMainWindow(), usersettings=user_settings)
     fva_client_ui.show()
+
     ok, fva_client_ui.db = createDB()
     if not ok:
         QtWidgets.QMessageBox.critical(None, "Error en la Base de Datos",
