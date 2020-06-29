@@ -69,7 +69,7 @@ class FVA_Base_client(object):
         }
 
         # Fixme: poner en settings
-        url = self.settings.bccr_fva_domain + self.settings.bccr_fva_url_negociation
+        url = self.settings.bccr_fva_domain + self.settings.bccr_fva_url_negotiation
         response = requests.get(url, verify=ca_bundle, headers=headers)
         result = response.json()
     # {'ProtocolVersion': '1.4',

@@ -244,7 +244,7 @@ background-color:rgb(216, 230, 225);}</string>
     <string>Mis Firmas</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+H</string>
+    <string>Ctrl+J</string>
    </property>
   </action>
   <action name="actionMyRequests">
@@ -268,7 +268,7 @@ background-color:rgb(216, 230, 225);}</string>
     <string>Cerrar</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Q</string>
+    <string>Ctrl+X</string>
    </property>
    <property name="menuRole">
     <enum>QAction::QuitRole</enum>
@@ -292,7 +292,7 @@ background-color:rgb(216, 230, 225);}</string>
   <action name="actionBitacoras">
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/images/configure_module.png</normaloff>:/images/configure_module.png</iconset>
+     <normaloff>:/images/log.png</normaloff>:/images/log.png</iconset>
    </property>
    <property name="text">
     <string>Bitacoras</string>

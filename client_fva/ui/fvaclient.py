@@ -15,7 +15,7 @@ from client_fva.ui.utils import apply_selected_appearance
 from client_fva.database import createDB
 import logging
 
-from  client_fva.fva_logging import get_loggin_window, configure_settings
+from  client_fva.fva_logging import get_logging_window, configure_settings
 
 logger = logging.getLogger('dfva_client')
 main_app = None
@@ -57,11 +57,6 @@ class FVAClient(Ui_FVAClientUI):
         self.user_settings = usersettings
         apply_selected_appearance(main_app, self.user_settings)
         self.tabmanager = TabManager(self, main_app)
-
-        # TODO - Delete this code because it's for testing
-        #my_requests_ui = MyRequests(QtWidgets.QWidget(), main_app)
-        #self.usrSlots.insertTab(self.usrSlots.count(), my_requests_ui.widget, "test")
-        # self.set_enabled_specific_menu_actions(True)
 
     def closeEvent(self, event):
         # it will minimize or close it depending on what the user setup in their settings - if the user selected exit
@@ -135,8 +130,7 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_layout(my_signatures_ui.mySignaturesLayout)
 
     def open_settings(self):
-        settings_ui = Settings(QtWidgets.QWidget(),
-                               main_app, fva_client_ui, self.user_settings)
+        settings_ui = Settings(QtWidgets.QWidget(), main_app, fva_client_ui, self.user_settings)
         self.setup_general_tab_layout(settings_ui.settingsLayout)
 
     def open_request_signature(self):
@@ -144,10 +138,8 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_layout(request_signature_ui.requestSignatureLayout)
 
     def open_request_authentication(self):
-        request_authentication_ui = RequestAuthentication(
-            QtWidgets.QWidget(), main_app)
-        self.setup_tab_layout(
-            request_authentication_ui.requestAuthenticationLayout)
+        request_authentication_ui = RequestAuthentication(QtWidgets.QWidget(), main_app)
+        self.setup_tab_layout(request_authentication_ui.requestAuthenticationLayout)
 
     def open_sign_validate(self):
         sign_validate_ui = SignValidate(QtWidgets.QWidget(), main_app)
@@ -159,8 +151,7 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_layout(manage_contacts_ui.manageContactsLayout)
 
     def open_logging_window(self):
-
-        logging_window = get_loggin_window()
+        logging_window = get_logging_window()
         logging_window.show()
         logging_window.raise_()
 

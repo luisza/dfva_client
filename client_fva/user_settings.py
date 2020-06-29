@@ -3,24 +3,25 @@ import os
 import stat
 import logging
 
+
 class UserSettings:
     __instance = None
 
     @staticmethod
     def getInstance():
         """ Static access method. """
-        if UserSettings.__instance == None:
+        if UserSettings.__instance is None:
             UserSettings()
         return UserSettings.__instance
 
     def __init__(self):
-        if UserSettings.__instance != None:
+        if UserSettings.__instance is not None:
             raise Exception("UserSettings class is a singleton!")
         else:
             UserSettings.__instance = self
 
         self.logging_level = logging.DEBUG
-        self.logging_formater = '%(levelname)s - %(message)s'
+        self.logging_formatter = '%(levelname)s - %(message)s'
         self.font_size = 12
         self.font_family = 'Noto Sans'
         self.theme = 'Fusion'
@@ -34,7 +35,7 @@ class UserSettings:
         self.max_pin_fails = 3  # max number of errors when input the pin
         self.reconnection_wait_time = 40  # seconds
         self.bccr_fva_domain = 'https://www.firmadigital.go.cr'
-        self.bccr_fva_url_negociation = "/wcfv2/Bccr.Firma.Fva.Hub/signalr/negotiate?clientProtocol=1.4&connectionData=%5B%7B%22name%22%3A%22administradordeclientes%22%7D%5D"
+        self.bccr_fva_url_negotiation = "/wcfv2/Bccr.Firma.Fva.Hub/signalr/negotiate?clientProtocol=1.4&connectionData=%5B%7B%22name%22%3A%22administradordeclientes%22%7D%5D"
         self.bccr_fva_url_connect = "/%s/connect"
         self.user_agent = 'SignalR (lang=Java; os=linux; version=2.0)'
 
@@ -74,10 +75,9 @@ class UserSettings:
             'reconnection_wait_time': self.reconnection_wait_time,
             'max_pin_fails': self.max_pin_fails
         }
-
         self.config['BCCR_FVA'] = {
             'bccr_fva_domain': self.bccr_fva_domain,
-            'bccr_fva_url_negociation': self.bccr_fva_url_negociation.replace("%", "@@"),
+            'bccr_fva_url_negotiation': self.bccr_fva_url_negotiation.replace("%", "@@"),
             'bccr_fva_url_connect': self.bccr_fva_url_connect.replace("%", "@@"),
             'user_agent': self.user_agent
         }
@@ -98,8 +98,12 @@ class UserSettings:
         self.config['DEVICES'] = {
             'wait_for_scan_new_device': self.wait_for_scan_new_device,
             'module_path': self.module_path
-
         }
+        self.config['LOGGING'] = {
+            'logging_formatter': self.logging_formatter.replace("%", "@@"),
+            'logging_level': self.logging_level
+        }
+
         # create settings folder if it doesn't exist
         if not os.path.exists(self.settings_file_path):
             os.mkdir(self.settings_file_path)

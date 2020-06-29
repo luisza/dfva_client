@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtCore
 
+
 class SignListWidget(QtWidgets.QListWidget):
 
     def __init__(self, *args, **kwargs):
@@ -25,7 +26,6 @@ class SignListWidget(QtWidgets.QListWidget):
             event.accept()
         else:
             event.ignore()
-
 
     def dropEvent(self, event):
         files = [u.toLocalFile() for u in event.mimeData().urls()]

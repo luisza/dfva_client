@@ -3,7 +3,7 @@
 
 function build_ui_py(){
   pyuic5 client_fva/ui/ui_elements/$1.ui -o client_fva/ui/$1ui.py -x
-  sed -i 's/import resources_rc/from . import resources_rc/g' client_fva/ui/$1ui.py
+  sed -i '' 's/import resources_rc/from . import resources_rc/g' client_fva/ui/$1ui.py
 }
 
 function build_all() {

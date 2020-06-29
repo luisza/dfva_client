@@ -13,5 +13,6 @@
     <file>images/edit.png</file>
     <file>images/send.png</file>
     <file>images/validate.png</file>
+    <file>images/log.png</file>
   </qresource>
 </RCC>
