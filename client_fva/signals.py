@@ -7,6 +7,7 @@ import time
 from PyQt5.QtCore import QMutex, QObject, pyqtSignal, QSharedMemory
 from PyQt5.QtWidgets import QApplication
 from uuid import uuid4
+import logging
 # Return response = {'pin': xxx, 'rejected': False}
 PIN_REQUEST = 1
 # Return response =  {'pin': xxx, 'code': xxx, 'rejected': False}
@@ -16,6 +17,7 @@ USB_DISCONNECTED = 4
 NOTIFTY_ERROR = 5
 NOTIFTY_INFO = 6
 
+logger = logging.getLogger()
 
 class SignalObject(object):
     '''

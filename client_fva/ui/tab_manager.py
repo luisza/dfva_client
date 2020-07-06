@@ -93,7 +93,7 @@ class TabManager(QObject):
         if index >= 0:
             self.controller.usrSlots.removeTab(index)
             self.speakers[name].closeEvent(None)
-            self.speakers[name].client.close()
+            self.speakers[name].close()
             del self.speakers[name]
         if self.controller.usrSlots.count() <= 1:
             self.controller.set_enabled_specific_menu_actions(False)
@@ -112,5 +112,5 @@ class TabManager(QObject):
         self.monitor.close()
         for name in list(self.speakers.keys()):
             self.speakers[name].closeEvent(None)
-            self.speakers[name].client.close()
+            self.speakers[name].close()
             del self.speakers[name]

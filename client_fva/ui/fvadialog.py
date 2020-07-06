@@ -66,6 +66,11 @@ class FVASpeakerClient(Ui_FVADialog):
         if event is not None:
             self.notify()
 
+    def close(self):
+        self.closeEvent(None)
+        self.client.close()
+        self.client.kill()
+
     def send_code(self, event):
         logger.info("Signing fva speaker dialog")
         self.rejected = False
@@ -109,13 +114,15 @@ class FVASpeakerClient(Ui_FVADialog):
             self.notify()
 
     def change_fva_status(self, status):
-        if status==self.CONNECTING:
-            self.status_widget.setIcon(QtGui.QIcon(":/images/icon.png"))
+        if status == self.CONNECTING:
+            self.status_widget.setIcon(QtGui.QIcon(":/images/connecting.png"))
+            self.status_widget.setToolTip('Conectando al servicio de firmado')
         elif status == self.CONNECTED:
-            self.status_widget.setIcon(QtGui.QIcon(":/images/sign.png"))
+            self.status_widget.setIcon(QtGui.QIcon(":/images/connected.png"))
+            self.status_widget.setToolTip('Conectado al servicio de firmado')
         elif status == self.ERROR:
-            self.status_widget.setIcon(QtGui.QIcon(":/images/manage_contacts.png"))
-
+            self.status_widget.setIcon(QtGui.QIcon(":/images/error.png"))
+            self.status_widget.setToolTip("Error al conectar con el servicio de firmado")
 
 def run():
     import signal

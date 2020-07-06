@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'client_fva/ui/ui_elements/fvaclientui.ui'
+# Form implementation generated from reading ui file 'client_fva/ui/ui_elements/fvaclient.ui'
 #
 # Created by: PyQt5 UI code generator 5.10.1
 #
@@ -129,7 +129,9 @@ class Ui_FVAClientUI(object):
         self.actionSignAuthenticate.setIcon(icon1)
         self.actionSignAuthenticate.setObjectName("actionSignAuthenticate")
         self.actionBitacoras = QtWidgets.QAction(FVAClientUI)
-        self.actionBitacoras.setIcon(icon4)
+        icon8 = QtGui.QIcon()
+        icon8.addPixmap(QtGui.QPixmap(":/images/log.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionBitacoras.setIcon(icon8)
         self.actionBitacoras.setObjectName("actionBitacoras")
         self.menuRequests.addAction(self.actionRequestSignature)
         self.menuRequests.addAction(self.actionRequestAuthentication)
@@ -168,11 +170,11 @@ class Ui_FVAClientUI(object):
         self.actionPreferences.setText(_translate("FVAClientUI", "Preferencias"))
         self.actionPreferences.setShortcut(_translate("FVAClientUI", "Ctrl+P"))
         self.actionMySignatures.setText(_translate("FVAClientUI", "Mis Firmas"))
-        self.actionMySignatures.setShortcut(_translate("FVAClientUI", "Ctrl+H"))
+        self.actionMySignatures.setShortcut(_translate("FVAClientUI", "Ctrl+J"))
         self.actionMyRequests.setText(_translate("FVAClientUI", "Mis Solicitudes"))
         self.actionMyRequests.setShortcut(_translate("FVAClientUI", "Ctrl+S"))
         self.actionExit.setText(_translate("FVAClientUI", "Cerrar"))
-        self.actionExit.setShortcut(_translate("FVAClientUI", "Ctrl+Q"))
+        self.actionExit.setShortcut(_translate("FVAClientUI", "Ctrl+X"))
         self.actionSignAuthenticate.setText(_translate("FVAClientUI", "Firmar - Autenticar"))
         self.actionSignAuthenticate.setShortcut(_translate("FVAClientUI", "Ctrl+D"))
         self.actionBitacoras.setText(_translate("FVAClientUI", "Bitacoras"))

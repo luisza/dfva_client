@@ -12,6 +12,7 @@ import urllib
 from base64 import b64decode, b64encode
 import PyKCS11
 import requests
+from PyQt5 import QtCore
 
 from client_fva import signals
 from client_fva.pkcs11client import PKCS11Client
@@ -20,7 +21,7 @@ from client_fva.user_settings import UserSettings
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ca_bundle = os.path.join(BASE_DIR, 'certs/ca_bundle.pem')
-from threading import Thread
+
 
 logger = logging.getLogger()
 
@@ -57,8 +58,7 @@ class FVA_Base_client(object):
         headers = {
             'User-Agent': self.settings.user_agent
         }
-
-        url = self.settings.bccr_fva_domain + self.settings.bccr_fva_url_negociation
+        url = self.settings.bccr_fva_domain + self.settings.bccr_fva_url_negotiation
         response = requests.get(url, verify=ca_bundle, headers=headers)
         if response.status_code != requests.codes.ok:
             logger.error("BCCR request_start_negotiation %s: %s" % (response.status_code, response.reason))
@@ -304,11 +304,11 @@ class FVA_Base_client(object):
         return b64encode(d)
 
 
-class FVA_client(FVA_Base_client, Thread):
+class FVA_client(FVA_Base_client, QtCore.QThread):
     def __init__(self, *args, **kwargs):
         self.status_notifier = kwargs.get('notifier', None)
         FVA_Base_client.__init__(self, *args, **kwargs)
-        Thread.__init__(self)
+        QtCore.QThread.__init__(self, None)
         self.internal_daemon = kwargs.get('daemon', True)
         self.connection_tries = 0
         self.daemon_active = False
@@ -336,7 +336,6 @@ class FVA_client(FVA_Base_client, Thread):
             logger.error("Max number of retries, closing connection")
         if self.response is not None:
             self.status_notifier.change_fva_status(self.status_notifier.ERROR)
-            self.status_notifier
             self.response.connection.close()
             self.response = None
             self.daemon_active = False
@@ -348,6 +347,7 @@ class FVA_client(FVA_Base_client, Thread):
             self.response.connection.close()
             self.response = None
         logger.info("Terminando FVA_client de " + self.identification)
+
 
 
 class OSDummyClient:
