@@ -40,22 +40,17 @@ class TabManager(QObject):
         if self.card_information is None:
             layout = self.controller.usrSlots.widget(0).layout()
             self.card_information = QTableWidget()
-            self.card_information.setEditTriggers(
-                QtWidgets.QAbstractItemView.NoEditTriggers)  # make it readonly
+            self.card_information.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)  # make it readonly
             # set row count
             self.card_information.setRowCount(0)
             # set column count
-            self.card_information.setColumnCount(5)
-            self.card_information.setHorizontalHeaderItem(
-                0, QTableWidgetItem("Identificación"))
-            self.card_information.setHorizontalHeaderItem(
-                1, QTableWidgetItem("Nombre"))
-            self.card_information.setHorizontalHeaderItem(
-                2, QTableWidgetItem("Emisión"))
-            self.card_information.setHorizontalHeaderItem(
-                3, QTableWidgetItem("Vencimiento"))
-            self.card_information.setHorizontalHeaderItem(
-                4, QTableWidgetItem("Tipo"))
+            self.card_information.setColumnCount(6)
+            self.card_information.setHorizontalHeaderItem(0, QTableWidgetItem("Identificación"))
+            self.card_information.setHorizontalHeaderItem(1, QTableWidgetItem("Nombre"))
+            self.card_information.setHorizontalHeaderItem(2, QTableWidgetItem("Emisión"))
+            self.card_information.setHorizontalHeaderItem(3, QTableWidgetItem("Vencimiento"))
+            self.card_information.setHorizontalHeaderItem(4, QTableWidgetItem("Tipo"))
+            self.card_information.setHorizontalHeaderItem(5, QTableWidgetItem("Conexión con firmador"))
             layout.addWidget(self.card_information, 1, 0, 1, 2)
             #headers = self.card_information.horizontalHeader()
             # headers.setResizeMode(QtWidgets.QtHeaderView.ResizeToContents)
@@ -64,30 +59,27 @@ class TabManager(QObject):
         if certs:
             cert = certs['authentication']
             self.card_information.insertRow(self.card_information.rowCount())
-            self.card_information.setItem(
-                self.card_count, 0, QTableWidgetItem(name))
+            self.card_information.setItem(self.card_count, 0, QTableWidgetItem(name))
             self.card_information.setItem(
                 self.card_count, 1, QTableWidgetItem(cert['name']))
             self.card_information.setItem(self.card_count, 2, QTableWidgetItem(
                 cert['cert_start'].strftime("%Y-%m-%d %H:%M")))
             self.card_information.setItem(self.card_count, 3, QTableWidgetItem(
                 cert['cert_expire'].strftime("%Y-%m-%d %H:%M")))
-            self.card_information.setItem(
-                self.card_count, 4, QTableWidgetItem(cert['type']))
+            self.card_information.setItem(self.card_count, 4, QTableWidgetItem(cert['type']))
+            self.card_information.setItem(self.card_count, 5, fvaspeaker.status_widget)
             self.card_count += 1
             self.card_information.resizeColumnsToContents()
         else:
             self.card_information.setRowCount(0)
 
     def create_tab(self, name, slot):
-        print("create tab", name)
         my_requests_ui = MyRequests(QtWidgets.QWidget(), self.main_app)
         FVADialog = QtWidgets.QDialog()
         ui = FVASpeakerClient(FVADialog, slot, name)
         position = self.controller.usrSlots.count()
         self.speakers[name] = ui
-        self.controller.usrSlots.insertTab(
-            position, my_requests_ui.widget, name)
+        self.controller.usrSlots.insertTab(position, my_requests_ui.widget, name)
         self.controller.set_enabled_specific_menu_actions(True)
         self.create_list_menu(ui, name)
 
@@ -119,7 +111,6 @@ class TabManager(QObject):
     def close(self):
         self.monitor.close()
         for name in list(self.speakers.keys()):
-
             self.speakers[name].closeEvent(None)
             self.speakers[name].client.close()
             del self.speakers[name]

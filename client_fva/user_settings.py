@@ -25,7 +25,7 @@ class UserSettings:
         self.font_family = 'Noto Sans'
         self.theme = 'Fusion'
         self.save_password_in_manager = False
-        self.number_requests_before_fail = 2
+        self.number_requests_before_fail = 3
         self.save_signed_docs_path = ''
         self.module_path = ''
         self.hide_on_close = True  # by default window is only minimized
@@ -52,7 +52,7 @@ class UserSettings:
         self.supported_validate_format = ['certificate', 'cofirma', 'contrafirma', 'odf', 'msoffice', 'pdf']
         # how much time to wait before the verification of the status of the sign or authentication request
         self.check_wait_time = 10
-        self.start_fva_bccr_client = False
+        self.start_fva_bccr_client = True
         self.config = configparser.ConfigParser()
         self.settings_file_path = os.path.join(os.environ.get('HOME'), ".fva_client")
         self.settings_file_name = "client.conf"

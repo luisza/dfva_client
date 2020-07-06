@@ -8,7 +8,7 @@ import time
 
 from PyQt5.QtCore import QMutex, QObject, QRunnable, pyqtSignal, pyqtSlot
 
-from client_fva import pkcs11client, signals
+from client_fva import signals
 from client_fva.pkcs11client import PKCS11Client
 from client_fva.user_settings import UserSettings
 from smartcard.CardMonitoring import CardMonitor, CardObserver

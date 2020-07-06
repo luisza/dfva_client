@@ -1,10 +1,11 @@
 import time
 from base64 import b64decode
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import QRunnable, QThreadPool, pyqtSlot
+from PyQt5.QtWidgets import QTableWidgetItem
 
-from client_fva import fva_speaker, signals
+from client_fva import signals
 from client_fva.fva_speaker import FVA_client
 from client_fva.ui.fvadialogui import Ui_FVADialog
 from client_fva.user_settings import UserSettings
@@ -24,12 +25,18 @@ class Timer(QRunnable):
             self.fva_speaker.on_timer()
 
 
-class FVASpeakerClient(Ui_FVADialog, ):
+class FVASpeakerClient(Ui_FVADialog):
     rejected = False
     operation_finished = False
 
+    CONNECTING = 0
+    CONNECTED = 1
+    ERROR = 2
+
     def __init__(self, dialog, slot, identification):
         Ui_FVADialog.__init__(self)
+        self.status_widget = QTableWidgetItem()
+        self.status_widget.setIcon(QtGui.QIcon(":/images/sign.png"))
 
         self.dialog = dialog
         self.setupUi(dialog)
@@ -40,7 +47,8 @@ class FVASpeakerClient(Ui_FVADialog, ):
         self.client = FVA_client(settings=self.settings,
                                  slot=slot,
                                  identification=identification,
-                                 daemon=self.settings.start_fva_bccr_client
+                                 daemon=self.settings.start_fva_bccr_client,
+                                 notifier=self
                                  )
 
 
@@ -99,6 +107,14 @@ class FVASpeakerClient(Ui_FVADialog, ):
             self.operation_finished = True
             self.dialog.hide()
             self.notify()
+
+    def change_fva_status(self, status):
+        if status==self.CONNECTING:
+            self.status_widget.setIcon(QtGui.QIcon(":/images/icon.png"))
+        elif status == self.CONNECTED:
+            self.status_widget.setIcon(QtGui.QIcon(":/images/sign.png"))
+        elif status == self.ERROR:
+            self.status_widget.setIcon(QtGui.QIcon(":/images/manage_contacts.png"))
 
 
 def run():

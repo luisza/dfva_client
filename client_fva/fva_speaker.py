@@ -22,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ca_bundle = os.path.join(BASE_DIR, 'certs/ca_bundle.pem')
 from threading import Thread
 
-logger = logging.getLogger('dfva_client')
+logger = logging.getLogger()
 
 
 class FVA_Base_client(object):
@@ -42,24 +42,14 @@ class FVA_Base_client(object):
         """
         Hace la negociación del protocolo de comunicación a utilizar
         """
-
-        count = 0
-        ok = False
         data = None
-        while not ok and count < self.settings.number_requests_before_fail:
-            try:
-                data = self._request_start_negotiation()
-            except requests.exceptions.ConnectionError:
-                logger.warning(
-                    "Error en requests iniciando negociación de la conexión, puede que no tenga acceso a internet")
-            except Exception as e:
-                logger.error(
-                    "Error iniciando negociación de la conexión %r" % (e, ))
-                # FiXME logging
-            if data:
-                ok = True
-            count += 1
-
+        try:
+            data = self._request_start_negotiation()
+        except requests.exceptions.ConnectionError:
+            logger.warning(
+                "Error en requests iniciando negociación de la conexión, puede que no tenga acceso a internet")
+        except Exception as e:
+            logger.error("Error iniciando negociación de la conexión %r" % (e, ))
         return data
 
     def _request_start_negotiation(self):
@@ -68,9 +58,11 @@ class FVA_Base_client(object):
             'User-Agent': self.settings.user_agent
         }
 
-        # Fixme: poner en settings
         url = self.settings.bccr_fva_domain + self.settings.bccr_fva_url_negociation
         response = requests.get(url, verify=ca_bundle, headers=headers)
+        if response.status_code != requests.codes.ok:
+            logger.error("BCCR request_start_negotiation %s: %s" % (response.status_code, response.reason))
+            raise Exception("Negociation unsuccessfull %s"%(response.reason,))
         result = response.json()
     # {'ProtocolVersion': '1.4',
     #  'DisconnectTimeout': 30.0,
@@ -97,21 +89,18 @@ class FVA_Base_client(object):
         """
         Inicia la comunicación con el servicio del BCCR
         """
-
-        count = 0
-        ok = False
         response = None
-        while not ok and count < self.settings.number_requests_before_fail:
-            try:
-                response = self._start_the_communication(data)
-            except requests.exceptions.ConnectionError:
-                logger.warning(
-                    "Error en requests iniciando la comunicación")
-            except Exception as e:
-                logger.error("Error iniciando conexión %r" % (e, ))
-                # FiXME logging
-            if response is not None:
-                ok = True
+        try:
+            response = self._start_the_communication(data)
+        except requests.exceptions.ConnectionError:
+            logger.warning("Error en requests iniciando la comunicación")
+        except Exception as e:
+            logger.error("Error iniciando conexión %r" % (e, ))
+
+        if response is not None:
+            if response.status_code != requests.codes.ok:
+                logger.error("BCCR start_the_communication %s: %s"%(response.status_code, response.reason))
+                response = None
         return response
 
     def _start_the_communication(self, data):
@@ -141,12 +130,13 @@ class FVA_Base_client(object):
         return self.response
 
     def start_client(self):
-        logger.info("Iniciando la comunicación con el BCCR de " +
-                    self.identification)
+        logger.info("Iniciando la comunicación con el BCCR de " +  self.identification)
         data = self.start_the_negotiation()
         response = None
         if data:
             response = self.start_the_communication(data)
+        if response is None or response.status_code != requests.codes.ok:
+            return None
         return response
 
     def process_messages(self, response):
@@ -154,6 +144,7 @@ class FVA_Base_client(object):
         Mientras existan mensajes por leer intenta procesar todo mensaje que 
         venga del BCCR.
         """
+        self.status_notifier.change_fva_status(self.status_notifier.CONNECTED)
         for message in self.read_messages(response):
             try:
                 data = json.loads(message)
@@ -268,8 +259,7 @@ class FVA_Base_client(object):
                 logger.warning(
                     "Error en requests enviando datos firmados, puede que no tenga acceso a internet")
             except Exception as e:
-                logger.error(
-                    "Error enviando datos firmados %r" % (e, ))
+                logger.error("Error enviando datos firmados %r" % (e, ))
             if data:
                 ok = True
             count += 1
@@ -316,19 +306,20 @@ class FVA_Base_client(object):
 
 class FVA_client(FVA_Base_client, Thread):
     def __init__(self, *args, **kwargs):
-
+        self.status_notifier = kwargs.get('notifier', None)
         FVA_Base_client.__init__(self, *args, **kwargs)
         Thread.__init__(self)
         self.internal_daemon = kwargs.get('daemon', True)
+        self.connection_tries = 0
+        self.daemon_active = False
 
     def run(self):
-
         if self.identification is None:
-            logger.error(
-                "No se puede iniciar FVA_client, obtención de identificación no se realizó adecuadamente")
+            logger.error("No se puede iniciar FVA_client, obtención de identificación no se realizó adecuadamente")
             return
-
-        while self.internal_daemon:
+        self.daemon_active = True
+        self.status_notifier.change_fva_status(self.status_notifier.CONNECTING)
+        while self.internal_daemon and self.connection_tries != self.settings.number_requests_before_fail:
             data = self.start_client()
             # start client could spend a lot of time connecting
             # and daemon could be close until client connect
@@ -336,17 +327,26 @@ class FVA_client(FVA_Base_client, Thread):
             if self.internal_daemon:
                 if data is not None:
                     self.process_messages(data)
+                    self.connection_tries = 0
                 else:
-                    logger.info("Esperando para reconectar a " +
-                                self.identification)
+                    logger.info("Esperando para reconectar a " + self.identification)
+                    self.connection_tries += 1
                     time.sleep(self.settings.reconnection_wait_time)
-            elif data is not None and self.response is not None:
-                self.response.connection.close()
+        if self.connection_tries == self.settings.number_requests_before_fail:
+            logger.error("Max number of retries, closing connection")
+        if self.response is not None:
+            self.status_notifier.change_fva_status(self.status_notifier.ERROR)
+            self.status_notifier
+            self.response.connection.close()
+            self.response = None
+            self.daemon_active = False
 
     def close(self):
         self.internal_daemon = False
+        self.daemon_active = False
         if self.response:
             self.response.connection.close()
+            self.response = None
         logger.info("Terminando FVA_client de " + self.identification)
 
 
