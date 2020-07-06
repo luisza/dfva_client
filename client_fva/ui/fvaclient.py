@@ -65,19 +65,21 @@ class FVAClient(Ui_FVAClientUI):
         if self.close_window or self.force_exit:
             event.accept()
             self.tabmanager.close()
-            sys.exit(1)
+            sys.exit(0)
         else:
             event.ignore()
             self.hide()
 
     def setup_tray_icon(self):
         self.trayIcon = QtWidgets.QSystemTrayIcon(QtGui.QIcon(":/images/icon.png"), self.main_window)
-        self.trayIconMenu = menu = QtWidgets.QMenu()
-        self.trayIconOpenAction = menu.addAction("Abrir")
+        self.trayIconMenu = QtWidgets.QMenu()
+        self.trayIconOpenAction = self.trayIconMenu.addAction("Abrir")
+        self.trayIconOpenAction.setIcon(QtGui.QIcon(":images/maximize.png"))
         self.trayIconOpenAction.triggered.connect(self.show)
-        self.trayIconExitAction = menu.addAction("Salir")
+        self.trayIconExitAction = self.trayIconMenu.addAction("Salir")
+        self.trayIconExitAction.setIcon(QtGui.QIcon(":images/exit.png"))
         self.trayIconExitAction.triggered.connect(self.exit)
-        self.trayIcon.setContextMenu(menu)
+        self.trayIcon.setContextMenu(self.trayIconMenu)
         self.trayIcon.setToolTip("Cliente FVA")
         self.trayIcon.activated.connect(self.toggle)
         self.trayIcon.show()

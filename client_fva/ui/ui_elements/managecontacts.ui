@@ -22,7 +22,7 @@ background-color:rgb(216, 230, 225);</string>
     <widget class="QTableView" name="contactsTableView"/>
    </item>
    <item row="4" column="1">
-    <widget class="QPushButton" name="addGroup">
+    <widget class="QPushButton" name="add_group">
      <property name="layoutDirection">
       <enum>Qt::LeftToRight</enum>
      </property>
@@ -104,7 +104,7 @@ background-color: rgb(229, 229, 229);</string>
     </widget>
    </item>
    <item row="4" column="0">
-    <widget class="QPushButton" name="addContact">
+    <widget class="QPushButton" name="add_contact">
      <property name="styleSheet">
       <string notr="true">color: rgb(11, 35, 21);
 background-color: rgb(229, 229, 229);</string>
