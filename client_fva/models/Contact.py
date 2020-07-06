@@ -1,7 +1,8 @@
 import logging
+import re
 
 from PyQt5.QtSql import QSqlQuery, QSqlQueryModel
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtWidgets
 
 ID = 0
 FIRSTNAME = 1
@@ -57,17 +58,23 @@ class ContactModel(QSqlQueryModel):
             logger.error(query.lastError().text())
 
     def add_contact(self, firstname, lastname, identification):
-        query = QSqlQuery(self.db)
-        query.prepare("insert into contacts(groupid, userid, firstname,  lastname,  identification) "
-                      "values(?, ?, ?, ?, ?)")
-        query.addBindValue(self.group)
-        query.addBindValue(self.user)
-        query.addBindValue(firstname)
-        query.addBindValue(lastname)
-        query.addBindValue(identification)
-        if not query.exec_():
-            logger.error(query.lastError().text())
-        self.refresh()
+        if self.identification_is_valid(identification):
+            query = QSqlQuery(self.db)
+            query.prepare("insert into contacts(groupid, userid, firstname,  lastname,  identification) "
+                          "values(?, ?, ?, ?, ?)")
+            query.addBindValue(self.group)
+            query.addBindValue(self.user)
+            query.addBindValue(firstname)
+            query.addBindValue(lastname)
+            query.addBindValue(identification)
+            if not query.exec_():
+                logger.error(query.lastError().text())
+            self.refresh()
+        else:
+            QtWidgets.QMessageBox.critical(None, 'Contacto Inválido', "No se puede crear el nuevo contacto porque "
+                                                                      "la identificación ingresada es inválida.\n"
+                                                                      "Formatos aceptados \n * Nacional: 00-0000-0000"
+                                                                      "\n * Extranjero: 000000000000")
 
     def refresh(self):
         if self.group == -1 or self.group is None:
@@ -101,3 +108,9 @@ class ContactModel(QSqlQueryModel):
         if not query.exec_():
             logger.error(query.lastError().text())
         self.refresh()
+
+    def identification_is_valid(self, identification):
+        pattern = r'(^[1|5]\d{11}$)|(^\d{2}-\d{4}-\d{4}$)'  # only person identifications
+        if re.match(pattern, identification):
+            return True
+        return False

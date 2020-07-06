@@ -50,7 +50,8 @@ class FVAClient(Ui_FVAClientUI):
         self.force_exit = False  # the exit button was pressed (from the tray icon) so we need to exit it all
         self.db = None
 
-        # TODO - CREATE METHODS TO POPULATE CURRENT USER ACCORDING TO TAB SO IT'S NOT 1 ALWAYS
+        # TODO - CREATE METHODS TO POPULATE CURRENT USER ACCORDING TO TAB SO IT'S NOT 1 ALWAYS - ALSO ADD USER MODEL
+        # AND ITS MANAGEMENT IN DATABASE - CONTACTS ARE RELATED TO USERS BUT RIGHT NOW THEY ARE ALWAYS RELATED TO 1
         self.current_user = 1
 
         # load initial app settings
