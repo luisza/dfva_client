@@ -14,5 +14,11 @@
     <file>images/send.png</file>
     <file>images/validate.png</file>
     <file>images/log.png</file>
+    <file>images/delete.png</file>
+    <file>images/maximize.png</file>
+    <file>images/close.png</file>
+    <file>images/error.png</file>
+    <file>images/connecting.png</file>
+    <file>images/connected.png</file>
   </qresource>
 </RCC>
