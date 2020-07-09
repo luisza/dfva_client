@@ -120,7 +120,7 @@ class Ui_FVAClientUI(object):
         self.actionMyRequests.setObjectName("actionMyRequests")
         self.actionExit = QtWidgets.QAction(FVAClientUI)
         icon7 = QtGui.QIcon()
-        icon7.addPixmap(QtGui.QPixmap(":/images/exit.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon7.addPixmap(QtGui.QPixmap(":/images/close.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionExit.setIcon(icon7)
         self.actionExit.setMenuRole(QtWidgets.QAction.QuitRole)
         self.actionExit.setIconVisibleInMenu(True)

@@ -94,7 +94,7 @@ class Ui_RequestSignature(object):
         self.addContact.setStyleSheet("color: rgb(11, 35, 21);\n"
 "background-color: rgb(229, 229, 229);")
         self.addContact.setIcon(icon)
-        self.addContact.setObjectName("addContact")
+        self.addContact.setObjectName("add_contact")
         self.contactsFrameLayout.addWidget(self.addContact, 4, 1, 1, 1)
         self.scrollAreaLayout.addWidget(self.contactsFrame, 0, 1, 1, 1)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)

@@ -26,7 +26,7 @@ class Ui_ManageContacts(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.addGroup.setIcon(icon)
-        self.addGroup.setObjectName("addGroup")
+        self.addGroup.setObjectName("add_group")
         self.manageContactsLayout.addWidget(self.addGroup, 4, 0, 1, 1)
         self.searchContact = QtWidgets.QLineEdit(ManageContacts)
         self.searchContact.setObjectName("searchContact")
@@ -56,7 +56,7 @@ class Ui_ManageContacts(object):
         self.addContact.setStyleSheet("color: rgb(11, 35, 21);\n"
 "background-color: rgb(229, 229, 229);")
         self.addContact.setIcon(icon)
-        self.addContact.setObjectName("addContact")
+        self.addContact.setObjectName("add_contact")
         self.manageContactsLayout.addWidget(self.addContact, 4, 1, 1, 1)
         self.groupsTableView = QtWidgets.QTableView(ManageContacts)
         self.groupsTableView.setObjectName("groupsTableView")

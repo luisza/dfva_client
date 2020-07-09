@@ -1,7 +1,7 @@
 from PyQt5 import QtSql
 import logging
 
-logger = logging.getLogger('dfva_client')
+logger = logging.getLogger()
 
 
 def createDB():

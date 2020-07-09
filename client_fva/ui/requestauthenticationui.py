@@ -69,7 +69,7 @@ class Ui_RequestAuthentication(object):
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap(":/images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.addContact.setIcon(icon1)
-        self.addContact.setObjectName("addContact")
+        self.addContact.setObjectName("add_contact")
         self.addContactFrameLayout.addWidget(self.addContact, 1, 2, 1, 1)
         self.searchContact = QtWidgets.QLineEdit(self.addContactFrame)
         self.searchContact.setObjectName("searchContact")

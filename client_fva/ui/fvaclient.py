@@ -50,7 +50,8 @@ class FVAClient(Ui_FVAClientUI):
         self.force_exit = False  # the exit button was pressed (from the tray icon) so we need to exit it all
         self.db = None
 
-        # TODO - CREATE METHODS TO POPULATE CURRENT USER ACCORDING TO TAB SO IT'S NOT 1 ALWAYS
+        # TODO - CREATE METHODS TO POPULATE CURRENT USER ACCORDING TO TAB SO IT'S NOT 1 ALWAYS - ALSO ADD USER MODEL
+        # AND ITS MANAGEMENT IN DATABASE - CONTACTS ARE RELATED TO USERS BUT RIGHT NOW THEY ARE ALWAYS RELATED TO 1
         self.current_user = 1
 
         # load initial app settings
@@ -72,12 +73,14 @@ class FVAClient(Ui_FVAClientUI):
 
     def setup_tray_icon(self):
         self.trayIcon = QtWidgets.QSystemTrayIcon(QtGui.QIcon(":/images/icon.png"), self.main_window)
-        self.trayIconMenu = menu = QtWidgets.QMenu()
-        self.trayIconOpenAction = menu.addAction("Abrir")
+        self.trayIconMenu = QtWidgets.QMenu()
+        self.trayIconOpenAction = self.trayIconMenu.addAction("Abrir")
+        self.trayIconOpenAction.setIcon(QtGui.QIcon(":images/maximize.png"))
         self.trayIconOpenAction.triggered.connect(self.show)
-        self.trayIconExitAction = menu.addAction("Salir")
+        self.trayIconExitAction = self.trayIconMenu.addAction("Salir")
+        self.trayIconExitAction.setIcon(QtGui.QIcon(":images/exit.png"))
         self.trayIconExitAction.triggered.connect(self.exit)
-        self.trayIcon.setContextMenu(menu)
+        self.trayIcon.setContextMenu(self.trayIconMenu)
         self.trayIcon.setToolTip("Cliente FVA")
         self.trayIcon.activated.connect(self.toggle)
         self.trayIcon.show()
