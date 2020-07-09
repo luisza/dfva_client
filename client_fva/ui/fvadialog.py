@@ -7,10 +7,11 @@ from PyQt5.QtWidgets import QTableWidgetItem
 
 from client_fva import signals
 from client_fva.fva_speaker import FVA_client
+from client_fva.session_storage import SessionStorage
 from client_fva.ui.fvadialogui import Ui_FVADialog
 from client_fva.user_settings import UserSettings
 import logging
-logger = logging.getLogger('dfva_client')
+logger = logging.getLogger()
 
 
 class Timer(QRunnable):
@@ -44,11 +45,12 @@ class FVASpeakerClient(Ui_FVADialog):
         self.submit.clicked.connect(self.send_code)
         self.timeout = 0
         self.settings = UserSettings.getInstance()
+        self.storage = SessionStorage.getInstance()
         self.client = FVA_client(settings=self.settings,
                                  slot=slot,
                                  identification=identification,
                                  daemon=self.settings.start_fva_bccr_client,
-                                 pkcs11client=self.settings.pkcs11_cache
+                                 pkcs11client=self.storage.pkcs11_client
                                  )
         self.client.status_signal.connect(self.change_fva_status)
         self.client.start()

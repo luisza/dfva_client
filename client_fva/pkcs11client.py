@@ -14,7 +14,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.x509.oid import NameOID, ExtensionOID
-
+from PyQt5.QtWidgets import QApplication, QInputDialog, QLineEdit
 
 logger = logging.getLogger()
 
@@ -38,12 +38,14 @@ class PKCS11Client:
         self.session = {}
         self.certificates = {}
         self.keys = {}
+        self.lib = None
 
     def get_slots(self):
 
         try:
-            lib = pkcs11.lib(self.get_module_lib())
-            slots = lib.get_slots()
+            if self.lib is None:
+                self.lib = pkcs11.lib(self.get_module_lib())
+            slots = self.lib.get_slots()
         except Exception as e:
             self.signal.send('notify', obj={
                 'message': "La biblioteca instalada no funciona para leer las \
@@ -119,7 +121,7 @@ class PKCS11Client:
             necesarias o porque el sistema operativo no está soportado"
         })
 
-    def get_pin(self, pin=None):
+    def get_pin(self, pin=None, slot=None):
         """Obtiene el pin de la tarjeta para iniciar sessión"""
 
         if pin:
@@ -129,13 +131,15 @@ class PKCS11Client:
             return os.environ['PKCS11_PIN']
         else:
             try:
-                serial = self.get_slot().get_tokens()[0].serial.decode('utf-8')
+                serial = self.get_slot(slot=slot).get_token().serial.decode('utf-8')
             except:
                 serial = 'N/D'
                 # Fixme: aqui debería manejarse mejor
-            respobj = signals.get_signal_response(self.signal.send('pin', obj={'serial': serial}))
-            return respobj.response['pin']
-
+            text, ok = QInputDialog.getText(None, "Atención", f"Ingrese su pin para {serial}", QLineEdit.Password)
+            #respobj = signals.get_signal_response(self.signal.send('pin', obj={'serial': serial}))
+            #return respobj.response['pin']
+            if ok:
+                return text
         raise Exception(
             'Sorry PIN is Needed, we will remove this, but for now use export \
             PKCS11_PIN=<pin> before call python')
@@ -148,7 +152,7 @@ class PKCS11Client:
         if slot is None or slot not in self.session:
             slotinst = self.get_slot(slot=slot)
             token = slotinst.get_token()
-            session = token.open(user_pin=self.get_pin(pin=pin))
+            session = token.open(user_pin=self.get_pin(pin=pin, slot=slot))
             if slot is not None:
                 self.session[slot] = session
             return session

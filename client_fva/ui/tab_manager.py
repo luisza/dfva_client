@@ -1,6 +1,8 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QThreadPool, QObject
 from client_fva.monitor import Monitor
+from client_fva.person import PersonClient
+from client_fva.session_storage import SessionStorage
 from client_fva.ui.myrequests import MyRequests
 from client_fva import signals
 import logging
@@ -19,8 +21,7 @@ class TabManager(QObject):
         self.main_app = main_app
         self.card_information = None
         self.card_count = 0
-        self.tabs = ['General']
-        self.serials = ['nd']
+        self.session_storage = SessionStorage.getInstance()
         self.threadpool = QThreadPool()
         logger.info("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
         self.monitor = Monitor()
@@ -59,7 +60,7 @@ class TabManager(QObject):
         certs = fvaspeaker.client.pkcs11client.get_certificate_info(slot=slot)
         if certs:
             cert = certs['authentication']
-            #index = len(self.tabs)
+            #index = len(self.session_storage.tabs)
             self.card_information.insertRow(self.card_information.rowCount())
             self.card_information.setItem(self.card_count, 0, QTableWidgetItem(name))
             self.card_information.setItem(self.card_count, 1, QTableWidgetItem(cert['name']))
@@ -81,26 +82,29 @@ class TabManager(QObject):
         my_requests_ui = MyRequests(QtWidgets.QWidget(), self.main_app)
         FVADialog = QtWidgets.QDialog()
         ui = FVASpeakerClient(FVADialog, slot, name)
-
-        self.tabs.append(slot)
-        self.serials.append(serial)
-        position = len(self.tabs)
+        person = PersonClient(slot=slot, person=name)
+        self.session_storage.tabs.append(slot)
+        self.session_storage.serials.append(serial)
+        self.session_storage.persons.append(person)
+        position = len(self.session_storage.tabs)
         self.speakers[serial] = ui
         self.controller.usrSlots.insertTab(position, my_requests_ui.widget, "%s: %s"%(serial[-4:], name))
         self.controller.set_enabled_specific_menu_actions(True)
         self.create_list_menu(ui, name, serial, slot)
+        person.register()
 
     def remove_tab(self, name, slot):
-        index = self.tabs.index(slot)
+        index = self.session_storage.tabs.index(slot)
         if index >=0:
-            serial = self.serials[index]
+            serial = self.session_storage.serials[index]
             self.controller.usrSlots.removeTab(index)
             self.speakers[serial].closeEvent(None)
             self.speakers[serial].close()
             del self.speakers[serial]
             self.card_information.removeRow(index-1)
-            del self.tabs[index]
-            del self.serials[index]
+            del self.session_storage.tabs[index]
+            del self.session_storage.serials[index]
+            del self.session_storage.persons[index]
             self.card_count -= 1
 
     def close(self):

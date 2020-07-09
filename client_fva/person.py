@@ -14,6 +14,7 @@ from client_fva.pkcs11client import PKCS11Client
 from client_fva.rsa import decrypt
 from pytz import timezone
 from client_fva.user_settings import UserSettings
+from .session_storage import SessionStorage
 
 
 class PersonClientInterface():
@@ -443,7 +444,7 @@ class OSPersonClient(PersonBaseClient):
             _format=_format)
 
 
-class PKCS11PersonClient(PKCS11Client, OSPersonClient):
+class PKCS11PersonClient(OSPersonClient):
     session = None
     certificates = None
     key_token = None
@@ -452,29 +453,31 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
     def __init__(self, *args, **kwargs):
 
         self.requests = kwargs.get('request_client', requests)
-        self.settings = kwargs.get('settings', UserSettings.getInstance())
-        kwargs['settings'] = self.settings
+        self.settings = UserSettings.getInstance()
+        self.slot = kwargs.get('slot')
+        storage = SessionStorage.getInstance()
         self.wait_time = self.settings.check_wait_time
-        PKCS11Client.__init__(self, *args, **kwargs)
+        self.pkcs11client = storage.pkcs11_client
 
-        self.person = self.get_person()
+        self.person = kwargs.get('person', None)
 
         if self.person is None:
-            raise Exception(
-                "Person cannot be created, sorry read certificates failed")
+            raise Exception("Person cannot be created, sorry read certificates failed")
 
         #self.session = self.get_session()
         #self.certificates = self.get_certificates()
 
     def get_person(self):
-        return self.get_identification()
+        if self.person is None:
+            self.person = self.pkcs11client.get_identification(slot=self.slot)
+        return self.person
 
     def _get_public_auth_certificate(self):
-        certificates = self.get_certificates()
+        certificates = self.pkcs11client.get_certificates(slot=self.slot)
         return certificates['authentication'].decode()
 
     def _get_public_sign_certificate(self):
-        certificates = self.get_certificates()
+        certificates = self.pkcs11client.get_certificates(slot=self.slot)
         return certificates['sign'].decode()
 
     def get_key_token(self):
@@ -482,7 +485,7 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
         if self.key_token is None:
             self.register()
 
-        keys = self.get_keys()
+        keys = self.pkcs11client.get_keys(slot=self.slot)
         key_token = keys['authentication']['priv_key'].decrypt(self.key_token)
         return key_token
 
@@ -492,7 +495,7 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
         """
         if etype == 'authenticate':
             etype = 'authentication'
-        keys = self.get_keys()
+        keys = self.pkcs11client.get_keys(slot=self.slot)
         keytoken = self.get_key_token()
         signed_token = keys[etype]['priv_key'].sign(keytoken)
 
@@ -500,14 +503,14 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
 
     def _decrypt(self, str_data):
         etype = 'authentication'
-        keys = self.get_keys()
+        keys = self.pkcs11client.get_keys(slot=self.slot)
         return decrypt(keys[etype]['priv_key'], str_data)
 
     def sign_identification(self, identification):
         """Firma con la llave privada la identificación de la persona, para determinar si es correctamente, la 
         persona que dice ser (validación en DFVA).
         """
-        keys = self.get_keys()
+        keys = self.pkcs11client.get_keys(slot=self.slot)
         return keys['authentication']['priv_key'].sign(identification)
 
     def register(self, algorithm='sha512'):
@@ -523,9 +526,7 @@ class PKCS11PersonClient(PKCS11Client, OSPersonClient):
             "code": edata,
         }
 
-        result = self.requests.post(
-            self.settings.fva_server_url +
-            self.settings.login_person, json=params)
+        result = self.requests.post(self.settings.fva_server_url + self.settings.login_person, json=params)
         data = result.json()
         self.key_token = b64decode(data['token'])
         return data

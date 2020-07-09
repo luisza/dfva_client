@@ -60,7 +60,7 @@ class UserSettings:
 
         # non-active wait time for the thread
         self.wait_for_scan_new_device = 3000
-        self.pkcs11_cache = None
+
 
     def save(self):
         self.config['APPEARANCE'] = {

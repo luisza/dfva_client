@@ -10,6 +10,7 @@ from PyQt5.QtCore import QMutex, QObject, QRunnable, pyqtSignal, pyqtSlot
 
 from client_fva import signals
 from client_fva.pkcs11client import PKCS11Client
+from client_fva.session_storage import SessionStorage
 from client_fva.user_settings import UserSettings
 from smartcard.CardMonitoring import CardMonitor, CardObserver
 from smartcard.ReaderMonitoring import ReaderMonitor, ReaderObserver
@@ -82,8 +83,9 @@ class Monitor(QRunnable):
         self.settings = kwargs.get('settings', UserSettings.getInstance())
         kwargs['settings'] = self.settings
         kwargs['cached'] = False
+        self.session_storage = SessionStorage.getInstance()
         self.pkcs11client = PKCS11Client(*args, **kwargs)
-        self.settings.pkcs11_cache = self.pkcs11client
+        self.session_storage.pkcs11_client = self.pkcs11client
         #self.signal = kwargs.get('signal', signal('fva_client'))
         QRunnable.__init__(self)
 
