@@ -7,13 +7,14 @@ Created on 17 ago. 2017
 import json
 import logging
 import os
+
+import pkcs11
 import time
 import urllib
 from base64 import b64decode, b64encode
-import PyKCS11
 import requests
 from PyQt5 import QtCore
-
+from pkcs11.mechanisms import Mechanism
 from client_fva import signals
 from client_fva.pkcs11client import PKCS11Client
 from client_fva.rsa import pem_to_base64
@@ -32,12 +33,12 @@ class FVA_Base_client(object):
 
     def __init__(self, *args, **kwargs):
         self.settings = kwargs.get('settings', UserSettings.getInstance())
+        self.slot_number = kwargs.pop('slot')
         self.pkcs11client = kwargs.get('pkcs11client', None)
-        kwargs['settings'] = self.settings
         self.response = None
         if self.pkcs11client is None:
-            self.pkcs11client = PKCS11Client(*args, **kwargs)
-        self.identification = self.pkcs11client.get_identification()
+            raise Exception("Pkcs11Client not found")
+        self.identification = self.pkcs11client.get_identification(slot=self.slot_number)
 
     def start_the_negotiation(self):
         """
@@ -104,7 +105,7 @@ class FVA_Base_client(object):
         return response
 
     def _start_the_communication(self, data):
-        certificates = self.pkcs11client.get_certificates()
+        certificates = self.pkcs11client.get_certificates(slot=self.slot_number)
         # url = self.base_url+'/connect'
         url = self.settings.bccr_fva_domain + \
             self.settings.bccr_fva_url_connect % (data['Url'])
@@ -144,7 +145,7 @@ class FVA_Base_client(object):
         Mientras existan mensajes por leer intenta procesar todo mensaje que 
         venga del BCCR.
         """
-        self.status_notifier.change_fva_status(self.status_notifier.CONNECTED)
+        self.status_signal.emit(self.CONNECTED)
         for message in self.read_messages(response):
             try:
                 data = json.loads(message)
@@ -207,16 +208,12 @@ class FVA_Base_client(object):
         dev["c"] = ""
         if not respobj.response['rejected']:
             dev["c"] = respobj.response['code']
-            dev['b'], pin = self.get_signed_hash(data['M'][0]['A'][0]['b'],
-                                                 pin=respobj.response['pin'],
+            dev['b'], pin = self.get_signed_hash(data['M'][0]['A'][0]['b'], pin=respobj.response['pin'],
                                                  data=data)
-            dev['a'], pin = self.get_signed_hash(data['M'][0]['A'][0]['a'],
-                                                 pin=pin,
-                                                 data=data)
+            dev['a'], pin = self.get_signed_hash(data['M'][0]['A'][0]['a'], pin=pin, data=data)
 
             if not all((dev['b'], dev['a'])):
-                logger.error("Alguna firma incorrecta %r o %r" %
-                             (dev['a'], dev['b']))
+                logger.error("Alguna firma incorrecta %r o %r" %(dev['a'], dev['b']))
                 dev["d"] = 2
             else:
                 dev['b'] = dev['b'].decode()
@@ -281,10 +278,9 @@ class FVA_Base_client(object):
         while not ok and count < self.settings.max_pin_fails:
             try:
                 response = self._get_signed_hash(_hash, pin)
-            # Fixme manejar mejor este error
-            except PyKCS11.PyKCS11Error:
-                data['message'] = "Error PIN de %s incorrecto, por favor \
-                vuelvalo a ingresar" % (self.identification,)
+
+            except pkcs11.exceptions.PinIncorrect as e:
+                data['message'] = "Error PIN de %s incorrecto, por favor vuelvalo a ingresar" % (self.identification,)
                 sobj = signals.SignalObject(signals.PIN_REQUEST, data)
                 respobj = signals.receive(signals.send('fva_speaker', sobj))
                 pin = respobj.response['pin']
@@ -298,15 +294,18 @@ class FVA_Base_client(object):
 
     def _get_signed_hash(self, _hash, pin):
 
-        certificates = self.pkcs11client.get_keys(pin=pin)
-        d = certificates['sign']['priv_key'].sign(
-            b64decode(_hash), using='sha256')
+        certificates = self.pkcs11client.get_keys(pin=pin, slot=self.slot_number)
+        d = certificates['sign']['priv_key'].sign(b64decode(_hash), mechanism=Mechanism.SHA256_RSA_PKCS)
         return b64encode(d)
 
 
 class FVA_client(FVA_Base_client, QtCore.QThread):
+    status_signal = QtCore.pyqtSignal(int)
+    CONNECTING = 0
+    CONNECTED = 1
+    ERROR = 2
+
     def __init__(self, *args, **kwargs):
-        self.status_notifier = kwargs.get('notifier', None)
         FVA_Base_client.__init__(self, *args, **kwargs)
         QtCore.QThread.__init__(self, None)
         self.internal_daemon = kwargs.get('daemon', True)
@@ -318,7 +317,8 @@ class FVA_client(FVA_Base_client, QtCore.QThread):
             logger.error("No se puede iniciar FVA_client, obtención de identificación no se realizó adecuadamente")
             return
         self.daemon_active = True
-        self.status_notifier.change_fva_status(self.status_notifier.CONNECTING)
+        self.status_signal.emit(self.CONNECTING)
+
         while self.internal_daemon and self.connection_tries != self.settings.number_requests_before_fail:
             data = self.start_client()
             # start client could spend a lot of time connecting
@@ -335,7 +335,7 @@ class FVA_client(FVA_Base_client, QtCore.QThread):
         if self.connection_tries == self.settings.number_requests_before_fail:
             logger.error("Max number of retries, closing connection")
         if self.response is not None:
-            self.status_notifier.change_fva_status(self.status_notifier.ERROR)
+            self.status_signal.emit(self.ERROR)
             self.response.connection.close()
             self.response = None
             self.daemon_active = False

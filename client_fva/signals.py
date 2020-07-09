@@ -38,7 +38,7 @@ class SignalObject(object):
     Datos enviados:
 
         * notify  {'message': 'XXX' }
-        * monitor_usb  {'person': 'identificacion', 'slot': slot_obj }
+        * monitor_usb  {'person': 'identificacion', 'slot': slot_obj, 'serial': '0001' }
         * pin {'serial': 'id slot'}
         * fva_speaker  {
               'a': HashAFirmarDocumento,
@@ -88,7 +88,6 @@ available_signals = {
 
 
 def send(key, data):
-    print("send: ", key)
     if key in available_signals:
         available_signals[key].result.emit(key, data)
         return data
@@ -97,7 +96,7 @@ def send(key, data):
 
 
 def connect(key, func):
-    print("connect: ", key)
+
     if key in available_signals:
         available_signals[key].result.connect(func)
     else:
@@ -111,7 +110,6 @@ def receive(obj, notify=False):
     if notify:
         obj.mutex.unlock()
     else:
-        print("Entrada: ", obj.sid, objs)
         obj.mutex.lock()
         obj.mutex.lock()
         obj.mutex.unlock()

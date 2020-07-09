@@ -14,7 +14,7 @@ from client_fva.user_settings import UserSettings
 from smartcard.CardMonitoring import CardMonitor, CardObserver
 from smartcard.ReaderMonitoring import ReaderMonitor, ReaderObserver
 
-logger = logging.getLogger('dfva_client')
+logger = logging.getLogger()
 
 
 class DFVAReaderObserver(ReaderObserver):
@@ -83,7 +83,7 @@ class Monitor(QRunnable):
         kwargs['settings'] = self.settings
         kwargs['cached'] = False
         self.pkcs11client = PKCS11Client(*args, **kwargs)
-
+        self.settings.pkcs11_cache = self.pkcs11client
         #self.signal = kwargs.get('signal', signal('fva_client'))
         QRunnable.__init__(self)
 
@@ -119,17 +119,13 @@ class Monitor(QRunnable):
         for tokeninfo in self.pkcs11client.get_tokens_information():
             slot = tokeninfo['slot']
             try:
-                self.slot = slot
                 serial = tokeninfo['serial']
                 if serial in self.connected_device:
                     tmp_device.append(serial)
                 else:
                     tmp_device.append(serial)
-
-                    self.pkcs11client.cached = False
-                    person = self.pkcs11client.get_identification()
-                    data = {'slot': slot,
-                            'person': person}
+                    person = self.pkcs11client.get_identification(slot=slot)
+                    data = {'slot': slot, 'person': person, 'serial': serial}
                     added_device[serial] = data
                     self.send_add_signal(data)
             except Exception as noToken:
@@ -137,11 +133,12 @@ class Monitor(QRunnable):
                     signals.send('notify', {
                         'message': "Un dispositivo ha sido encontrado, pero ninguna tarjeta pudo ser leída, por favor verifique que la tarjeta esté correctamente insertada"
                     })
-            except Exception as e:
-                if notify_exception:
-                    signals.result.emit('notify',  {
-                        'message': "Ha ocurrido un error inesperado leyendo alguno de los dispositivos"
-                    })
+                logger.error("%r"%(noToken,))
+            # except Exception as e:
+            #     if notify_exception:
+            #         signals.result.emit('notify',  {
+            #             'message': "Ha ocurrido un error inesperado leyendo alguno de los dispositivos"
+            #         })
 
         self.connected_device.update(added_device)
 

@@ -1,7 +1,7 @@
 import time
 from base64 import b64decode
 
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtCore import QRunnable, QThreadPool, pyqtSlot
 from PyQt5.QtWidgets import QTableWidgetItem
 
@@ -36,7 +36,7 @@ class FVASpeakerClient(Ui_FVADialog):
     def __init__(self, dialog, slot, identification):
         Ui_FVADialog.__init__(self)
         self.status_widget = QTableWidgetItem()
-        self.status_widget.setIcon(QtGui.QIcon(":/images/sign.png"))
+        self.status_widget.setIcon(QtGui.QIcon(":/images/connecting.png"))
 
         self.dialog = dialog
         self.setupUi(dialog)
@@ -48,11 +48,11 @@ class FVASpeakerClient(Ui_FVADialog):
                                  slot=slot,
                                  identification=identification,
                                  daemon=self.settings.start_fva_bccr_client,
-                                 notifier=self
+                                 pkcs11client=self.settings.pkcs11_cache
                                  )
-
-
+        self.client.status_signal.connect(self.change_fva_status)
         self.client.start()
+
         signals.connect('fva_speaker', self.request_pin_code)
         self.threadpool = QThreadPool()
         self.timer = None
@@ -69,7 +69,6 @@ class FVASpeakerClient(Ui_FVADialog):
     def close(self):
         self.closeEvent(None)
         self.client.close()
-        self.client.kill()
 
     def send_code(self, event):
         logger.info("Signing fva speaker dialog")
