@@ -66,7 +66,7 @@ background-color:rgb(216, 230, 225);</string>
         <x>0</x>
         <y>0</y>
         <width>598</width>
-        <height>286</height>
+        <height>288</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="scrollAreaWidgetLayout">
@@ -105,13 +105,6 @@ color: rgb(0, 0, 0);</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="0" colspan="4">
-           <widget class="QListWidget" name="filesWidget">
-            <property name="acceptDrops">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <spacer name="horizontalSpacer">
             <property name="orientation">
@@ -125,7 +118,20 @@ color: rgb(0, 0, 0);</string>
             </property>
            </spacer>
           </item>
-          <item row="0" column="3">
+          <item row="7" column="3">
+           <widget class="QLabel" name="label_razon">
+            <property name="toolTip">
+             <string>Solo en firmas de documentos PDF</string>
+            </property>
+            <property name="text">
+             <string>Razón*:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="4">
+           <widget class="QLineEdit" name="razon"/>
+          </item>
+          <item row="7" column="0">
            <widget class="QPushButton" name="browseFiles">
             <property name="autoFillBackground">
              <bool>false</bool>
@@ -143,56 +149,7 @@ background-color: rgb(229, 229, 229);</string>
             </property>
            </widget>
           </item>
-          <item row="7" column="3">
-           <widget class="QPushButton" name="sign">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="sizeIncrement">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="baseSize">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">color: rgb(11, 35, 21);
-background-color: rgb(229, 229, 229);</string>
-            </property>
-            <property name="text">
-             <string>Firmar</string>
-            </property>
-            <property name="icon">
-             <iconset resource="resources.qrc">
-              <normaloff>:/images/sign.png</normaloff>:/images/sign.png</iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>16</width>
-              <height>16</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="1">
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="7" column="2">
+          <item row="9" column="0">
            <widget class="QPushButton" name="validate">
             <property name="enabled">
              <bool>true</bool>
@@ -228,6 +185,88 @@ background-color: rgb(229, 229, 229);</string>
             </property>
            </widget>
           </item>
+          <item row="9" column="1">
+           <widget class="QPushButton" name="sign">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="sizeIncrement">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="baseSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color: rgb(11, 35, 21);
+background-color: rgb(229, 229, 229);</string>
+            </property>
+            <property name="text">
+             <string>Firmar</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/images/sign.png</normaloff>:/images/sign.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>16</width>
+              <height>16</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" rowspan="3" colspan="2">
+           <widget class="SignListAreaWidget" name="filesWidget">
+            <property name="acceptDrops">
+             <bool>true</bool>
+            </property>
+            <property name="viewMode">
+             <enum>QListView::ListMode</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="2">
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="3" column="4">
+           <widget class="QTextEdit" name="resumen"/>
+          </item>
+          <item row="8" column="3">
+           <widget class="QLabel" name="label_lugar">
+            <property name="toolTip">
+             <string>Solo en firmas de documentos PDF</string>
+            </property>
+            <property name="text">
+             <string>Lugar*:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="4">
+           <widget class="QLineEdit" name="lugar"/>
+          </item>
+          <item row="3" column="3">
+           <widget class="QLabel" name="label_resumen">
+            <property name="text">
+             <string>Resumen:</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -259,6 +298,13 @@ background-color: rgb(229, 229, 229);</string>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SignListAreaWidget</class>
+   <extends>QListWidget</extends>
+   <header>client_fva/ui/custom_components/ownsignlistwidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources.qrc"/>
  </resources>

@@ -1,4 +1,7 @@
 import sys
+from PyQt5.QtWidgets import QInputDialog, QLineEdit
+
+from client_fva.session_storage import SessionStorage
 from client_fva.ui.fvaclientui import Ui_FVAClientUI
 from client_fva.ui.myrequests import MyRequests
 from client_fva.ui.mysignatures import MySignatures
@@ -16,6 +19,7 @@ from client_fva.database import createDB
 import logging
 
 from  client_fva.fva_logging import get_logging_window, configure_settings
+from client_fva import signals
 
 logger = logging.getLogger('dfva_client')
 main_app = None
@@ -49,6 +53,7 @@ class FVAClient(Ui_FVAClientUI):
         self.close_window = False  # by default window is only minimized
         self.force_exit = False  # the exit button was pressed (from the tray icon) so we need to exit it all
         self.db = None
+        self.session_storage = SessionStorage.getInstance()
 
         # TODO - CREATE METHODS TO POPULATE CURRENT USER ACCORDING TO TAB SO IT'S NOT 1 ALWAYS - ALSO ADD USER MODEL
         # AND ITS MANAGEMENT IN DATABASE - CONTACTS ARE RELATED TO USERS BUT RIGHT NOW THEY ARE ALWAYS RELATED TO 1
@@ -58,6 +63,7 @@ class FVAClient(Ui_FVAClientUI):
         self.user_settings = usersettings
         apply_selected_appearance(main_app, self.user_settings)
         self.tabmanager = TabManager(self, main_app)
+        signals.connect('pin', self.request_pin)
 
     def closeEvent(self, event):
         # it will minimize or close it depending on what the user setup in their settings - if the user selected exit
@@ -145,7 +151,8 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_layout(request_authentication_ui.requestAuthenticationLayout)
 
     def open_sign_validate(self):
-        sign_validate_ui = SignValidate(QtWidgets.QWidget(), main_app)
+        sign_validate_ui = SignValidate(QtWidgets.QWidget(), main_app, storage=self.session_storage,
+                                        index=self.usrSlots.currentIndex())
         self.setup_tab_layout(sign_validate_ui.signValidateLayout)
 
     def open_manage_contacts(self):
@@ -165,6 +172,14 @@ class FVAClient(Ui_FVAClientUI):
         for action in slot_specific_actions:
             action.setEnabled(enabled)
 
+    def request_pin(self, sender, obj):
+        serial = obj.data['serial']
+        text, ok = QInputDialog.getText(None, "Atención", f"Ingrese su pin para {serial}", QLineEdit.Password)
+        if ok:
+            obj.response = {'pin': text, 'serial': serial, 'rejected': False}
+        else:
+            obj.response = {'pin': "", 'serial': serial, 'rejected': True}
+        signals.receive(obj, notify=True)
 
 def run():
     global main_app

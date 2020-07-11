@@ -51,6 +51,7 @@ class UserSettings:
         self.login_person = '/login/'
         self.supported_sign_format = ['xml_cofirma', 'xml_contrafirma', 'odf', 'msoffice', 'pdf']
         self.supported_validate_format = ['certificate', 'cofirma', 'contrafirma', 'odf', 'msoffice', 'pdf']
+        self.algorithm = 'sha512'
         # how much time to wait before the verification of the status of the sign or authentication request
         self.check_wait_time = 10
         self.start_fva_bccr_client = False
@@ -58,6 +59,7 @@ class UserSettings:
         self.settings_file_path = os.path.join(os.environ.get('HOME'), ".fva_client")
         self.settings_file_name = "client.conf"
 
+        self.secret_auth_keys = {}
         # non-active wait time for the thread
         self.wait_for_scan_new_device = 3000
 
@@ -74,7 +76,8 @@ class UserSettings:
             'number_requests_before_fail': self.number_requests_before_fail,
             'save_signed_docs_path': self.save_signed_docs_path,
             'reconnection_wait_time': self.reconnection_wait_time,
-            'max_pin_fails': self.max_pin_fails
+            'max_pin_fails': self.max_pin_fails,
+            'auth_token': ";".join(["%s,%s"%(x, y) for x, y in self.secret_auth_keys.items()])
         }
         self.config['BCCR_FVA'] = {
             'bccr_fva_domain': self.bccr_fva_domain,
@@ -114,11 +117,21 @@ class UserSettings:
         os.chmod(os.path.join(self.settings_file_path,
                               self.settings_file_name), stat.S_IRWXU)
 
+    def serialize_tokens(self, text):
+        data = text.split(';')
+        for key in data:
+            k, v = key.split(',')
+            self.secret_auth_keys[k]=v
+
     def load(self):
         self.config.read(os.path.join(
             self.settings_file_path, self.settings_file_name))
         for section in self.config.sections():
             for key, value in self.config[section].items():
+                if key == 'auth_token':
+                    self.serialize_tokens(value)
+                    continue
+
                 value = value.replace("@@", "%")
                 try:
                     typ = type(getattr(self, key))

@@ -82,7 +82,7 @@ class TabManager(QObject):
         my_requests_ui = MyRequests(QtWidgets.QWidget(), self.main_app)
         FVADialog = QtWidgets.QDialog()
         ui = FVASpeakerClient(FVADialog, slot, name)
-        person = PersonClient(slot=slot, person=name)
+        person = PersonClient(slot=slot, person=name, serial=serial)
         self.session_storage.tabs.append(slot)
         self.session_storage.serials.append(serial)
         self.session_storage.persons.append(person)

@@ -9,8 +9,9 @@ import time
 from datetime import datetime
 from base64 import b64encode, b64decode
 
+from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
+
 from .rsa import get_hash_sum, encrypt
-from client_fva.pkcs11client import PKCS11Client
 from client_fva.rsa import decrypt
 from pytz import timezone
 from client_fva.user_settings import UserSettings
@@ -106,7 +107,7 @@ class PersonClientInterface():
 
     def sign(self, identification, document, algorithm='sha512',
              file_path=None, _format='xml', is_base64=False,
-             wait=False):
+             wait=False, extras={}):
         """Solicita la firma de un documento.
 
         Parámetros:
@@ -116,7 +117,8 @@ class PersonClientInterface():
         * file_path: Ruta del documento a firmar, acá el cliente se encarga de convertirlo a base64
         * _format: Corresponde al formato del documento a firmar, actualmente se puede firmar xml, odf, msoffice
         * is_base64: si document no es None y no está base64 (ej un archivo creados al vuelo o un buffer) se le puede perdir al 
-        cliente que lo convierta a base64 
+        cliente que lo convierta a base64
+        * extras: diccionario con información extra que se desee enviar (útil para campos de PDF).
         """
         pass
 
@@ -153,6 +155,15 @@ class PersonClientInterface():
         """
         pass
 
+    def notify(self, name, data, text):
+        """
+        Permite enviar notificaciones a aplicaciones externas, principalemnte usado para conectar slots en QT
+        :param name: nombre de la notificacion
+        :param data: datos a notificar
+        :param text: Texto a despliegar
+        :return: None
+        """
+        pass
 
 class PersonBaseClient(PersonClientInterface):
 
@@ -186,7 +197,7 @@ class PersonBaseClient(PersonClientInterface):
             'identification': identification,
             'request_datetime': self._get_time(),
         }
-
+        self.notify('process', 1, 'Iniciando proceso de autenticación')
         str_data = json.dumps(data)
         edata = self._encrypt(str_data, etype='authenticate')
         hashsum = get_hash_sum(edata,  algorithm)
@@ -198,20 +209,22 @@ class PersonBaseClient(PersonClientInterface):
             'person': self.person,
             "data": edata,
         }
-        result = self.requests.post(
-            self.settings.fva_server_url +
-            self.settings.authenticate_person, json=params)
+        self.notify('process', 2, 'Enviando datos de solicitud al servidor')
+        result = self.requests.post(self.settings.fva_server_url + self.settings.authenticate_person,
+                                    json=params)
 
         data = result.json()
         data = self._decrypt(data['data'])
+        self.notify('process', 3, 'Datos de autenticación recibidos correctamente')
         id_transaction = data['id_transaction']
         if wait:
+            wait_count = 1
             while not data['received_notification']:
+                self.notify('process', 4, f'Verificando estado {wait_count}')
                 time.sleep(self.wait_time)
-                data = self.check_autenticate(
-                    identification, id_transaction,
-                    algorithm=algorithm)
-
+                data = self.check_autenticate(identification, id_transaction, algorithm=algorithm)
+        self.notify('process', 5, 'Transacción completa')
+        self.notify('end_authentication', 0, '')
         return data
 
     def check_autenticate(self, identification, code, algorithm='sha512'):
@@ -242,7 +255,7 @@ class PersonBaseClient(PersonClientInterface):
 
     def sign(self, identification, document, resume, _format="xml_cofirma",
              file_path=None, is_base64=False,
-             algorithm='sha512', wait=False):
+             algorithm='sha512', wait=False, extras={}):
         if not is_base64:
             document = b64encode(document).decode()
 
@@ -256,8 +269,10 @@ class PersonBaseClient(PersonClientInterface):
             'resumen': resume,
             'request_datetime': self._get_time(),
         }
+        data.update(extras)
 
         str_data = json.dumps(data)
+        self.notify('process', 2, 'Encriptando datos a enviar')
         edata = self._encrypt(str_data, etype='sign')
         hashsum = get_hash_sum(edata,  algorithm)
         edata = edata.decode()
@@ -271,19 +286,23 @@ class PersonBaseClient(PersonClientInterface):
 
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json'}
-
-        result = self.requests.post(
-            self.settings.fva_server_url + self.settings.sign_person,
-            json=params, headers=headers)
-
+        self.notify('process', 3, 'Enviando documento al sistema de firmado')
+        result = self.requests.post(self.settings.fva_server_url + self.settings.sign_person, json=params,
+                                    headers=headers)
+        self.notify('process', 4, 'Documento enviado')
         data = result.json()
         data = self._decrypt(data['data'])
         id_transaction = data['id_transaction']
+        if data['status'] != 0:
+            wait  = False
         if wait:
+            wait_count = 1
             while not data['received_notification']:
+                self.notify('process', 5, f'Verificando estado {wait_count}')
                 time.sleep(self.wait_time)
-                data = self.check_sign(
-                    identification, id_transaction, algorithm=algorithm)
+                data = self.check_sign(identification, id_transaction, algorithm=algorithm)
+                wait_count += 1
+        self.notify('process', 6, 'Transacción completa')
         return data
 
     def check_sign(self, identification, code, algorithm='sha512'):
@@ -312,10 +331,8 @@ class PersonBaseClient(PersonClientInterface):
         data = self._decrypt(data['data'])
         return data
 
-    def validate(self, document, file_path=None, algorithm='sha512',
-                 is_base64=False,
-                 _format='certificate'):
-
+    def validate(self, document, file_path=None, algorithm='sha512', is_base64=False, _format='certificate'):
+        self.notify('process', 1, 'Validando archivo')
         if not is_base64:
             document = b64encode(document).decode()
         data = {
@@ -346,15 +363,18 @@ class PersonBaseClient(PersonClientInterface):
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json'}
 
+        self.notify('process', 2, 'Enviando datos al servidor de validación')
         result = self.requests.post(
             self.settings.fva_server_url + url, json=params, headers=headers)
 
         data = result.json()
+        self.notify('process', 3, 'Analizando datos recibidos')
         data = self._decrypt(data['data'])
+        self.notify('process', 4, 'Operación completa')
         return data
 
     def is_suscriptor_connected(self, identification, algorithm='sha512'):
-
+        self.notify('process', 1, 'Verificando suscriptor conectado')
         data = {
             'person': self.person,
             'identification': identification,
@@ -372,6 +392,7 @@ class PersonBaseClient(PersonClientInterface):
             'person': self.person,
             "data": edata,
         }
+        self.notify('process', 2, 'Enviando datos al servidor')
         result = self.requests.post(
             self.settings.fva_server_url +
             self.settings.suscriptor_connected, json=params)
@@ -380,14 +401,14 @@ class PersonBaseClient(PersonClientInterface):
         dev = False
         if 'is_connected' in data:
             dev = data['is_connected']
+        self.notify('process', 3, 'Transacción completa')
         return dev
 
 
 class OSPersonClient(PersonBaseClient):
-    def sign(self, identification, document, resume, _format="xml_cofirma",
-             file_path=None, is_base64=False,
-             algorithm='sha512', wait=False):
-
+    def sign(self, identification, document, resume, _format="xml_cofirma", file_path=None, is_base64=False,
+             algorithm='sha512', wait=False, extras={}):
+        self.notify('process', 0, 'Iniciando firmado de documento')
         if _format not in self.settings.supported_sign_format:
             raise Exception("Format not supported only %s" %
                             (",".join(self.settings.supported_sign_format)))
@@ -398,7 +419,7 @@ class OSPersonClient(PersonBaseClient):
         if file_path:
             with open(file_path, 'rb') as arch:
                 document = arch.read()
-
+        self.notify('process', 1, 'Leyendo documento de disco')
         if hasattr(document, 'read'):
             document = document.read()
 
@@ -408,7 +429,7 @@ class OSPersonClient(PersonBaseClient):
         if resume is None:
             resume = "Sorry document with out resume"
 
-        return super(OSPersonClient, self).sign(
+        dev = super(OSPersonClient, self).sign(
             identification,
             document,
             resume,
@@ -416,7 +437,10 @@ class OSPersonClient(PersonBaseClient):
             file_path=None,
             is_base64=is_base64,
             algorithm=algorithm,
-            wait=wait)
+            wait=wait, extras=extras)
+
+        self.notify('end_sign', 0, '')
+        return dev
 
     def validate(self, document, file_path=None, algorithm='sha512',
                  is_base64=False,
@@ -432,16 +456,18 @@ class OSPersonClient(PersonBaseClient):
         if file_path:
             with open(file_path, 'rb') as arch:
                 document = arch.read()
-
+        self.notify('process', 1, 'Leyendo datos del disco')
         if hasattr(document, 'read'):
             document = document.read()
 
-        return super(OSPersonClient, self).validate(
+        dev =  super(OSPersonClient, self).validate(
             document,
             file_path=None,
             algorithm=algorithm,
             is_base64=is_base64,
             _format=_format)
+        self.notify('end_validate', 0, '')
+        return dev
 
 
 class PKCS11PersonClient(OSPersonClient):
@@ -455,6 +481,7 @@ class PKCS11PersonClient(OSPersonClient):
         self.requests = kwargs.get('request_client', requests)
         self.settings = UserSettings.getInstance()
         self.slot = kwargs.get('slot')
+        self.serial = kwargs.get('serial')
         storage = SessionStorage.getInstance()
         self.wait_time = self.settings.check_wait_time
         self.pkcs11client = storage.pkcs11_client
@@ -513,8 +540,16 @@ class PKCS11PersonClient(OSPersonClient):
         keys = self.pkcs11client.get_keys(slot=self.slot)
         return keys['authentication']['priv_key'].sign(identification)
 
-    def register(self, algorithm='sha512'):
+    def load_key_token(self):
+        dev = False
+        if self.serial in self.settings.secret_auth_keys:
+            self.key_token = b64decode(self.settings.secret_auth_keys[self.serial])
+            dev = True
+        return dev
 
+    def register(self, algorithm='sha512'):
+        if self.load_key_token():
+            return
         edata = self.sign_identification(self.person)
         hashsum = get_hash_sum(edata,  algorithm)
         edata = b64encode(edata).decode()
@@ -525,10 +560,11 @@ class PKCS11PersonClient(OSPersonClient):
             'person': self.person,
             "code": edata,
         }
-
         result = self.requests.post(self.settings.fva_server_url + self.settings.login_person, json=params)
         data = result.json()
         self.key_token = b64decode(data['token'])
+        self.settings.secret_auth_keys[self.serial] = data['token']
+        self.settings.save()
         return data
 
     def unregister(self):
@@ -536,4 +572,26 @@ class PKCS11PersonClient(OSPersonClient):
         self.key_token = None
 
 
-PersonClient = PKCS11PersonClient
+class QTObjPerson(PKCS11PersonClient, QObject):
+    process_status = pyqtSignal(int, str)
+    request_pin = pyqtSignal(str)
+    end_sign = pyqtSignal()
+    end_validate = pyqtSignal()
+    end_authentication = pyqtSignal()
+
+    def __init__(self, *args, **kwargs):
+        super(QTObjPerson, self).__init__(*args, **kwargs)
+        QObject.__init__(self)
+
+    def notify(self, name, data, text):
+        if name == 'process':
+            self.process_status.emit(data, text)
+        elif name == 'end_sign':
+            self.end_sign.emit()
+        elif name == 'end_validate':
+            self.end_validate.emit()
+        elif name == 'end_authentication':
+            self.end_authentication.emit()
+
+
+PersonClient = QTObjPerson

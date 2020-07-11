@@ -9,7 +9,7 @@ import time
 from PyQt5.QtCore import QMutex, QObject, QRunnable, pyqtSignal, pyqtSlot
 
 from client_fva import signals
-from client_fva.pkcs11client import PKCS11Client
+from client_fva.pkcs11client import PKCS11Client, SlotNotFound
 from client_fva.session_storage import SessionStorage
 from client_fva.user_settings import UserSettings
 from smartcard.CardMonitoring import CardMonitor, CardObserver
@@ -118,9 +118,9 @@ class Monitor(QRunnable):
         self.mutex.lock()
         tmp_device = []
         added_device = {}
-        for tokeninfo in self.pkcs11client.get_tokens_information():
-            slot = tokeninfo['slot']
-            try:
+        try:
+            for tokeninfo in self.pkcs11client.get_tokens_information():
+                slot = tokeninfo['slot']
                 serial = tokeninfo['serial']
                 if serial in self.connected_device:
                     tmp_device.append(serial)
@@ -130,12 +130,14 @@ class Monitor(QRunnable):
                     data = {'slot': slot, 'person': person, 'serial': serial}
                     added_device[serial] = data
                     self.send_add_signal(data)
-            except Exception as noToken:
-                if notify_exception:
-                    signals.send('notify', {
-                        'message': "Un dispositivo ha sido encontrado, pero ninguna tarjeta pudo ser leída, por favor verifique que la tarjeta esté correctamente insertada"
-                    })
-                logger.error("%r"%(noToken,))
+        except SlotNotFound as notoken:
+            pass
+        except Exception as noToken:
+            if notify_exception:
+                signals.send('notify', {
+                    'message': "Un dispositivo ha sido encontrado, pero ninguna tarjeta pudo ser leída, por favor verifique que la tarjeta esté correctamente insertada"
+                })
+            logger.error("%r"%(noToken,))
             # except Exception as e:
             #     if notify_exception:
             #         signals.result.emit('notify',  {

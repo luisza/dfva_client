@@ -18,6 +18,11 @@ from PyQt5.QtWidgets import QApplication, QInputDialog, QLineEdit
 
 logger = logging.getLogger()
 
+class SlotNotFound(Exception):
+    pass
+
+class PinNotProvided(Exception):
+    pass
 
 class PKCS11Client:
     slot = None
@@ -55,7 +60,7 @@ class PKCS11Client:
             logger.error("Error abriendo dispositivos PKCS11 %r" % (e,))
 
         if not slots:
-            raise Exception("PKCS11: Slot not found")
+            raise SlotNotFound("PKCS11: Slot not found")
 
         return slots
 
@@ -128,22 +133,22 @@ class PKCS11Client:
             return pin
 
         if 'PKCS11_PIN' in os.environ:
-            return os.environ['PKCS11_PIN']
+            pin = os.environ['PKCS11_PIN']
         else:
             try:
                 serial = self.get_slot(slot=slot).get_token().serial.decode('utf-8')
             except:
                 serial = 'N/D'
                 # Fixme: aqui debería manejarse mejor
-            text, ok = QInputDialog.getText(None, "Atención", f"Ingrese su pin para {serial}", QLineEdit.Password)
-            #respobj = signals.get_signal_response(self.signal.send('pin', obj={'serial': serial}))
-            #return respobj.response['pin']
-            if ok:
-                return text
-        raise Exception(
-            'Sorry PIN is Needed, we will remove this, but for now use export \
-            PKCS11_PIN=<pin> before call python')
 
+            sobj = signals.SignalObject(signals.PIN_REQUEST, {'serial': serial})
+            respobj = signals.receive(signals.send('pin', sobj))
+            pin = respobj.response['pin']
+        if pin is None:
+            raise PinNotProvided('Sorry PIN is Needed, we will remove this, but for now use export \
+            PKCS11_PIN=<pin> before call python')
+        return pin
+    
     def get_session(self, pin=None, slot=None):
         """Obtiene o inicializa una sessión para el uso de la tarjeta.
         .. warning:: Ojo cachear la session y revisar si está activa
