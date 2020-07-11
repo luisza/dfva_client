@@ -64,6 +64,18 @@ class UserSettings:
         self.wait_for_scan_new_device = 3000
 
 
+        self.validate_supported_extensions = {
+            'docx': 'msoffice', 'doc': 'msoffice', 'xls': 'msoffice', 'xlsx': 'msoffice', 'ppt': 'msoffice',
+            'pptx': 'msoffice', 'xml': 'cofirma', 'pdf': 'pdf', 'pem': 'certificate', 'crt': 'certificate',
+            'odt': 'odf', 'ods': 'odf', 'odp': 'odf', 'odg': 'odf', 'odf': 'odf', 'xmlc': 'contrafirma'
+        }
+        self.file_supported_extensions = {
+            'docx': 'msoffice', 'doc': 'msoffice', 'xls': 'msoffice', 'xlsx': 'msoffice', 'ppt': 'msoffice',
+            'pptx': 'msoffice', 'xml': 'xml_cofirma', 'pdf': 'pdf',
+            'odt': 'odf', 'ods': 'odf', 'odp': 'odf', 'odg': 'odf', 'odf': 'odf', 'xmlc': 'xml_contrafirma'
+        }
+
+
     def save(self):
         self.config['APPEARANCE'] = {
             'font_size': self.font_size,

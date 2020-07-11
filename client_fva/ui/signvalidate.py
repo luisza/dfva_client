@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QWidget
-
+from pathlib import Path
 from client_fva.session_storage import SessionStorage
 from client_fva.ui.signvalidateui import Ui_SignValidate
 from PyQt5.QtCore import pyqtSlot, QThreadPool, QRunnable, pyqtSignal, QObject, QThread
@@ -78,8 +78,17 @@ class SignValidate(QWidget, Ui_SignValidate):
         self.filesWidget.clear()
         self.signValidateProgressBar.setValue(0)
 
-    def get_format(self):
-        return "pdf"
+    def get_format(self, validate=False):
+        extension = "".join(Path(self.path).suffixes)
+        extension = extension.lower().replace('.', '')
+        support_extension = self.settings.file_supported_extensions
+        if validate:
+            support_extension = self.settings.validate_supported_extensions
+        if extension in support_extension:
+            extension = support_extension[extension]
+        else:
+            extension = None
+        return extension
 
     @pyqtSlot(name='get_document_path')
     def get_document_path(self):
@@ -94,8 +103,14 @@ class SignValidate(QWidget, Ui_SignValidate):
         if self.path is None:
             QtWidgets.QMessageBox.warning(None, "Sin documento seleccionado", 'Debe seleccionar un documento' )
             return
+        _format = self.get_format(validate=True)
+        if _format is None:
+            QtWidgets.QMessageBox.warning(None, "Formato de archivo no soportado",
+                                          'Lo lamentamos, este archivo no tiene un formato soportado por este sistema')
+            return
         validateprocess = PersonValidateOpers(len(self.opers), self.person, {'document': None, 'file_path': self.path,
-            'algorithm': self.settings.algorithm, 'is_base64': False, '_format': self.get_format() })
+            'algorithm': self.settings.algorithm, 'is_base64': False, '_format': _format })
+        validateprocess.has_result.connect(self.validate_result)
         validateprocess.start()
         self.opers.append(validateprocess)
 
@@ -122,10 +137,14 @@ class SignValidate(QWidget, Ui_SignValidate):
             extras['reason'] = self.razon.text()
             extras['place'] = self.lugar.text()
         self.signValidateProgressBar.setRange(0, 6)
-
+        _format = self.get_format()
+        if _format is None:
+            QtWidgets.QMessageBox.warning(None, "Formato de archivo no soportado",
+                                          'Lo lamentamos, este archivo no tiene un formato soportado por este sistema')
+            return
         resume = self.resumen.toPlainText()
         persont = PersonSignOpers(len(self.opers), self.person, {'identification': self.person.person, 'document': None, 'resume': resume,
-                                      '_format': self.get_format(), 'algorithm': self.settings.algorithm,
+                                      '_format': _format, 'algorithm': self.settings.algorithm,
                                       'is_base64': False, 'wait': True, 'extras': extras,  'file_path': self.path })
 
         persont.has_result.connect(self.sign_result)
@@ -138,4 +157,7 @@ class SignValidate(QWidget, Ui_SignValidate):
             self.signValidateProgressBar.setFormat(text)
 
     def sign_result(self, tid):
+        print(self.opers[tid].result)
+
+    def validate_result(self, tid):
         print(self.opers[tid].result)
