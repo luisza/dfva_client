@@ -12,6 +12,9 @@ class Ui_ManageContacts(object):
     def setupUi(self, ManageContacts):
         ManageContacts.setObjectName("ManageContacts")
         ManageContacts.resize(615, 371)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        ManageContacts.setWindowIcon(icon)
         ManageContacts.setStyleSheet("color:rgb(76, 118, 82);\n"
 "background-color:rgb(216, 230, 225);")
         self.manageContactsLayout = QtWidgets.QGridLayout(ManageContacts)
@@ -23,9 +26,9 @@ class Ui_ManageContacts(object):
         self.addContact.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.addContact.setStyleSheet("color: rgb(11, 35, 21);\n"
 "background-color: rgb(229, 229, 229);")
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.addContact.setIcon(icon)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.addContact.setIcon(icon1)
         self.addContact.setObjectName("addContact")
         self.manageContactsLayout.addWidget(self.addContact, 4, 1, 1, 1)
         self.searchContact = QtWidgets.QLineEdit(ManageContacts)
@@ -55,7 +58,7 @@ class Ui_ManageContacts(object):
         self.addGroup = QtWidgets.QPushButton(ManageContacts)
         self.addGroup.setStyleSheet("color: rgb(11, 35, 21);\n"
 "background-color: rgb(229, 229, 229);")
-        self.addGroup.setIcon(icon)
+        self.addGroup.setIcon(icon1)
         self.addGroup.setObjectName("addGroup")
         self.manageContactsLayout.addWidget(self.addGroup, 4, 0, 1, 1)
         self.groupsTableView = QtWidgets.QTableView(ManageContacts)

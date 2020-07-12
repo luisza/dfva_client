@@ -26,7 +26,8 @@ class ManageContacts(Ui_ManageContacts):
         self.current_user = current_user
         self.setupUi(widget)
         self.selected_group = -1
-        self.contacts_model = ContactModel(user=current_user, db=self.db, tableview=self.contactsTableView)
+        self.contacts_model = ContactModel(user=current_user, db=self.db, tableview=self.contactsTableView,
+                                           widget=self.widget)
         self.groups_model = GroupModel(user=current_user, db=self.db, tableview=self.groupsTableView)
         self.proxy_model_contact = QtCore.QSortFilterProxyModel()  # to allow contacts search
         self.initialize_and_populate_groups()
@@ -111,8 +112,8 @@ class ManageContacts(Ui_ManageContacts):
                 self.contacts_model.add_contact(firstname, lastname, identification)
                 self.contactsTableView.selectRow(self.contacts_model.rowCount()-1)  # select the added contact
         else:
-            QtWidgets.QMessageBox.information(None, 'Seleccione Grupo', "Por favor seleccione un grupo para agregar "
-                                                                        "contactos.")
+            QtWidgets.QMessageBox.information(self.widget, 'Seleccione Grupo', "Por favor seleccione un grupo para "
+                                                                               "agregar contactos.")
 
     def delete_contact_action(self, row, column):
         self.contacts_model.delete_contact(row)

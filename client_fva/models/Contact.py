@@ -18,6 +18,7 @@ class ContactModel(QSqlQueryModel):
         self.user = kwargs.pop('user')
         self.db = kwargs.pop('db')
         self.tableview = kwargs.pop('tableview')
+        self.widget = kwargs.pop('widget')
         self.group = None
         super(ContactModel, self).__init__(*args, **kwargs)
 
@@ -48,10 +49,10 @@ class ContactModel(QSqlQueryModel):
 
     def update_contact_data(self, column, id, value):
         if column == "identification" and not self.valid_identification(value):
-            QtWidgets.QMessageBox.critical(None, 'Identificación Inválida', "No se puede actualizar el contacto porque "
-                                                                            "la identificación ingresada es inválida.\n"
-                                                                            "Formatos aceptados \n * Nacional: "
-                                                                            "00-0000-0000 \n * Extranjero: 000000000000")
+            QtWidgets.QMessageBox.critical(self.widget, 'Identificación Inválida',
+                                           "No se puede actualizar el contacto porque la identificación ingresada es "
+                                           "inválida.\nFormatos aceptados \n * Nacional: 00-0000-0000 \n "
+                                           "* Extranjero: 000000000000")
         else:
             strquery = 'update contacts set %s = ? where id = ? and userid = ? and groupid = ?' % (column)
             query = QSqlQuery(db=self.db)
@@ -77,10 +78,10 @@ class ContactModel(QSqlQueryModel):
                 logger.error(query.lastError().text())
             self.refresh()
         else:
-            QtWidgets.QMessageBox.critical(None, 'Contacto Inválido', "No se puede crear el nuevo contacto porque "
-                                                                      "la identificación ingresada es inválida.\n"
-                                                                      "Formatos aceptados \n * Nacional: 00-0000-0000"
-                                                                      "\n * Extranjero: 000000000000")
+            QtWidgets.QMessageBox.critical(self.widget, 'Contacto Inválido',
+                                           "No se puede crear el nuevo contacto porque la identificación ingresada "
+                                           "es inválida.\nFormatos aceptados \n * Nacional: 00-0000-0000"
+                                           "\n * Extranjero: 000000000000")
 
     def refresh(self):
         if self.group == -1 or self.group is None:

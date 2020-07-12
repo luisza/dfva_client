@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Administrar Contactos</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset>
+  </property>
   <property name="styleSheet">
    <string notr="true">color:rgb(76, 118, 82);
 background-color:rgb(216, 230, 225);</string>
