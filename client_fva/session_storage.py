@@ -17,6 +17,7 @@ class SessionStorage(object):
             SessionStorage.__instance = self
 
         self.pkcs11_client = None
+        self.parent_widget = None
         self.tabs = ['General']
         self.serials = ['nd']
         self.persons = [None]

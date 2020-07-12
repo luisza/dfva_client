@@ -54,7 +54,7 @@ class FVAClient(Ui_FVAClientUI):
         self.force_exit = False  # the exit button was pressed (from the tray icon) so we need to exit it all
         self.db = None
         self.session_storage = SessionStorage.getInstance()
-
+        self.session_storage.parent_widget = self.centralWidget
         # TODO - CREATE METHODS TO POPULATE CURRENT USER ACCORDING TO TAB SO IT'S NOT 1 ALWAYS - ALSO ADD USER MODEL
         # AND ITS MANAGEMENT IN DATABASE - CONTACTS ARE RELATED TO USERS BUT RIGHT NOW THEY ARE ALWAYS RELATED TO 1
         self.current_user = 1
@@ -190,7 +190,6 @@ def run():
     configure_settings(user_settings)
     fva_client_ui = FVAClient(QtWidgets.QMainWindow(), usersettings=user_settings)
     fva_client_ui.show()
-
     ok, fva_client_ui.db = createDB()
     if not ok:
         QtWidgets.QMessageBox.critical(None, "Error en la Base de Datos",
