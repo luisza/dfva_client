@@ -20,5 +20,6 @@
     <file>images/error.png</file>
     <file>images/connecting.png</file>
     <file>images/connected.png</file>
+    <file>images/search.png</file>
   </qresource>
 </RCC>
