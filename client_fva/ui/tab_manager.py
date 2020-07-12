@@ -91,7 +91,6 @@ class TabManager(QObject):
         self.controller.usrSlots.insertTab(position, my_requests_ui.widget, "%s: %s"%(serial[-4:], name))
         self.controller.set_enabled_specific_menu_actions(True)
         self.create_list_menu(ui, name, serial, slot)
-        person.register()
 
     def remove_tab(self, name, slot):
         index = self.session_storage.tabs.index(slot)
