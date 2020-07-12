@@ -47,18 +47,24 @@ class ContactModel(QSqlQueryModel):
         return True
 
     def update_contact_data(self, column, id, value):
-        strquery = 'update contacts set %s = ? where id = ? and userid = ? and groupid = ?' % (column)
-        query = QSqlQuery(db=self.db)
-        query.prepare(strquery)
-        query.addBindValue(value)
-        query.addBindValue(id)
-        query.addBindValue(self.user)
-        query.addBindValue(self.group)
-        if not query.exec_():
-            logger.error(query.lastError().text())
+        if column == "identification" and not self.valid_identification(value):
+            QtWidgets.QMessageBox.critical(None, 'Identificación Inválida', "No se puede actualizar el contacto porque "
+                                                                            "la identificación ingresada es inválida.\n"
+                                                                            "Formatos aceptados \n * Nacional: "
+                                                                            "00-0000-0000 \n * Extranjero: 000000000000")
+        else:
+            strquery = 'update contacts set %s = ? where id = ? and userid = ? and groupid = ?' % (column)
+            query = QSqlQuery(db=self.db)
+            query.prepare(strquery)
+            query.addBindValue(value)
+            query.addBindValue(id)
+            query.addBindValue(self.user)
+            query.addBindValue(self.group)
+            if not query.exec_():
+                logger.error(query.lastError().text())
 
     def add_contact(self, firstname, lastname, identification):
-        if self.identification_is_valid(identification):
+        if self.valid_identification(identification):
             query = QSqlQuery(self.db)
             query.prepare("insert into contacts(groupid, userid, firstname,  lastname,  identification) "
                           "values(?, ?, ?, ?, ?)")
@@ -109,7 +115,7 @@ class ContactModel(QSqlQueryModel):
             logger.error(query.lastError().text())
         self.refresh()
 
-    def identification_is_valid(self, identification):
+    def valid_identification(self, identification):
         pattern = r'(^[1|5]\d{11}$)|(^\d{2}-\d{4}-\d{4}$)'  # only person identifications
         if re.match(pattern, identification):
             return True
