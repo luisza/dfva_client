@@ -21,4 +21,4 @@ class SessionStorage(object):
         self.tabs = ['General']
         self.serials = ['nd']
         self.persons = [None]
-        self.users = [None,]
+        self.users = [None, ]
