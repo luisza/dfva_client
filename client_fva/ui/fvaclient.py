@@ -65,6 +65,10 @@ class FVAClient(Ui_FVAClientUI):
         self.tabmanager = TabManager(self, main_app)
         signals.connect('pin', self.request_pin)
 
+    def set_db(self, db):
+        self.db = db
+        self.session_storage.db = db
+
     def closeEvent(self, event):
         # it will minimize or close it depending on what the user setup in their settings - if the user selected exit
         # from the tray icon then it will be closed no matter what
@@ -135,7 +139,7 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_layout(my_requests_ui.myRequestsLayout)
 
     def open_my_signatures(self):
-        my_signatures_ui = MySignatures(QtWidgets.QWidget(), main_app)
+        my_signatures_ui = MySignatures(QtWidgets.QWidget(), main_app, self.db, self.usrSlots.currentIndex())
         self.setup_tab_layout(my_signatures_ui.mySignaturesLayout)
 
     def open_settings(self):
@@ -190,7 +194,8 @@ def run():
     configure_settings(user_settings)
     fva_client_ui = FVAClient(QtWidgets.QMainWindow(), usersettings=user_settings)
     fva_client_ui.show()
-    ok, fva_client_ui.db = createDB()
+    ok, db = createDB()
+    fva_client_ui.set_db(db)
     if not ok:
         QtWidgets.QMessageBox.critical(None, "Error en la Base de Datos",
                                        "Hubo un problema cargando la base de datos, por favor intente más tarde o "

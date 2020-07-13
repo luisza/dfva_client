@@ -1,5 +1,7 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QThreadPool, QObject
+
+from client_fva.models.User import UserModel
 from client_fva.monitor import Monitor
 from client_fva.person import PersonClient
 from client_fva.session_storage import SessionStorage
@@ -9,7 +11,7 @@ import logging
 from client_fva.ui.fvadialog import FVASpeakerClient
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem
 
-logger = logging.getLogger('dfva_client')
+logger = logging.getLogger()
 
 
 class TabManager(QObject):
@@ -38,6 +40,7 @@ class TabManager(QObject):
             return obj
 
     def create_list_menu(self, fvaspeaker, name, serial, slot):
+        user = None
         if self.card_information is None:
             layout = self.controller.usrSlots.widget(0).layout()
             self.card_information = QTableWidget()
@@ -60,6 +63,8 @@ class TabManager(QObject):
         certs = fvaspeaker.client.pkcs11client.get_certificate_info(slot=slot)
         if certs:
             cert = certs['authentication']
+            usercontrol = UserModel(db=self.session_storage.db)
+            user = usercontrol.get_or_create_user(name,cert['first_name'], cert['last_name'])
             #index = len(self.session_storage.tabs)
             self.card_information.insertRow(self.card_information.rowCount())
             self.card_information.setItem(self.card_count, 0, QTableWidgetItem(name))
@@ -74,15 +79,16 @@ class TabManager(QObject):
 
             self.card_count += 1
             self.card_information.resizeColumnsToContents()
-
         else:
             self.card_information.setRowCount(0)
+        return user
 
     def create_tab(self, name, slot, serial):
         my_requests_ui = MyRequests(QtWidgets.QWidget(), self.main_app)
         FVADialog = QtWidgets.QDialog()
         ui = FVASpeakerClient(FVADialog, slot, name)
         person = PersonClient(slot=slot, person=name, serial=serial)
+
         self.session_storage.tabs.append(slot)
         self.session_storage.serials.append(serial)
         self.session_storage.persons.append(person)
@@ -90,7 +96,8 @@ class TabManager(QObject):
         self.speakers[serial] = ui
         self.controller.usrSlots.insertTab(position, my_requests_ui.widget, "%s: %s"%(serial[-4:], name))
         self.controller.set_enabled_specific_menu_actions(True)
-        self.create_list_menu(ui, name, serial, slot)
+        user = self.create_list_menu(ui, name, serial, slot)
+        self.session_storage.users.append(user)
 
     def remove_tab(self, name, slot):
         index = self.session_storage.tabs.index(slot)
@@ -104,6 +111,7 @@ class TabManager(QObject):
             del self.session_storage.tabs[index]
             del self.session_storage.serials[index]
             del self.session_storage.persons[index]
+            del self.session_storage.users[index]
             self.card_count -= 1
 
     def close(self):

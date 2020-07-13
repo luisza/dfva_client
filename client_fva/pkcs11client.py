@@ -205,6 +205,8 @@ class PKCS11Client:
                 identification = cert.subject.get_attributes_for_oid(NameOID.SERIAL_NUMBER)[0].value
                 person = {
                     'name': name.title(),
+                    'first_name': GN,
+                    'last_name': SN,
                     'identification': identification.replace("CPF-", ''),
                     'type': O,
                     'organization': OU,

@@ -62,8 +62,6 @@ class UserSettings:
         self.secret_auth_keys = {}
         # non-active wait time for the thread
         self.wait_for_scan_new_device = 3000
-
-
         self.validate_supported_extensions = {
             'docx': 'msoffice', 'doc': 'msoffice', 'xls': 'msoffice', 'xlsx': 'msoffice', 'ppt': 'msoffice',
             'pptx': 'msoffice', 'xml': 'cofirma', 'pdf': 'pdf', 'pem': 'certificate', 'crt': 'certificate',

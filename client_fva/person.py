@@ -18,7 +18,7 @@ from client_fva.user_settings import UserSettings
 from .session_storage import SessionStorage
 
 
-class PersonClientInterface():
+class PersonClientInterface:
     """
     .. note:: Este cliente está en desarrollo por lo que muchas cosas falta y muchos errores no son manejados
     así que cualquier aporte o revisión es bienvenida.
@@ -427,7 +427,7 @@ class OSPersonClient(PersonBaseClient):
         #    document = document.decode()
 
         if resume is None:
-            resume = "Sorry document with out resume"
+            resume = "Sorry document without resume"
 
         dev = super(OSPersonClient, self).sign(
             identification,
@@ -460,7 +460,7 @@ class OSPersonClient(PersonBaseClient):
         if hasattr(document, 'read'):
             document = document.read()
 
-        dev =  super(OSPersonClient, self).validate(
+        dev = super(OSPersonClient, self).validate(
             document,
             file_path=None,
             algorithm=algorithm,
