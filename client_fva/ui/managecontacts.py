@@ -1,5 +1,7 @@
+import re
+
 from client_fva.ui.managecontactsui import Ui_ManageContacts
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QInputDialog, QLineEdit, QMenu
 from client_fva.models.Group import GroupModel
 from client_fva.ui.contactAddDialog import AddContactDialog
@@ -24,13 +26,16 @@ class ManageContacts(Ui_ManageContacts):
         self.current_user = current_user
         self.setupUi(widget)
         self.selected_group = -1
-        self.contacts_model = ContactModel(user=current_user, db=self.db, tableview=self.contactsTableView)
+        self.contacts_model = ContactModel(user=current_user, db=self.db, tableview=self.contactsTableView,
+                                           widget=self.widget)
         self.groups_model = GroupModel(user=current_user, db=self.db, tableview=self.groupsTableView)
+        self.proxy_model_contact = QtCore.QSortFilterProxyModel()  # to allow contacts search
         self.initialize_and_populate_groups()
         self.initialize_and_populate_contacts()
         self.groupsTableView.selectionModel().currentRowChanged.connect(lambda: self.group_selected())
         self.addGroup.clicked.connect(lambda: self.add_group_db())
         self.addContact.clicked.connect(lambda: self.add_contact_db())
+        self.searchContact.textChanged.connect(self.search_contacts)
 
     def initialize_and_populate_groups(self):
         self.groupsTableView.setModel(self.groups_model)
@@ -38,6 +43,8 @@ class ManageContacts(Ui_ManageContacts):
         self.groupsTableView.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.groups_model.refresh()
         self.groupsTableView.contextMenuEvent = self.context_group_menu_event
+        self.groupsTableView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers |
+                                             QtWidgets.QAbstractItemView.DoubleClicked)  # only edit on double click
 
     def context_group_menu_event(self, pos):
         if self.groupsTableView.selectedIndexes():
@@ -53,11 +60,15 @@ class ManageContacts(Ui_ManageContacts):
                     self.delete_group_action(row, column)
 
     def initialize_and_populate_contacts(self):
-        self.contactsTableView.setModel(self.contacts_model)
+        self.proxy_model_contact.setSourceModel(self.contacts_model)
+        self.proxy_model_contact.setFilterKeyColumn(-1)  # so it searches by all columns
+        self.contactsTableView.setModel(self.proxy_model_contact)
         self.contactsTableView.setSelectionMode(QtWidgets.QTableView.SingleSelection)
         self.contactsTableView.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.contacts_model.refresh()
         self.contactsTableView.contextMenuEvent = self.context_contact_menu_event
+        self.contactsTableView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers |
+                                               QtWidgets.QAbstractItemView.DoubleClicked)  # only edit on double click
 
     def context_contact_menu_event(self, pos):
         if self.contactsTableView.selectedIndexes():
@@ -84,7 +95,7 @@ class ManageContacts(Ui_ManageContacts):
         text, okPressed = QInputDialog.getText(self.widget, "Agregar Grupo", "Nombre", QLineEdit.Normal, "")
         if okPressed and text:
             self.groups_model.add_group(text)
-            self.groupsTableView.selectRow(self.groups_model.rowCount()-1)
+            self.groupsTableView.selectRow(self.groups_model.rowCount()-1)  # select the added group
 
     def delete_group_action(self, row, column):
         self.contacts_model.delete_group_contacts()
@@ -99,9 +110,15 @@ class ManageContacts(Ui_ManageContacts):
             firstname, lastname, identification, ok = AddContactDialog.new_contact(self.widget)
             if ok:
                 self.contacts_model.add_contact(firstname, lastname, identification)
+                self.contactsTableView.selectRow(self.contacts_model.rowCount()-1)  # select the added contact
         else:
-            QtWidgets.QMessageBox.information(None, 'Seleccione Grupo', "Por favor seleccione un grupo para agregar "
-                                                                        "contactos.")
+            QtWidgets.QMessageBox.information(self.widget, 'Seleccione Grupo', "Por favor seleccione un grupo para "
+                                                                               "agregar contactos.")
 
     def delete_contact_action(self, row, column):
         self.contacts_model.delete_contact(row)
+
+    def search_contacts(self, text):
+        regex = ".*{}.*".format(text)  # a contains search
+        self.proxy_model_contact.setFilterRegExp(QtCore.QRegExp(regex, QtCore.Qt.CaseInsensitive))
+

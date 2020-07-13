@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Agregar Contacto</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset>
+  </property>
   <widget class="QDialogButtonBox" name="dialogbox">
    <property name="geometry">
     <rect>
