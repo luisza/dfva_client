@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_elements/managecontacts.ui'
+# Form implementation generated from reading ui file 'client_fva/ui/ui_elements/managecontacts.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,6 +12,9 @@ class Ui_ManageContacts(object):
     def setupUi(self, ManageContacts):
         ManageContacts.setObjectName("ManageContacts")
         ManageContacts.resize(615, 371)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        ManageContacts.setWindowIcon(icon)
         ManageContacts.setStyleSheet("color:rgb(76, 118, 82);\n"
 "background-color:rgb(216, 230, 225);")
         self.manageContactsLayout = QtWidgets.QGridLayout(ManageContacts)
@@ -19,15 +22,15 @@ class Ui_ManageContacts(object):
         self.contactsTableView = QtWidgets.QTableView(ManageContacts)
         self.contactsTableView.setObjectName("contactsTableView")
         self.manageContactsLayout.addWidget(self.contactsTableView, 3, 1, 1, 1)
-        self.addGroup = QtWidgets.QPushButton(ManageContacts)
-        self.addGroup.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.addGroup.setStyleSheet("color: rgb(11, 35, 21);\n"
+        self.addContact = QtWidgets.QPushButton(ManageContacts)
+        self.addContact.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.addContact.setStyleSheet("color: rgb(11, 35, 21);\n"
 "background-color: rgb(229, 229, 229);")
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.addGroup.setIcon(icon)
-        self.addGroup.setObjectName("add_group")
-        self.manageContactsLayout.addWidget(self.addGroup, 4, 0, 1, 1)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.addContact.setIcon(icon1)
+        self.addContact.setObjectName("addContact")
+        self.manageContactsLayout.addWidget(self.addContact, 4, 1, 1, 1)
         self.searchContact = QtWidgets.QLineEdit(ManageContacts)
         self.searchContact.setObjectName("searchContact")
         self.manageContactsLayout.addWidget(self.searchContact, 1, 0, 1, 2)
@@ -52,12 +55,12 @@ class Ui_ManageContacts(object):
         self.titleLabel_2.setWordWrap(True)
         self.titleLabel_2.setObjectName("titleLabel_2")
         self.manageContactsLayout.addWidget(self.titleLabel_2, 0, 0, 1, 2)
-        self.addContact = QtWidgets.QPushButton(ManageContacts)
-        self.addContact.setStyleSheet("color: rgb(11, 35, 21);\n"
+        self.addGroup = QtWidgets.QPushButton(ManageContacts)
+        self.addGroup.setStyleSheet("color: rgb(11, 35, 21);\n"
 "background-color: rgb(229, 229, 229);")
-        self.addContact.setIcon(icon)
-        self.addContact.setObjectName("add_contact")
-        self.manageContactsLayout.addWidget(self.addContact, 4, 1, 1, 1)
+        self.addGroup.setIcon(icon1)
+        self.addGroup.setObjectName("addGroup")
+        self.manageContactsLayout.addWidget(self.addGroup, 4, 0, 1, 1)
         self.groupsTableView = QtWidgets.QTableView(ManageContacts)
         self.groupsTableView.setObjectName("groupsTableView")
         self.manageContactsLayout.addWidget(self.groupsTableView, 3, 0, 1, 1)
@@ -68,12 +71,12 @@ class Ui_ManageContacts(object):
     def retranslateUi(self, ManageContacts):
         _translate = QtCore.QCoreApplication.translate
         ManageContacts.setWindowTitle(_translate("ManageContacts", "Administrar Contactos"))
-        self.addGroup.setText(_translate("ManageContacts", "Grupo"))
+        self.addContact.setText(_translate("ManageContacts", "Contacto"))
         self.searchContact.setPlaceholderText(_translate("ManageContacts", "Buscar contacto..."))
         self.titleLabel_4.setText(_translate("ManageContacts", "Contactos"))
         self.titleLabel_3.setText(_translate("ManageContacts", "Grupos"))
         self.titleLabel_2.setText(_translate("ManageContacts", "Administrar Contactos"))
-        self.addContact.setText(_translate("ManageContacts", "Contacto"))
+        self.addGroup.setText(_translate("ManageContacts", "Grupo"))
 
 from . import resources_rc
 
