@@ -16,6 +16,7 @@ import requests
 from PyQt5 import QtCore
 from pkcs11.mechanisms import Mechanism
 from client_fva import signals
+from client_fva.models.Pin import Secret
 from client_fva.pkcs11client import PKCS11Client
 from client_fva.rsa import pem_to_base64
 from client_fva.user_settings import UserSettings
@@ -293,7 +294,7 @@ class FVA_Base_client(object):
         return response, pin
 
     def _get_signed_hash(self, _hash, pin):
-
+        pin = Secret(pin, decode=True)
         certificates = self.pkcs11client.get_keys(pin=pin, slot=self.slot_number)
         d = certificates['sign']['priv_key'].sign(b64decode(_hash), mechanism=Mechanism.SHA256_RSA_PKCS)
         return b64encode(d)

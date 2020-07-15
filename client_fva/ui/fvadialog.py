@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QTableWidgetItem
 
 from client_fva import signals
 from client_fva.fva_speaker import FVA_client
+from client_fva.models.Pin import Secret
 from client_fva.session_storage import SessionStorage
 from client_fva.ui.fvadialogui import Ui_FVADialog
 from client_fva.user_settings import UserSettings
@@ -80,10 +81,12 @@ class FVASpeakerClient(Ui_FVADialog):
         self.notify()
 
     def notify(self):
-        self.obj.response['pin'] = self.pin.text()
+        self.obj.response['pin'] = str(Secret(self.pin.text()))
         self.obj.response['code'] = self.code.text()
         self.obj.response['rejected'] = self.rejected
         signals.receive(self.obj, notify=True)
+        self.pin.setText('')
+        self.code.setText('')
 
     def request_pin_code(self, sender, obj):
         logger.info("Request fva speaker dialog %r" %

@@ -1,6 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QInputDialog, QLineEdit
 
+from client_fva.models.Pin import Secret
 from client_fva.session_storage import SessionStorage
 from client_fva.ui.fvaclientui import Ui_FVAClientUI
 from client_fva.ui.myrequests import MyRequests
@@ -180,7 +181,7 @@ class FVAClient(Ui_FVAClientUI):
         serial = obj.data['serial']
         text, ok = QInputDialog.getText(None, "Atención", f"Ingrese su pin para {serial}", QLineEdit.Password)
         if ok:
-            obj.response = {'pin': text, 'serial': serial, 'rejected': False}
+            obj.response = {'pin': str(Secret(text)), 'serial': serial, 'rejected': False}
         else:
             obj.response = {'pin': "", 'serial': serial, 'rejected': True}
         signals.receive(obj, notify=True)

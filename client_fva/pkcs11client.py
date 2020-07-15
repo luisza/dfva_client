@@ -16,6 +16,8 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.x509.oid import NameOID, ExtensionOID
 from PyQt5.QtWidgets import QApplication, QInputDialog, QLineEdit
 
+from client_fva.models.Pin import Secret
+
 logger = logging.getLogger()
 
 class SlotNotFound(Exception):
@@ -129,6 +131,9 @@ class PKCS11Client:
     def get_pin(self, pin=None, slot=None):
         """Obtiene el pin de la tarjeta para iniciar sessión"""
 
+        if isinstance(pin, Secret):
+            return str(pin)
+
         if pin:
             return pin
 
@@ -143,7 +148,8 @@ class PKCS11Client:
 
             sobj = signals.SignalObject(signals.PIN_REQUEST, {'serial': serial})
             respobj = signals.receive(signals.send('pin', sobj))
-            pin = respobj.response['pin']
+            if respobj.response['pin']:
+                pin = str(Secret(respobj.response['pin'], decode=True))
         if pin is None:
             raise PinNotProvided('Sorry PIN is Needed, we will remove this, but for now use export \
             PKCS11_PIN=<pin> before call python')
