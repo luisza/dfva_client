@@ -7,9 +7,8 @@ PyQt5==5.10.1
 python-dateutil==2.7.1
 python-pkcs11==0.6.0
 pytz==2018.3
-requests==2.20.0
+requests==2.24.0
 git+https://github.com/LudovicRousseau/PyKCS11
 pyscard==1.9.6
 sip==4.19.8
 six==1.11.0
-

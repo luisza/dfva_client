@@ -1,8 +1,3 @@
-'''
-Created on 21 ago. 2017
-
-@author: luis
-'''
 import pkcs11
 import os
 from pkcs11.constants import Attribute
@@ -14,17 +9,19 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.x509.oid import NameOID, ExtensionOID
-from PyQt5.QtWidgets import QApplication, QInputDialog, QLineEdit
 
 from client_fva.models.Pin import Secret
 
 logger = logging.getLogger()
 
+
 class SlotNotFound(Exception):
     pass
 
+
 class PinNotProvided(Exception):
     pass
+
 
 class PKCS11Client:
     slot = None
@@ -40,7 +37,6 @@ class PKCS11Client:
     def __init__(self, *args, **kwargs):
 
         self.settings = kwargs.get('settings', {})
-        self.signal = kwargs.get('signal', None)
         self.slot = kwargs.get('slot', None)
         self.session = {}
         self.certificates = {}
@@ -48,13 +44,13 @@ class PKCS11Client:
         self.lib = None
 
     def get_slots(self):
-
+        slots = None
         try:
             if self.lib is None:
                 self.lib = pkcs11.lib(self.get_module_lib())
             slots = self.lib.get_slots()
         except Exception as e:
-            self.signal.send('notify', obj={
+            signals.send('notify', {
                 'message': "La biblioteca instalada no funciona para leer las \
                 tarjetas, porque no ha instalado las bibliotecas\
                 necesarias o porque el sistema operativo no está soportado"
@@ -122,11 +118,9 @@ class PKCS11Client:
         if os.path.exists(path):
             return path
 
-        self.signal.send('notify', obj={
-            'message': "No existe una biblioteca instalada para leer las \
-            tarjetas, esto puede ser porque no ha instalado las bibliotecas \
-            necesarias o porque el sistema operativo no está soportado"
-        })
+        signals.send('notify', {'message': "No existe una biblioteca instalada para leer las tarjetas, esto puede "
+                                           "ser porque no ha instalado las bibliotecas necesarias o porque el sistema "
+                                           "operativo no está soportado"})
 
     def get_pin(self, pin=None, slot=None):
         """Obtiene el pin de la tarjeta para iniciar sessión"""
@@ -265,9 +259,8 @@ class PKCS11Client:
         try:
             info = self.get_certificate_info(slot=slot)
         except pkcs11.exceptions.TokenNotRecognised as e:
-            self.signal.send('notify', obj={
-                'message': "No se puede obtener la identificación de la persona, posiblemente porque la tarjeta está mal conectada"
-            })
+            signals.send('notify', {'message': "No se puede obtener la identificación de la persona, posiblemente "
+                                               "porque la tarjeta está mal conectada"})
             logger.error("Tarjeta no detectada %r" % (e, ))
         if info:
             self.identification = info['authentication']['identification']
