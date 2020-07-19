@@ -1,8 +1,3 @@
-'''
-
-@author: luis
-'''
-
 import time
 from PyQt5.QtCore import QMutex, QObject, pyqtSignal, QSharedMemory
 from PyQt5.QtWidgets import QApplication

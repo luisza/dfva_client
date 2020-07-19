@@ -1,9 +1,3 @@
-'''
-Created on 17 ago. 2017
-
-@author: luis
-'''
-
 import json
 import logging
 import os

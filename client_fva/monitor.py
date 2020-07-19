@@ -1,8 +1,3 @@
-'''
-Created on 30 sep. 2017
-
-@author: luisza
-'''
 import logging
 import time
 
@@ -134,9 +129,9 @@ class Monitor(QRunnable):
             pass
         except Exception as noToken:
             if notify_exception:
-                signals.send('notify', {
-                    'message': "Un dispositivo ha sido encontrado, pero ninguna tarjeta pudo ser leída, por favor verifique que la tarjeta esté correctamente insertada"
-                })
+                signals.send('notify', {'message': "Un dispositivo ha sido encontrado, pero ninguna tarjeta pudo ser "
+                                                   "leída, por favor verifique que la tarjeta esté correctamente "
+                                                   "insertada"})
             logger.error("%r"%(noToken,))
             # except Exception as e:
             #     if notify_exception:

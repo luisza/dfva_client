@@ -1,9 +1,3 @@
-'''
-Created on 3 ago. 2017
-
-@author: luis
-'''
-
 from Crypto.Cipher import AES
 import io
 import hashlib

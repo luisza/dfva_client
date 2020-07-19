@@ -1,8 +1,3 @@
-'''
-Created on 21 ago. 2017
-
-@author: luis
-'''
 import pkcs11
 import os
 from pkcs11.constants import Attribute
@@ -14,7 +9,6 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.x509.oid import NameOID, ExtensionOID
-from PyQt5.QtWidgets import QApplication, QInputDialog, QLineEdit
 
 logger = logging.getLogger()
 
@@ -52,11 +46,11 @@ class PKCS11Client:
                 self.lib = pkcs11.lib(self.get_module_lib())
             slots = self.lib.get_slots()
         except Exception as e:
-            self.signal.send('notify', obj={
-                'message': "La biblioteca instalada no funciona para leer las \
-                tarjetas, porque no ha instalado las bibliotecas\
-                necesarias o porque el sistema operativo no está soportado"
-            })
+            signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR,
+                                                        {'message': "La biblioteca instalada no funciona para leer "
+                                                                    "las tarjetas, porque no ha instalado las "
+                                                                    "bibliotecas necesarias o porque el sistema "
+                                                                    "operativo no está soportado"}))
             logger.error("Error abriendo dispositivos PKCS11 %r" % (e,))
 
         if not slots:
@@ -106,25 +100,24 @@ class PKCS11Client:
 
         _os = platform.system().lower()
         _os_arch = platform.machine()
+        path = None
         BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         if _os == 'linux':
             path = os.path.join(
-                BASE_DIR, 'client_fva/libs/%s/%s/libASEP11.so' % (_os, _os_arch))
+                BASE_DIR, 'os_libs/%s/%s/libASEP11.so' % (_os, _os_arch))
         elif _os == "darwin":
             path = os.path.join(
-                BASE_DIR, 'client_fva/libs/macos/libASEP11.dylib')
+                BASE_DIR, 'os_libs/macos/libASEP11.dylib')
         elif _os == "windows":
             path = os.path.join(
-                BASE_DIR, 'client_fva/libs/windows/asepkcs.dll')
+                BASE_DIR, 'os_libs/windows/asepkcs.dll')
 
-        if os.path.exists(path):
+        if path and os.path.exists(path):
             return path
 
-        self.signal.send('notify', obj={
-            'message': "No existe una biblioteca instalada para leer las \
-            tarjetas, esto puede ser porque no ha instalado las bibliotecas \
-            necesarias o porque el sistema operativo no está soportado"
-        })
+        signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR, {
+            'message': "No existe una biblioteca instalada para leer las tarjetas, esto puede ser porque no ha "
+                       "instalado las bibliotecas necesarias o porque el sistema operativo no está soportado"}))
 
     def get_pin(self, pin=None, slot=None):
         """Obtiene el pin de la tarjeta para iniciar sessión"""
@@ -259,9 +252,10 @@ class PKCS11Client:
         try:
             info = self.get_certificate_info(slot=slot)
         except pkcs11.exceptions.TokenNotRecognised as e:
-            self.signal.send('notify', obj={
-                'message': "No se puede obtener la identificación de la persona, posiblemente porque la tarjeta está mal conectada"
-            })
+            signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR,
+                                                        {'message': "No se puede obtener la identificación de la "
+                                                                    "persona, posiblemente porque la tarjeta está "
+                                                                    "mal conectada"}))
             logger.error("Tarjeta no detectada %r" % (e, ))
         if info:
             self.identification = info['authentication']['identification']

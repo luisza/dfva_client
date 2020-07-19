@@ -1,8 +1,3 @@
-'''
-Created on 1 ago. 2017
-
-@author: luis
-'''
 import requests
 import json
 import time

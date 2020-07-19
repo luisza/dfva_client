@@ -1,8 +1,3 @@
-'''
-Created on 2 ago. 2017
-
-@author: luis
-'''
 from client_fva.person import PersonClient
 from client_fva.user_settings import UserSettings
 import os 

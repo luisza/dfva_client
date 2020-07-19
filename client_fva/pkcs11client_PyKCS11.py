@@ -1,8 +1,3 @@
-'''
-Created on 21 ago. 2017
-
-@author: luis
-'''
 import PyKCS11
 import os
 import platform
@@ -12,7 +7,6 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.x509.oid import NameOID, ExtensionOID
-from blinker import signal
 import threading
 
 logger = logging.getLogger('dfva_client')
