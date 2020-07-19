@@ -92,11 +92,19 @@ class PersonClientInterface:
         """Solicita una autenticación a la persona con la identificación suministrada"""
         pass
 
-    def check_autenticate(self, identification, code, algorithm='sha512'):
+    def check_authenticate(self, code):
         """Verifica si una solicitud de autenticación ya ha sido procesada.
 
         Cuando se solicita una autenticación el sistema devuelve un código que debe mostrarse al usuario, 
         para verificar si el usuario ya ingresó los datos debe usarse es mismo código y la misma identificación.
+        """
+        pass
+
+    def delete_authenticate(self, code):
+        """Elimina una solicitud de autenticación que ya haya sido procesada.
+
+        Después del proceso de firmado y verificación de la firma para autenticación, se debe informar al sistema web, para que elimine
+        la transacción, esto como medida amiga ya que dfva borra las transacciones periodicamente
         """
         pass
 
@@ -117,7 +125,7 @@ class PersonClientInterface:
         """
         pass
 
-    def check_sign(self, identification, code):
+    def check_sign(self, code):
         """Verifica si una solicitud de firma ya ha sido procesada.
 
         Cuando se solicita una firma el sistema devuelve un código que debe mostrarse al usuario, 
@@ -125,6 +133,13 @@ class PersonClientInterface:
         """
         pass
 
+    def delete_sign(self, code):
+        """Elimina una solicitud de firma ya ha sido procesada.
+
+        Después del proceso de firmado y verificación de la firma, se debe informar al sistema web, para que elimine
+        la transacción, esto como medida amiga ya que dfva borra las transacciones periodicamente
+        """
+        pass
     def validate(self, document, file_path=None, _format='certificate',
                  is_base64=False):
         """
@@ -143,7 +158,7 @@ class PersonClientInterface:
 
         pass
 
-    def is_suscriptor_connected(self, identification, algorithm='sha512'):
+    def is_suscriptor_connected(self, identification):
         """Comprueba si un suscriptor (persona) está conectada con su dispositivo de firma digital.
         Puede usarse este método para indicarle al usuario cuando desea enviar una petición a firmar el estado de 
         la otra persona.
@@ -186,9 +201,6 @@ class PersonBaseClient(PersonClientInterface):
         return self.register()
 
     def authenticate(self, identification, wait=False):
-        data = {
-
-        }
         self.notify('process', 1, 'Iniciando proceso de autenticación')
 
         params = {
@@ -203,37 +215,29 @@ class PersonBaseClient(PersonClientInterface):
                                     json=params, headers=self.get_http_headers())
 
         data = result.json()
-        data = data['data']
         self.notify('process', 3, 'Datos de autenticación recibidos correctamente')
-        id_transaction = data['id_transaction']
+        id_auth = data['id']
         if wait:
             wait_count = 1
             while not data['received_notification']:
                 self.notify('process', 4, f'Verificando estado {wait_count}')
                 time.sleep(self.wait_time)
-                data = self.check_autenticate(identification, id_transaction)
+                data = self.check_authenticate(id_auth)
+                wait_count+= 1
+            self.delete_autenticate(id_auth)
         self.notify('process', 5, 'Transacción completa')
         self.notify('end_authentication', 0, '')
         return data
 
-    def check_autenticate(self, identification, code, algorithm='sha512'):
-        data = {
-            'person': self.person,
-            'identification': identification,
-            'request_datetime': self._get_time(),
-        }
-        params = {
-            "public_certificate": self._get_public_auth_certificate(),
-            'person': self.person,
-            "data": data,
-        }
-
-        result = self.requests.post(self.settings.fva_server_url + self.settings.check_authenticate_person % (code,),
-                                    json=params, headers=self.get_http_headers())
-
+    def check_authenticate(self, code):
+        result = self.requests.get(self.settings.fva_server_url + self.settings.check_authenticate_person % (code,),
+                                   headers=self.get_http_headers())
         data = result.json()
-        data = data['data']
         return data
+
+    def delete_autenticate(self, code):
+        return self.requests.delete(self.settings.fva_server_url + self.settings.authenticate_delete % (code,),
+                                   headers=self.get_http_headers())
 
     def sign(self, identification, document, resume, _format="xml_cofirma", file_path=None, is_base64=False,
              algorithm='sha512', wait=False, extras={}):
@@ -267,18 +271,23 @@ class PersonBaseClient(PersonClientInterface):
             while not data['received_notification']:
                 self.notify('process', 5, f'Verificando estado {wait_count}')
                 time.sleep(self.wait_time)
-                data = self.check_sign(identification, sign_id)
+                data = self.check_sign(sign_id)
                 wait_count += 1
+            self.delete_sign(sign_id)
         self.notify('process', 6, 'Transacción completa')
         return data
 
-    def check_sign(self, identification, code):
+    def check_sign(self, code):
 
         result = self.requests.get(self.settings.fva_server_url + self.settings.check_sign_person % (code,),
                                    headers=self.get_http_headers())
 
         data = result.json()
         return data
+
+    def delete_sign(self, code):
+        return self.requests.delete(self.settings.fva_server_url + self.settings.sign_delete % (code,),
+                                   headers=self.get_http_headers())
 
     def validate(self, document, file_path=None, is_base64=False, _format='certificate'):
         self.notify('process', 1, 'Validando archivo')
@@ -305,24 +314,10 @@ class PersonBaseClient(PersonClientInterface):
         self.notify('process', 4, 'Operación completa')
         return data
 
-    def is_suscriptor_connected(self, identification, algorithm='sha512'):
+    def is_suscriptor_connected(self, identification):
         self.notify('process', 1, 'Verificando suscriptor conectado')
-        data = {
-            'person': self.person,
-            'identification': identification,
-            'request_datetime': self._get_time(),
-        }
-
-        params = {
-            "algorithm": algorithm,
-            "public_certificate": self._get_public_auth_certificate(),
-            'person': self.person,
-            "data": data,
-        }
-        self.notify('process', 2, 'Enviando datos al servidor')
-        result = self.requests.post(
-            self.settings.fva_server_url +
-            self.settings.suscriptor_connected, json=params, headers=self.get_http_headers())
+        result = self.requests.get(self.settings.fva_server_url + self.settings.suscriptor_connected%(identification),
+            headers=self.get_http_headers())
 
         data = result.json()
         dev = False

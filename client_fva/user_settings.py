@@ -43,11 +43,13 @@ class UserSettings:
         self.fva_server_url = 'http://localhost:8000'
         self.authenticate_person = '/person/authenticate/'
         self.check_authenticate_person = '/person/authenticate/%s/'
+        self.authenticate_delete = '/person/sign/%s/'
         self.sign_person = '/person/sign/'
         self.check_sign_person = '/person/sign/%s/'
+        self.sign_delete = '/person/sign/%s/'
         self.validate_certificate = '/person/validate_certificate/'
         self.validate_document = '/person/validate_document/'
-        self.suscriptor_connected = '/validate/person_suscriptor_connected/'
+        self.suscriptor_connected = '/person/validate_suscriptor/%s/'
         self.login_person = '/login/'
         self.supported_sign_format = ['xml_cofirma', 'xml_contrafirma', 'odf', 'msoffice', 'pdf']
         self.supported_validate_format = ['certificate', 'cofirma', 'contrafirma', 'odf', 'msoffice', 'pdf']
@@ -100,11 +102,13 @@ class UserSettings:
             'fva_server_url': self.fva_server_url,
             'authenticate_person': self.authenticate_person,
             'check_authenticate_person': self.check_authenticate_person.replace("%", "@@"),
+            'authenticate_delete': self.authenticate_delete.replace("%", "@@"),
             'sign_person': self.sign_person,
             'check_sign_person': self.check_sign_person.replace("%", "@@"),
+            'sign_delete': self.sign_delete.replace("%", "@@"),
             'validate_certificate': self.validate_certificate,
             'validate_document': self.validate_document,
-            'suscriptor_connected': self.suscriptor_connected,
+            'suscriptor_connected': self.suscriptor_connected.replace("%", "@@"),
             'login_person': self.login_person,
             'supported_sign_format': ",".join(self.supported_sign_format),
             'supported_validate_format': ",".join(self.supported_validate_format),
