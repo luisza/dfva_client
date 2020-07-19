@@ -65,7 +65,8 @@ class UserSettings:
         self.validate_supported_extensions = {
             'docx': 'msoffice', 'doc': 'msoffice', 'xls': 'msoffice', 'xlsx': 'msoffice', 'ppt': 'msoffice',
             'pptx': 'msoffice', 'xml': 'cofirma', 'pdf': 'pdf', 'pem': 'certificate', 'crt': 'certificate',
-            'odt': 'odf', 'ods': 'odf', 'odp': 'odf', 'odg': 'odf', 'odf': 'odf', 'xmlc': 'contrafirma'
+            'der': 'certificate', 'odt': 'odf', 'ods': 'odf', 'odp': 'odf', 'odg': 'odf', 'odf': 'odf',
+            'xmlc': 'contrafirma'
         }
         self.file_supported_extensions = {
             'docx': 'msoffice', 'doc': 'msoffice', 'xls': 'msoffice', 'xlsx': 'msoffice', 'ppt': 'msoffice',

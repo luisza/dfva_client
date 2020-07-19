@@ -24,6 +24,7 @@ function build_all() {
   build_ui_py settings
   build_ui_py tabdefault
   build_ui_py validationinformation
+  build_ui_py validationinformationcertificate
 }
 
 if [ "$#" -eq  "0" ]

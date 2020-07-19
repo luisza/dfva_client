@@ -10,6 +10,7 @@ from client_fva.session_storage import SessionStorage
 from client_fva.ui.filechooser import FileChooser
 from client_fva.ui.signvalidateui import Ui_SignValidate
 from client_fva.ui.validationinformation import ValidationInformation
+from client_fva.ui.validationinformationcertificate import ValidationInformationCertificate
 from client_fva.user_settings import UserSettings
 
 
@@ -193,16 +194,22 @@ class SignValidate(QWidget, Ui_SignValidate):
         print(self.opers[tid].result)
 
     def validate_result(self, tid):
-        print(self.opers[tid].result)
-        vi = ValidationInformation(self.widget, self.main_app)
-        vi.status.setText(self.opers[tid].result['status_text'])
-        for signer in self.opers[tid].result['signers']:
-            vi.add_signer(signer['identification_number'], signer['full_name'], signer['signature_date'])
+        if self.opers[tid].data['_format'] == 'certificate':
+            vi = ValidationInformationCertificate(self.widget, self.main_app)
+            vi.status.setText(self.opers[tid].result['status_text'])
+            vi.set_status_icon(self.opers[tid].result['was_successfully'])
+            vi.add_owner(self.opers[tid].result)
+            vi.show()
+        else:
+            vi = ValidationInformation(self.widget, self.main_app)
+            vi.status.setText(self.opers[tid].result['status_text'])
+            for signer in self.opers[tid].result['signers']:
+                vi.add_signer(signer['identification_number'], signer['full_name'], signer['signature_date'])
 
-        for warning in self.opers[tid].result['warnings']:
-            vi.add_warning(warning['description'])
+            for warning in self.opers[tid].result['warnings']:
+                vi.add_warning(warning['description'])
 
-        for error in self.opers[tid].result['errors']:
-            vi.add_errors(error['detail'])
-        vi.set_status_icon(self.opers[tid].result['status'] == 0)
-        vi.show()
+            for error in self.opers[tid].result['errors']:
+                vi.add_errors(error['detail'])
+            vi.set_status_icon(self.opers[tid].result['status'] == 0)
+            vi.show()
