@@ -104,18 +104,19 @@ class PKCS11Client:
 
         _os = platform.system().lower()
         _os_arch = platform.machine()
+        path = None
         BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         if _os == 'linux':
             path = os.path.join(
-                BASE_DIR, 'client_fva/libs/%s/%s/libASEP11.so' % (_os, _os_arch))
+                BASE_DIR, 'os_libs/%s/%s/libASEP11.so' % (_os, _os_arch))
         elif _os == "darwin":
             path = os.path.join(
-                BASE_DIR, 'client_fva/libs/macos/libASEP11.dylib')
+                BASE_DIR, 'os_libs/macos/libASEP11.dylib')
         elif _os == "windows":
             path = os.path.join(
-                BASE_DIR, 'client_fva/libs/windows/asepkcs.dll')
+                BASE_DIR, 'os_libs/windows/asepkcs.dll')
 
-        if os.path.exists(path):
+        if path and os.path.exists(path):
             return path
 
         signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR, {
