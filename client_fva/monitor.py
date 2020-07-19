@@ -1,8 +1,3 @@
-'''
-Created on 30 sep. 2017
-
-@author: luisza
-'''
 import logging
 import time
 

@@ -9,8 +9,8 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.x509.oid import NameOID, ExtensionOID
-
 from client_fva.models.Pin import Secret
+
 
 logger = logging.getLogger()
 
@@ -50,11 +50,11 @@ class PKCS11Client:
                 self.lib = pkcs11.lib(self.get_module_lib())
             slots = self.lib.get_slots()
         except Exception as e:
-            signals.send('notify',  signals.SignalObject(signals.NOTIFTY_ERROR,
-                                                         {'message': "La biblioteca instalada no funciona para leer "
-                                                                     "las tarjetas, porque no ha instalado las "
-                                                                     "bibliotecas necesarias o porque el sistema "
-                                                                     "operativo no está soportado"}))
+            signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR,
+                                                        {'message': "La biblioteca instalada no funciona para leer "
+                                                                    "las tarjetas, porque no ha instalado las "
+                                                                    "bibliotecas necesarias o porque el sistema "
+                                                                    "operativo no está soportado"}))
             logger.error("Error abriendo dispositivos PKCS11 %r" % (e,))
 
         if not slots:
@@ -260,9 +260,10 @@ class PKCS11Client:
         try:
             info = self.get_certificate_info(slot=slot)
         except pkcs11.exceptions.TokenNotRecognised as e:
-            signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR, {
-                'message': "No se puede obtener la identificación de la persona, posiblemente porque la tarjeta está "
-                           "mal conectada"}))
+            signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR,
+                                                        {'message': "No se puede obtener la identificación de la "
+                                                                    "persona, posiblemente porque la tarjeta está "
+                                                                    "mal conectada"}))
             logger.error("Tarjeta no detectada %r" % (e, ))
         if info:
             self.identification = info['authentication']['identification']
