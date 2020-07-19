@@ -1,13 +1,7 @@
-'''
-
-@author: luis
-'''
-
-import time
-from PyQt5.QtCore import QMutex, QObject, pyqtSignal, QSharedMemory
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QMutex, QObject, pyqtSignal
 from uuid import uuid4
 import logging
+
 # Return response = {'pin': xxx, 'rejected': False}
 PIN_REQUEST = 1
 # Return response =  {'pin': xxx, 'code': xxx, 'rejected': False}
@@ -18,6 +12,7 @@ NOTIFTY_ERROR = 5
 NOTIFTY_INFO = 6
 
 logger = logging.getLogger()
+
 
 class SignalObject(object):
     '''
@@ -60,6 +55,7 @@ class SignalObject(object):
         * fva_speaker  {'pin': 99999, 'rejected': false, 'code': 'UY12345ZL'}
 
     '''
+
     _type = None
     data = None
     response = None
@@ -96,7 +92,6 @@ def send(key, data):
 
 
 def connect(key, func):
-
     if key in available_signals:
         available_signals[key].result.connect(func)
     else:

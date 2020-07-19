@@ -17,7 +17,6 @@ from PyQt5 import QtCore
 from pkcs11.mechanisms import Mechanism
 from client_fva import signals
 from client_fva.models.Pin import Secret
-from client_fva.pkcs11client import PKCS11Client
 from client_fva.rsa import pem_to_base64
 from client_fva.user_settings import UserSettings
 

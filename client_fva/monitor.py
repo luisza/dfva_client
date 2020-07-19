@@ -86,7 +86,6 @@ class Monitor(QRunnable):
         self.session_storage = SessionStorage.getInstance()
         self.pkcs11client = PKCS11Client(*args, **kwargs)
         self.session_storage.pkcs11_client = self.pkcs11client
-        #self.signal = kwargs.get('signal', signal('fva_client'))
         QRunnable.__init__(self)
 
         self.setAutoDelete(True)
@@ -134,9 +133,9 @@ class Monitor(QRunnable):
             pass
         except Exception as noToken:
             if notify_exception:
-                signals.send('notify', {
-                    'message': "Un dispositivo ha sido encontrado, pero ninguna tarjeta pudo ser leída, por favor verifique que la tarjeta esté correctamente insertada"
-                })
+                signals.send('notify', {'message': "Un dispositivo ha sido encontrado, pero ninguna tarjeta pudo ser "
+                                                   "leída, por favor verifique que la tarjeta esté correctamente "
+                                                   "insertada"})
             logger.error("%r"%(noToken,))
             # except Exception as e:
             #     if notify_exception:
