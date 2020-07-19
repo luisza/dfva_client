@@ -9,6 +9,7 @@ from client_fva.models.MySign import MySignModel
 from client_fva.session_storage import SessionStorage
 from client_fva.ui.filechooser import FileChooser
 from client_fva.ui.signvalidateui import Ui_SignValidate
+from client_fva.ui.validationinformation import ValidationInformation
 from client_fva.user_settings import UserSettings
 
 
@@ -50,7 +51,6 @@ class PersonValidateOpers(QThread):
         super(PersonValidateOpers, self).__init__()
         self.tid = tid
         self.result = None
-
 
     def run(self):
         self.result = self.person.validate(self.data['document'], self.data['file_path'], self.data['algorithm'],
@@ -194,3 +194,15 @@ class SignValidate(QWidget, Ui_SignValidate):
 
     def validate_result(self, tid):
         print(self.opers[tid].result)
+        vi = ValidationInformation(self.widget, self.main_app)
+        vi.status.setText(self.opers[tid].result['status_text'])
+        for signer in self.opers[tid].result['signers']:
+            vi.add_signer(signer['identification_number'], signer['full_name'], signer['signature_date'])
+
+        for warning in self.opers[tid].result['warnings']:
+            vi.add_warning(warning['description'])
+
+        for error in self.opers[tid].result['errors']:
+            vi.add_errors(error['detail'])
+        vi.set_status_icon(self.opers[tid].result['status'] == 0)
+        vi.show()

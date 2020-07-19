@@ -93,7 +93,7 @@ class PersonClientInterface:
         """Cierra la sessión dentro de la tarjeta, a futuro notificará a DFVA para que elimine el token"""
         pass
 
-    def authenticate(self, identification, algorithm='sha512', wait=False):
+    def authenticate(self, identification, wait=False):
         """Solicita una autenticación a la persona con la identificación suministrada"""
         pass
 
@@ -105,7 +105,7 @@ class PersonClientInterface:
         """
         pass
 
-    def sign(self, identification, document, algorithm='sha512',
+    def sign(self, identification, document, resume, algorithm='sha512',
              file_path=None, _format='xml', is_base64=False,
              wait=False, extras={}):
         """Solicita la firma de un documento.
@@ -130,7 +130,7 @@ class PersonClientInterface:
         """
         pass
 
-    def validate(self, document, file_path=None, algorithm='sha512', _format='certificate',
+    def validate(self, document, file_path=None, _format='certificate',
                  is_base64=False):
         """
         Verifica si un certificado o documento firmado está adecuadamente firmado y es válido.
@@ -165,18 +165,8 @@ class PersonClientInterface:
         """
         pass
 
+
 class PersonBaseClient(PersonClientInterface):
-
-    def _encrypt(self, str_data, etype='authenticate'):
-        """ Encrypta usando alguno de los 2 encryptadores del dispositivo PKCS11.
-        * etype = authenticate, sign
-        """
-        pass
-
-    def _decrypt(self, str_data):
-        """ Desencripta usando la llave privada del certificados de autenticación del dispositivo PKCS11.
-        """
-        pass
 
     def _get_public_auth_certificate(self):
         """Obtiene el certificado de autenticación de la tarjeta"""
@@ -191,30 +181,34 @@ class PersonBaseClient(PersonClientInterface):
         actual_hour = cr_timezone.localize(datetime.now())
         return actual_hour.isoformat()  # .strftime("%Y-%m-%d %H:%M:%S")
 
-    def authenticate(self, identification, wait=False, algorithm='sha512'):
+    def get_http_headers(self):
+        return {'Accept': 'application/json', 'Content-Type': 'application/json',
+                'Authorization':  "Token %s" % self.get_auth_token()}
+
+    def get_auth_token(self):
+        if self.serial in self.settings.secret_auth_keys:
+            return self.settings.secret_auth_keys[self.serial]
+        return self.register()
+
+    def authenticate(self, identification, wait=False):
         data = {
+
+        }
+        self.notify('process', 1, 'Iniciando proceso de autenticación')
+
+        params = {
+            "public_certificate": self._get_public_auth_certificate(),
             'person': self.person,
             'identification': identification,
             'request_datetime': self._get_time(),
         }
-        self.notify('process', 1, 'Iniciando proceso de autenticación')
-        str_data = json.dumps(data)
-        edata = self._encrypt(str_data, etype='authenticate')
-        hashsum = get_hash_sum(edata,  algorithm)
-        edata = edata.decode()
-        params = {
-            "data_hash": hashsum,
-            "algorithm": algorithm,
-            "public_certificate": self._get_public_auth_certificate(),
-            'person': self.person,
-            "data": edata,
-        }
+
         self.notify('process', 2, 'Enviando datos de solicitud al servidor')
         result = self.requests.post(self.settings.fva_server_url + self.settings.authenticate_person,
-                                    json=params)
+                                    json=params, headers=self.get_http_headers())
 
         data = result.json()
-        data = self._decrypt(data['data'])
+        data = data['data']
         self.notify('process', 3, 'Datos de autenticación recibidos correctamente')
         id_transaction = data['id_transaction']
         if wait:
@@ -222,7 +216,7 @@ class PersonBaseClient(PersonClientInterface):
             while not data['received_notification']:
                 self.notify('process', 4, f'Verificando estado {wait_count}')
                 time.sleep(self.wait_time)
-                data = self.check_autenticate(identification, id_transaction, algorithm=algorithm)
+                data = self.check_autenticate(identification, id_transaction)
         self.notify('process', 5, 'Transacción completa')
         self.notify('end_authentication', 0, '')
         return data
@@ -233,143 +227,86 @@ class PersonBaseClient(PersonClientInterface):
             'identification': identification,
             'request_datetime': self._get_time(),
         }
-
-        str_data = json.dumps(data)
-        edata = self._encrypt(str_data, etype='authenticate')
-        hashsum = get_hash_sum(edata,  algorithm)
-        edata = edata.decode()
         params = {
-            "data_hash": hashsum,
-            "algorithm": algorithm,
             "public_certificate": self._get_public_auth_certificate(),
             'person': self.person,
-            "data": edata,
+            "data": data,
         }
-        result = self.requests.post(
-            self.settings.fva_server_url +
-            self.settings.check_authenticate_person % (code,), json=params)
+
+        result = self.requests.post(self.settings.fva_server_url + self.settings.check_authenticate_person % (code,),
+                                    json=params, headers=self.get_http_headers())
 
         data = result.json()
-        data = self._decrypt(data['data'])
+        data = data['data']
         return data
 
-    def sign(self, identification, document, resume, _format="xml_cofirma",
-             file_path=None, is_base64=False,
+    def sign(self, identification, document, resume, _format="xml_cofirma", file_path=None, is_base64=False,
              algorithm='sha512', wait=False, extras={}):
         if not is_base64:
             document = b64encode(document).decode()
 
-        data = {
+        params = {
             'person': self.person,
             'document': document,
             'format': _format,
             'algorithm_hash': algorithm,
             'document_hash': get_hash_sum(document,  algorithm),
             'identification': identification,
-            'resumen': resume,
+            'resume': resume,
             'request_datetime': self._get_time(),
-        }
-        data.update(extras)
-
-        str_data = json.dumps(data)
-        self.notify('process', 2, 'Encriptando datos a enviar')
-        edata = self._encrypt(str_data, etype='sign')
-        hashsum = get_hash_sum(edata,  algorithm)
-        edata = edata.decode()
-        params = {
-            "data_hash": hashsum,
-            "algorithm": algorithm,
             "public_certificate": self._get_public_sign_certificate(),
-            'person': self.person,
-            "data": edata,
         }
+        params.update(extras)
 
-        headers = {'Accept': 'application/json',
-                   'Content-Type': 'application/json'}
         self.notify('process', 3, 'Enviando documento al sistema de firmado')
         result = self.requests.post(self.settings.fva_server_url + self.settings.sign_person, json=params,
-                                    headers=headers)
+                                    headers=self.get_http_headers())
         self.notify('process', 4, 'Documento enviado')
         data = result.json()
-        data = self._decrypt(data['data'])
-        id_transaction = data['id_transaction']
+        #data = data['data']
+        sign_id = data['id']
         if data['status'] != 0:
-            wait  = False
+            wait = False
         if wait:
             wait_count = 1
             while not data['received_notification']:
                 self.notify('process', 5, f'Verificando estado {wait_count}')
                 time.sleep(self.wait_time)
-                data = self.check_sign(identification, id_transaction, algorithm=algorithm)
+                data = self.check_sign(identification, sign_id)
                 wait_count += 1
         self.notify('process', 6, 'Transacción completa')
         return data
 
-    def check_sign(self, identification, code, algorithm='sha512'):
-        data = {
-            'person': self.person,
-            'identification': identification,
-            'request_datetime': self._get_time(),
-        }
+    def check_sign(self, identification, code):
 
-        str_data = json.dumps(data)
-        edata = self._encrypt(str_data, etype='sign')
-        hashsum = get_hash_sum(edata,  algorithm)
-        edata = edata.decode()
-        params = {
-            "data_hash": hashsum,
-            "algorithm": algorithm,
-            "public_certificate": self._get_public_sign_certificate(),
-            'person': self.person,
-            "data": edata,
-        }
-        result = self.requests.post(
-            self.settings.fva_server_url +
-            self.settings.check_sign_person % (code,), json=params)
+        result = self.requests.get(self.settings.fva_server_url + self.settings.check_sign_person % (code,),
+                                   headers=self.get_http_headers())
 
         data = result.json()
-        data = self._decrypt(data['data'])
         return data
 
-    def validate(self, document, file_path=None, algorithm='sha512', is_base64=False, _format='certificate'):
+    def validate(self, document, file_path=None, is_base64=False, _format='certificate'):
         self.notify('process', 1, 'Validando archivo')
         if not is_base64:
             document = b64encode(document).decode()
-        data = {
+
+        params = {
             'person': self.person,
             'document': document,
             'request_datetime': self._get_time(),
             'format': _format
         }
-        if _format != 'certificate':
-            data['format'] = _format
 
-        str_data = json.dumps(data)
-        edata = self._encrypt(str_data, etype='sign')
-        hashsum = get_hash_sum(edata,  algorithm)
-        edata = edata.decode()
-        params = {
-            "data_hash": hashsum,
-            "algorithm": algorithm,
-            "public_certificate": self._get_public_sign_certificate(),
-            'person': self.person,
-            "data": edata,
-        }
 
         if _format == 'certificate':
             url = self.settings.validate_certificate
         else:
             url = self.settings.validate_document
-        headers = {'Accept': 'application/json',
-                   'Content-Type': 'application/json'}
 
         self.notify('process', 2, 'Enviando datos al servidor de validación')
-        result = self.requests.post(
-            self.settings.fva_server_url + url, json=params, headers=headers)
+        result = self.requests.post(self.settings.fva_server_url + url, json=params, headers=self.get_http_headers())
 
         data = result.json()
-        self.notify('process', 3, 'Analizando datos recibidos')
-        data = self._decrypt(data['data'])
         self.notify('process', 4, 'Operación completa')
         return data
 
@@ -381,21 +318,16 @@ class PersonBaseClient(PersonClientInterface):
             'request_datetime': self._get_time(),
         }
 
-        str_data = json.dumps(data)
-        edata = self._encrypt(str_data, etype='authenticate')
-        hashsum = get_hash_sum(edata,  algorithm)
-        edata = edata.decode()
         params = {
-            "data_hash": hashsum,
             "algorithm": algorithm,
             "public_certificate": self._get_public_auth_certificate(),
             'person': self.person,
-            "data": edata,
+            "data": data,
         }
         self.notify('process', 2, 'Enviando datos al servidor')
         result = self.requests.post(
             self.settings.fva_server_url +
-            self.settings.suscriptor_connected, json=params)
+            self.settings.suscriptor_connected, json=params, headers=self.get_http_headers())
 
         data = result.json()
         dev = False
@@ -463,7 +395,6 @@ class OSPersonClient(PersonBaseClient):
         dev = super(OSPersonClient, self).validate(
             document,
             file_path=None,
-            algorithm=algorithm,
             is_base64=is_base64,
             _format=_format)
         self.notify('end_validate', 0, '')
@@ -507,50 +438,15 @@ class PKCS11PersonClient(OSPersonClient):
         certificates = self.pkcs11client.get_certificates(slot=self.slot)
         return certificates['sign'].decode()
 
-    def get_key_token(self):
-        """Convierte a texto plano o número el token de sessión de DFVA que está encriptado"""
-        if self.key_token is None:
-            self.register()
-
-        keys = self.pkcs11client.get_keys(slot=self.slot)
-        key_token = keys['authentication']['priv_key'].decrypt(self.key_token)
-        return key_token
-
-    def _encrypt(self, str_data, etype='authenticate'):
-        """
-        etype = authenticate, sign
-        """
-        if etype == 'authenticate':
-            etype = 'authentication'
-        keys = self.pkcs11client.get_keys(slot=self.slot)
-        keytoken = self.get_key_token()
-        signed_token = keys[etype]['priv_key'].sign(keytoken)
-
-        return encrypt(keytoken, signed_token, str_data)
-
-    def _decrypt(self, str_data):
-        etype = 'authentication'
-        keys = self.pkcs11client.get_keys(slot=self.slot)
-        return decrypt(keys[etype]['priv_key'], str_data)
-
-    def sign_identification(self, identification):
+    def sign_identification(self, identification, slot=None):
         """Firma con la llave privada la identificación de la persona, para determinar si es correctamente, la 
         persona que dice ser (validación en DFVA).
         """
-        keys = self.pkcs11client.get_keys(slot=self.slot)
+        keys = self.pkcs11client.get_keys(slot=slot)
         return keys['authentication']['priv_key'].sign(identification)
 
-    def load_key_token(self):
-        dev = False
-        if self.serial in self.settings.secret_auth_keys:
-            self.key_token = b64decode(self.settings.secret_auth_keys[self.serial])
-            dev = True
-        return dev
-
-    def register(self, algorithm='sha512'):
-        if self.load_key_token():
-            return
-        edata = self.sign_identification(self.person)
+    def register(self, algorithm='sha512', slot=None):
+        edata = self.sign_identification(self.person, slot=slot)
         hashsum = get_hash_sum(edata,  algorithm)
         edata = b64encode(edata).decode()
         params = {
@@ -562,10 +458,8 @@ class PKCS11PersonClient(OSPersonClient):
         }
         result = self.requests.post(self.settings.fva_server_url + self.settings.login_person, json=params)
         data = result.json()
-        self.key_token = b64decode(data['token'])
         self.settings.secret_auth_keys[self.serial] = data['token']
-        self.settings.save()
-        return data
+        return data['token']
 
     def unregister(self):
         self.close()

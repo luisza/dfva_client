@@ -23,6 +23,7 @@ function build_all() {
   build_ui_py requestauthentication
   build_ui_py settings
   build_ui_py tabdefault
+  build_ui_py validationinformation
 }
 
 if [ "$#" -eq  "0" ]

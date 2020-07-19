@@ -41,12 +41,12 @@ class UserSettings:
 
         # DFVA settings
         self.fva_server_url = 'http://localhost:8000'
-        self.authenticate_person = '/authenticate/person/'
-        self.check_authenticate_person = '/authenticate/%s/person_show/'
-        self.sign_person = '/sign/person/'
-        self.check_sign_person = '/sign/%s/person_show/'
-        self.validate_certificate = '/validate/person_certificate/'
-        self.validate_document = '/validate/person_document/'
+        self.authenticate_person = '/person/authenticate/'
+        self.check_authenticate_person = '/person/authenticate/%s/'
+        self.sign_person = '/person/sign/'
+        self.check_sign_person = '/person/sign/%s/'
+        self.validate_certificate = '/person/validate_certificate/'
+        self.validate_document = '/person/validate_document/'
         self.suscriptor_connected = '/validate/person_suscriptor_connected/'
         self.login_person = '/login/'
         self.supported_sign_format = ['xml_cofirma', 'xml_contrafirma', 'odf', 'msoffice', 'pdf']
