@@ -21,8 +21,8 @@
    <string notr="true">color:rgb(76, 118, 82);
 background-color:rgb(216, 230, 225);</string>
   </property>
-  <layout class="QGridLayout" name="signValidateLayout">
-   <item row="0" column="0" colspan="3">
+  <layout class="QVBoxLayout" name="signValidateLayout">
+   <item>
     <widget class="QLabel" name="titleLabel">
      <property name="acceptDrops">
       <bool>false</bool>
@@ -44,29 +44,7 @@ background-color:rgb(216, 230, 225);</string>
      </property>
     </widget>
    </item>
-   <item row="9" column="0" colspan="3">
-    <widget class="QProgressBar" name="signValidateProgressBar">
-     <property name="styleSheet">
-      <string notr="true"/>
-     </property>
-     <property name="value">
-      <number>0</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="invertedAppearance">
-      <bool>false</bool>
-     </property>
-     <property name="textDirection">
-      <enum>QProgressBar::BottomToTop</enum>
-     </property>
-     <property name="format">
-      <string>Procesando...</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0" rowspan="2" colspan="3">
+   <item>
     <widget class="QScrollArea" name="scrollArea">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -235,6 +213,12 @@ color: rgb(0, 0, 0);</string>
           </item>
           <item row="3" column="0">
            <widget class="SignListAreaWidget" name="filesWidget">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="acceptDrops">
              <bool>true</bool>
             </property>
@@ -242,10 +226,22 @@ color: rgb(0, 0, 0);</string>
              <enum>Qt::ScrollBarAsNeeded</enum>
             </property>
             <property name="horizontalScrollBarPolicy">
-             <enum>Qt::ScrollBarAlwaysOff</enum>
+             <enum>Qt::ScrollBarAsNeeded</enum>
             </property>
             <property name="sizeAdjustPolicy">
              <enum>QAbstractScrollArea::AdjustIgnored</enum>
+            </property>
+            <property name="autoScroll">
+             <bool>true</bool>
+            </property>
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
+            </property>
+            <property name="verticalScrollMode">
+             <enum>QAbstractItemView::ScrollPerPixel</enum>
+            </property>
+            <property name="horizontalScrollMode">
+             <enum>QAbstractItemView::ScrollPerPixel</enum>
             </property>
             <property name="viewMode">
              <enum>QListView::ListMode</enum>
@@ -343,6 +339,28 @@ background-color: rgb(229, 229, 229);</string>
        </item>
       </layout>
      </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QProgressBar" name="signValidateProgressBar">
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="value">
+      <number>0</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="invertedAppearance">
+      <bool>false</bool>
+     </property>
+     <property name="textDirection">
+      <enum>QProgressBar::BottomToTop</enum>
+     </property>
+     <property name="format">
+      <string>No archivo seleccionado....</string>
+     </property>
     </widget>
    </item>
   </layout>
