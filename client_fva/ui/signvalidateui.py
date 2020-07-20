@@ -177,7 +177,7 @@ class Ui_SignValidate(object):
         self.label_razon.setToolTip(_translate("SignValidate", "Solo en firmas de documentos PDF"))
         self.label_razon.setText(_translate("SignValidate", "Razón*"))
         self.sign.setText(_translate("SignValidate", "Firmar"))
-        self.signValidateProgressBar.setFormat(_translate("SignValidate", "No archivo seleccionado...."))
+        self.signValidateProgressBar.setFormat(_translate("SignValidate", "Sin archivo seleccionado...."))
 
 from client_fva.ui.custom_components.ownsignlistwidget import SignListAreaWidget
 from . import resources_rc
