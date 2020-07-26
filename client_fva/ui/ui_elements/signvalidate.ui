@@ -13,12 +13,16 @@
   <property name="windowTitle">
    <string>Firmar - Validar Documentos</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset>
+  </property>
   <property name="styleSheet">
    <string notr="true">color:rgb(76, 118, 82);
 background-color:rgb(216, 230, 225);</string>
   </property>
-  <layout class="QGridLayout" name="signValidateLayout">
-   <item row="0" column="0" colspan="3">
+  <layout class="QVBoxLayout" name="signValidateLayout">
+   <item>
     <widget class="QLabel" name="titleLabel">
      <property name="acceptDrops">
       <bool>false</bool>
@@ -40,7 +44,7 @@ background-color:rgb(216, 230, 225);</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="0" colspan="3">
+   <item>
     <widget class="QScrollArea" name="scrollArea">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -65,12 +69,12 @@ background-color:rgb(216, 230, 225);</string>
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>598</width>
-        <height>288</height>
+        <width>592</width>
+        <height>290</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="scrollAreaWidgetLayout">
-       <item row="1" column="1">
+       <item row="0" column="0">
         <widget class="QFrame" name="fileFrame">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
@@ -81,9 +85,27 @@ background-color:rgb(216, 230, 225);</string>
          <property name="midLineWidth">
           <number>0</number>
          </property>
-         <layout class="QGridLayout" name="fileFrameLayout">
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_resumen">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <italic>false</italic>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">font: bold;
+color: rgb(0, 0, 0);</string>
+            </property>
+            <property name="text">
+             <string>Resumen</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="0">
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="label_archivo">
             <property name="styleSheet">
              <string notr="true">font: bold;
 color: rgb(0, 0, 0);</string>
@@ -105,33 +127,16 @@ color: rgb(0, 0, 0);</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>3</height>
-             </size>
-            </property>
-           </spacer>
+          <item row="3" column="2" rowspan="3">
+           <widget class="QTextEdit" name="resumen"/>
           </item>
-          <item row="7" column="3">
-           <widget class="QLabel" name="label_razon">
-            <property name="toolTip">
-             <string>Solo en firmas de documentos PDF</string>
-            </property>
-            <property name="text">
-             <string>Razón*:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="4">
+          <item row="8" column="2">
            <widget class="QLineEdit" name="razon"/>
           </item>
-          <item row="7" column="0">
+          <item row="8" column="0">
+           <widget class="QLineEdit" name="lugar"/>
+          </item>
+          <item row="4" column="0" rowspan="2">
            <widget class="QPushButton" name="browseFiles">
             <property name="autoFillBackground">
              <bool>false</bool>
@@ -149,7 +154,7 @@ background-color: rgb(229, 229, 229);</string>
             </property>
            </widget>
           </item>
-          <item row="9" column="0">
+          <item row="12" column="0">
            <widget class="QPushButton" name="validate">
             <property name="enabled">
              <bool>true</bool>
@@ -185,7 +190,102 @@ background-color: rgb(229, 229, 229);</string>
             </property>
            </widget>
           </item>
-          <item row="9" column="1">
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_lugar">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <italic>false</italic>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Solo en firmas de documentos PDF</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">font: bold;
+color: rgb(0, 0, 0);</string>
+            </property>
+            <property name="text">
+             <string>Lugar*</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="SignListAreaWidget" name="filesWidget">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="acceptDrops">
+             <bool>true</bool>
+            </property>
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAsNeeded</enum>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAsNeeded</enum>
+            </property>
+            <property name="sizeAdjustPolicy">
+             <enum>QAbstractScrollArea::AdjustIgnored</enum>
+            </property>
+            <property name="autoScroll">
+             <bool>true</bool>
+            </property>
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
+            </property>
+            <property name="verticalScrollMode">
+             <enum>QAbstractItemView::ScrollPerPixel</enum>
+            </property>
+            <property name="horizontalScrollMode">
+             <enum>QAbstractItemView::ScrollPerPixel</enum>
+            </property>
+            <property name="viewMode">
+             <enum>QListView::ListMode</enum>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="2">
+           <widget class="QLabel" name="label_razon">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <italic>false</italic>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Solo en firmas de documentos PDF</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">font: bold;
+color: rgb(0, 0, 0);</string>
+            </property>
+            <property name="text">
+             <string>Razón*</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="12" column="2">
            <widget class="QPushButton" name="sign">
             <property name="enabled">
              <bool>true</bool>
@@ -221,51 +321,18 @@ background-color: rgb(229, 229, 229);</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0" rowspan="3" colspan="2">
-           <widget class="SignListAreaWidget" name="filesWidget">
-            <property name="acceptDrops">
-             <bool>true</bool>
-            </property>
-            <property name="viewMode">
-             <enum>QListView::ListMode</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="2">
-           <spacer name="horizontalSpacer_2">
+          <item row="9" column="0">
+           <spacer name="verticalSpacer_2">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Vertical</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>40</width>
-              <height>20</height>
+              <width>20</width>
+              <height>40</height>
              </size>
             </property>
            </spacer>
-          </item>
-          <item row="3" column="4">
-           <widget class="QTextEdit" name="resumen"/>
-          </item>
-          <item row="8" column="3">
-           <widget class="QLabel" name="label_lugar">
-            <property name="toolTip">
-             <string>Solo en firmas de documentos PDF</string>
-            </property>
-            <property name="text">
-             <string>Lugar*:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="4">
-           <widget class="QLineEdit" name="lugar"/>
-          </item>
-          <item row="3" column="3">
-           <widget class="QLabel" name="label_resumen">
-            <property name="text">
-             <string>Resumen:</string>
-            </property>
-           </widget>
           </item>
          </layout>
         </widget>
@@ -274,7 +341,7 @@ background-color: rgb(229, 229, 229);</string>
      </widget>
     </widget>
    </item>
-   <item row="9" column="0" colspan="3">
+   <item>
     <widget class="QProgressBar" name="signValidateProgressBar">
      <property name="styleSheet">
       <string notr="true"/>
@@ -292,7 +359,7 @@ background-color: rgb(229, 229, 229);</string>
       <enum>QProgressBar::BottomToTop</enum>
      </property>
      <property name="format">
-      <string>Procesando...</string>
+      <string>No archivo seleccionado....</string>
      </property>
     </widget>
    </item>

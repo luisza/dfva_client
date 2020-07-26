@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from base64 import b64decode
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread
 from PyQt5.QtWidgets import QWidget
 
@@ -18,7 +18,7 @@ class PersonSignOpers(QThread):
     has_result = pyqtSignal(int)
 
     def __init__(self, tid, person, user, data):
-        self.data=data
+        self.data = data
         self.person = person
         super(PersonSignOpers, self).__init__()
         self.tid = tid
@@ -29,16 +29,16 @@ class PersonSignOpers(QThread):
     def run(self):
         data = self.data
 
-        mid = self.mysign.add_mysign(data['identification'], data['file_path'], data['file_name'],
-                                     sign_document_path=data['save_path'])
-        self.result = self.person.sign(data['identification'],
-            data['document'], data['resume'], _format=data['_format'], file_path=data['file_path'],
-            algorithm=data['algorithm'], is_base64=data['is_base64'], wait=data['wait'], extras=data['extras']
+        mid = self.mysign.add_mysign(data["identification"], data["file_path"], data["file_name"],
+                                     sign_document_path=data["save_path"])
+        self.result = self.person.sign(data["identification"],
+            data["document"], data["resume"], _format=data["_format"], file_path=data["file_path"],
+            algorithm=data["algorithm"], is_base64=data["is_base64"], wait=data["wait"], extras=data["extras"]
         )
-        self.mysign.update_mysign(mid, transaction_id=self.result['status'], transaction_text=self.result['status_text'])
+        self.mysign.update_mysign(mid, transaction_id=self.result["status"], transaction_text=self.result["status_text"])
 
-        with open(data['save_path'], 'wb') as arch:
-            arch.write(b64decode(self.result['signed_document']))
+        with open(data["save_path"], "wb") as arch:
+            arch.write(b64decode(self.result["sign_document"]))
 
         self.has_result.emit(self.tid)
 
@@ -47,15 +47,15 @@ class PersonValidateOpers(QThread):
     has_result = pyqtSignal(int)
 
     def __init__(self, tid, person, data):
-        self.data=data
+        self.data = data
         self.person = person
         super(PersonValidateOpers, self).__init__()
         self.tid = tid
         self.result = None
 
     def run(self):
-        self.result = self.person.validate(self.data['document'], self.data['file_path'], self.data['algorithm'],
-                             self.data['is_base64'], self.data['_format'])
+        self.result = self.person.validate(self.data["document"], self.data["file_path"], self.data["algorithm"],
+                                           self.data["is_base64"], self.data["_format"])
         self.has_result.emit(self.tid)
 
 
@@ -81,10 +81,31 @@ class SignValidate(QWidget, Ui_SignValidate):
         self.person.process_status.connect(self.update_process_bar)
         self.person.end_sign.connect(self.end_sign)
         self.person.end_validate.connect(self.end_validate)
+        self.filesWidget.contextMenuEvent = self.context_file_menu_event
+
+    def context_file_menu_event(self, pos):
+        if self.filesWidget.selectedIndexes():
+            selected = self.filesWidget.currentRow()  # user can only select one file at the time
+            menu = QtWidgets.QMenu()
+            menu.setStyleSheet("QMenu::item{color:rgb(76, 118, 82);background-color:rgb(216, 230, 225);}")
+            delete_action = menu.addAction("Delete")
+            delete_action.setIcon(QtGui.QIcon(":images/delete.png"))
+            action = menu.exec_(self.filesWidget.mapToGlobal(pos.pos()))
+            if action == delete_action:
+                self.delete_file(selected)
 
     def add_file(self, path):
-        self.path = path
-        self.filesWidget.addItem(path)
+        if path:  # only add it to the list if something was actually selected - none if user clicked cancel
+            if not self.filesWidget.count():  # only one file can be added at the time
+                self.path = path
+                self.filesWidget.addItem(path)
+            else:
+                QtWidgets.QMessageBox.critical(self.widget, "Solo un documento permitido",
+                                               "Solo un documento puede ser validado/firmado a la vez.")
+
+    def delete_file(self, selected_row):
+        self.path = None
+        self.filesWidget.takeItem(selected_row)
 
     def clean(self):
         self.resumen.setText("")
@@ -96,7 +117,7 @@ class SignValidate(QWidget, Ui_SignValidate):
 
     def get_format(self, validate=False):
         extension = "".join(Path(self.path).suffixes)
-        extension = extension.lower().replace('.', '')
+        extension = extension.lower().replace(".", "")
         support_extension = self.settings.file_supported_extensions
         if validate:
             support_extension = self.settings.validate_supported_extensions
@@ -106,26 +127,27 @@ class SignValidate(QWidget, Ui_SignValidate):
             extension = None
         return extension
 
-    @pyqtSlot(name='get_document_path')
+    @pyqtSlot(name="get_document_path")
     def get_document_path(self):
-
         d = FileChooser()
         path = d.openFileNameDialog()
         self.add_file(path)
         del d
 
-    @pyqtSlot(name='validate_document')
+    @pyqtSlot(name="validate_document")
     def validate_document(self):
         if self.path is None:
-            QtWidgets.QMessageBox.warning(None, "Sin documento seleccionado", 'Debe seleccionar un documento' )
+            QtWidgets.QMessageBox.critical(self.widget, "Sin documento seleccionado",
+                                           "Debe seleccionar un documento para llevar a cabo la acción seleccionada.")
             return
         _format = self.get_format(validate=True)
         if _format is None:
-            QtWidgets.QMessageBox.warning(None, "Formato de archivo no soportado",
-                                          'Lo lamentamos, este archivo no tiene un formato soportado por este sistema')
+            QtWidgets.QMessageBox.critical(self.widget, "Formato de archivo no soportado",
+                                           "Lo lamentamos, el archivo seleccionado no tiene un formato soportado por "
+                                           "este sistema.")
             return
-        validateprocess = PersonValidateOpers(len(self.opers), self.person, {'document': None, 'file_path': self.path,
-            'algorithm': self.settings.algorithm, 'is_base64': False, '_format': _format })
+        validateprocess = PersonValidateOpers(len(self.opers), self.person, {"document": None, "file_path": self.path,
+            "algorithm": self.settings.algorithm, "is_base64": False, "_format": _format })
         validateprocess.has_result.connect(self.validate_result)
         validateprocess.start()
         self.opers.append(validateprocess)
@@ -133,8 +155,9 @@ class SignValidate(QWidget, Ui_SignValidate):
     @pyqtSlot()
     def end_sign(self):
         self.clean()
-        QtWidgets.QMessageBox.information(None, "Documento firmado con éxito",
-                                      'El documento fue firmado y guardado con éxito en la carpeta de destino')
+        QtWidgets.QMessageBox.information(self.widget, "Documento firmado con éxito",
+                                          "El documento seleccionado fue firmado y guardado con éxito en la carpeta de "
+                                          "destino.")
 
     def end_validate(self):
         self.clean()
@@ -142,8 +165,8 @@ class SignValidate(QWidget, Ui_SignValidate):
     def get_document_name(self, signed=False):
         name = Path(self.path).name
         if signed:
-            l = name.split('.')
-            l.insert(-1, '-firmado.')
+            l = name.split(".")
+            l.insert(-1, "-firmado.")
             name = "".join(l)
         return name
 
@@ -155,32 +178,35 @@ class SignValidate(QWidget, Ui_SignValidate):
             signed = False
         return str(os.path.abspath(os.path.join(prefix, self.get_document_name(signed))))
 
-    @pyqtSlot(name='sign_document')
+    @pyqtSlot(name="sign_document")
     def sign_document(self):
         if self.path is None:
-            QtWidgets.QMessageBox.warning(None, "Sin documento seleccionado", 'Debe seleccionar un documento' )
+            QtWidgets.QMessageBox.critical(self.widget, "Sin documento seleccionado",
+                                           "Debe seleccionar un documento para llevar a cabo la acción seleccionada.")
             return
 
         extras = {}
-        if self.get_format() == 'pdf':
-            if self.razon.text() == '' and self.lugar.text() == '':
-                QtWidgets.QMessageBox.warning(None, "Datos faltantes", 'Cuando firma un documento PDF debe indicar el lugar y la razón de firma')
+        if self.get_format() == "pdf":
+            if self.razon.text() == "" and self.lugar.text() == "":
+                QtWidgets.QMessageBox.critical(self.widget, "Datos faltantes",
+                                               "Para firmar un documento PDF se debe indicar el lugar y la razón "
+                                               "de la firma.")
                 return
-            extras['reason'] = self.razon.text()
-            extras['place'] = self.lugar.text()
+            extras["reason"] = self.razon.text()
+            extras["place"] = self.lugar.text()
         self.signValidateProgressBar.setRange(0, 6)
         _format = self.get_format()
         if _format is None:
-            QtWidgets.QMessageBox.warning(None, "Formato de archivo no soportado",
-                                          'Lo lamentamos, este archivo no tiene un formato soportado por este sistema')
+            QtWidgets.QMessageBox.critical(self.widget, "Formato de archivo no soportado",
+                                           "Lo lamentamos, el archivo seleccionado no tiene un formato soportado por "
+                                           "este sistema.")
             return
         resume = self.resumen.toPlainText()
         persont = PersonSignOpers(len(self.opers), self.person, self.session_storage.users[self.index],
-                                  {'identification': self.person.person, 'document': None, 'resume': resume,
-                                      '_format': _format, 'algorithm': self.settings.algorithm, 'is_base64': False,
-                                   'wait': True, 'extras': extras,  'file_path': self.path,
-                                   'save_path': self.get_save_document_path(), 'file_name': self.get_document_name()})
-
+                                  {"identification": self.person.person, "document": None, "resume": resume,
+                                   "_format": _format, "algorithm": self.settings.algorithm, "is_base64": False,
+                                   "wait": True, "extras": extras,  "file_path": self.path,
+                                   "save_path": self.get_save_document_path(), "file_name": self.get_document_name()})
         persont.has_result.connect(self.sign_result)
         persont.start()
         self.opers.append(persont)
@@ -213,3 +239,4 @@ class SignValidate(QWidget, Ui_SignValidate):
                 vi.add_errors(error['detail'])
             vi.set_status_icon(self.opers[tid].result['status'] == 0)
             vi.show()
+
