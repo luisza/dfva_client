@@ -89,8 +89,7 @@ class UserSettings:
             'number_requests_before_fail': self.number_requests_before_fail,
             'save_signed_docs_path': self.save_signed_docs_path,
             'reconnection_wait_time': self.reconnection_wait_time,
-            'max_pin_fails': self.max_pin_fails,
-            'auth_token': ";".join(["%s,%s"%(x, y) for x, y in self.secret_auth_keys.items()])
+            'max_pin_fails': self.max_pin_fails
         }
         self.config['BCCR_FVA'] = {
             'bccr_fva_domain': self.bccr_fva_domain,
