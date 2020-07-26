@@ -64,6 +64,7 @@ class SignalObject(object):
         self._type = _type
         self.data = data
         self.response = {}
+        self.status = 0   # 0 initial, 1 in progress, 2 finished
         self.sid = uuid4().hex
         self.mutex = QMutex()
 
@@ -103,9 +104,13 @@ objs = {}
 
 def receive(obj, notify=False):
     if notify:
-        obj.mutex.unlock()
+        if obj.status == 1:
+            obj.mutex.unlock()
+        obj.status = 2
     else:
-        obj.mutex.lock()
+        if obj.status == 0:
+            obj.status = 1
+            obj.mutex.lock()
         #obj.mutex.lock()
         #obj.mutex.unlock()
     return obj
