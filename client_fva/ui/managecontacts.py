@@ -1,8 +1,5 @@
-import re
-
 from client_fva.ui.managecontactsui import Ui_ManageContacts
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtWidgets import QInputDialog, QLineEdit, QMenu
 from client_fva.models.Group import GroupModel
 from client_fva.ui.contactAddDialog import AddContactDialog
 from client_fva.models.Contact import ContactModel
@@ -51,7 +48,7 @@ class ManageContacts(Ui_ManageContacts):
             selected = self.groupsTableView.currentIndex()  # user can only select one group at the time
             if selected.isValid():
                 row, column = selected.row(), selected.column()
-                menu = QMenu()
+                menu = QtWidgets.QMenu()
                 menu.setStyleSheet("QMenu::item{color:rgb(76, 118, 82);background-color:rgb(216, 230, 225);}")
                 delete_action = menu.addAction("Delete")
                 delete_action.setIcon(QtGui.QIcon(":images/delete.png"))
@@ -75,7 +72,7 @@ class ManageContacts(Ui_ManageContacts):
             selected = self.contactsTableView.currentIndex()  # user can only select one contact at the time
             if selected.isValid():
                 row, column = selected.row(), selected.column()
-                menu = QMenu()
+                menu = QtWidgets.QMenu()
                 menu.setStyleSheet("QMenu::item{color:rgb(76, 118, 82);background-color:rgb(216, 230, 225);}")
                 delete_action = menu.addAction("Delete")
                 delete_action.setIcon(QtGui.QIcon(":images/delete.png"))
@@ -92,7 +89,7 @@ class ManageContacts(Ui_ManageContacts):
             self.contacts_model.refresh()
 
     def add_group_db(self):
-        text, okPressed = QInputDialog.getText(self.widget, "Agregar Grupo", "Nombre", QLineEdit.Normal, "")
+        text, okPressed = QtWidgets.QInputDialog.getText(self.widget, "Agregar Grupo", "Nombre", QtWidgets.QLineEdit.Normal, "")
         if okPressed and text:
             self.groups_model.add_group(text)
             self.groupsTableView.selectRow(self.groups_model.rowCount()-1)  # select the added group
