@@ -1,13 +1,11 @@
 import requests
-import json
 import time
 from datetime import datetime
-from base64 import b64encode, b64decode
+from base64 import b64encode
 
-from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal
 
-from .rsa import get_hash_sum, encrypt
-from client_fva.rsa import decrypt
+from .rsa import get_hash_sum
 from pytz import timezone
 from client_fva.user_settings import UserSettings
 from .session_storage import SessionStorage
@@ -108,9 +106,8 @@ class PersonClientInterface:
         """
         pass
 
-    def sign(self, identification, document, resume, algorithm='sha512',
-             file_path=None, _format='xml', is_base64=False,
-             wait=False, extras={}):
+    def sign(self, identification, document, resume, algorithm='sha512', file_path=None, _format='xml',
+             is_base64=False, wait=False, extras={}):
         """Solicita la firma de un documento.
 
         Parámetros:
@@ -140,12 +137,12 @@ class PersonClientInterface:
         la transacción, esto como medida amiga ya que dfva borra las transacciones periodicamente
         """
         pass
-    def validate(self, document, file_path=None, _format='certificate',
-                 is_base64=False):
+
+    def validate(self, document, file_path=None, _format='certificate', is_base64=False):
         """
         Verifica si un certificado o documento firmado está adecuadamente firmado y es válido.
 
-        Parámeteros:
+        Parámetros:
 
         * document: Documento a validar en base64 o None si se especifica file_path
         * file_path: Ruta del documento o certificado a valiad, acá el cliente se encarga de convertirlo a base64
@@ -155,10 +152,9 @@ class PersonClientInterface:
         cliente que lo convierta a base64 
 
         """
-
         pass
 
-    def is_suscriptor_connected(self, identification):
+    def is_subscriber_connected(self, identification):
         """Comprueba si un suscriptor (persona) está conectada con su dispositivo de firma digital.
         Puede usarse este método para indicarle al usuario cuando desea enviar una petición a firmar el estado de 
         la otra persona.
@@ -224,7 +220,7 @@ class PersonBaseClient(PersonClientInterface):
                 time.sleep(self.wait_time)
                 data = self.check_authenticate(id_auth)
                 wait_count+= 1
-            self.delete_autenticate(id_auth)
+            self.delete_authenticate(id_auth)
         self.notify('process', 5, 'Transacción completa')
         self.notify('end_authentication', 0, '')
         return data
@@ -235,12 +231,14 @@ class PersonBaseClient(PersonClientInterface):
         data = result.json()
         return data
 
-    def delete_autenticate(self, code):
+    def delete_authenticate(self, code):
         return self.requests.delete(self.settings.fva_server_url + self.settings.authenticate_delete % (code,),
-                                   headers=self.get_http_headers())
+                                    headers=self.get_http_headers())
 
     def sign(self, identification, document, resume, _format="xml_cofirma", file_path=None, is_base64=False,
-             algorithm='sha512', wait=False, extras={}):
+             algorithm='sha512', wait=False, extras=None):
+        if extras is None:
+            extras = {}
         if not is_base64:
             document = b64encode(document).decode()
 
@@ -262,7 +260,6 @@ class PersonBaseClient(PersonClientInterface):
                                     headers=self.get_http_headers())
         self.notify('process', 4, 'Documento enviado')
         data = result.json()
-        #data = data['data']
         sign_id = data['id']
         if data['status'] != 0:
             wait = False
@@ -278,10 +275,8 @@ class PersonBaseClient(PersonClientInterface):
         return data
 
     def check_sign(self, code):
-
         result = self.requests.get(self.settings.fva_server_url + self.settings.check_sign_person % (code,),
                                    headers=self.get_http_headers())
-
         data = result.json()
         return data
 
@@ -301,7 +296,6 @@ class PersonBaseClient(PersonClientInterface):
             'format': _format
         }
 
-
         if _format == 'certificate':
             url = self.settings.validate_certificate
         else:
@@ -314,11 +308,10 @@ class PersonBaseClient(PersonClientInterface):
         self.notify('process', 4, 'Operación completa')
         return data
 
-    def is_suscriptor_connected(self, identification):
+    def is_subscriber_connected(self, identification):
         self.notify('process', 1, 'Verificando suscriptor conectado')
         result = self.requests.get(self.settings.fva_server_url + self.settings.suscriptor_connected%(identification),
-            headers=self.get_http_headers())
-
+                                   headers=self.get_http_headers())
         data = result.json()
         dev = False
         if 'is_connected' in data:
@@ -345,22 +338,11 @@ class OSPersonClient(PersonBaseClient):
         if hasattr(document, 'read'):
             document = document.read()
 
-        # if hasattr(document, 'decode'):
-        #    document = document.decode()
+        if not resume:
+            resume = "Documento sin resumen"
 
-        if resume is None:
-            resume = "Sorry document without resume"
-
-        dev = super(OSPersonClient, self).sign(
-            identification,
-            document,
-            resume,
-            _format=_format,
-            file_path=None,
-            is_base64=is_base64,
-            algorithm=algorithm,
-            wait=wait, extras=extras)
-
+        dev = super(OSPersonClient, self).sign(identification, document, resume, _format=_format, file_path=None,
+                                               is_base64=is_base64, algorithm=algorithm, wait=wait, extras=extras)
         self.notify('end_sign', 0, '')
         return dev
 
@@ -382,11 +364,7 @@ class OSPersonClient(PersonBaseClient):
         if hasattr(document, 'read'):
             document = document.read()
 
-        dev = super(OSPersonClient, self).validate(
-            document,
-            file_path=None,
-            is_base64=is_base64,
-            _format=_format)
+        dev = super(OSPersonClient, self).validate(document, file_path=None, is_base64=is_base64, _format=_format)
         self.notify('end_validate', 0, '')
         return dev
 
@@ -412,9 +390,6 @@ class PKCS11PersonClient(OSPersonClient):
         if self.person is None:
             raise Exception("Person cannot be created, sorry read certificates failed")
 
-        #self.session = self.get_session()
-        #self.certificates = self.get_certificates()
-
     def get_person(self):
         if self.person is None:
             self.person = self.pkcs11client.get_identification(slot=self.slot)
@@ -436,20 +411,24 @@ class PKCS11PersonClient(OSPersonClient):
         return keys['authentication']['priv_key'].sign(identification)
 
     def register(self, algorithm='sha512', slot=None):
-        edata = self.sign_identification(self.person, slot=slot)
-        hashsum = get_hash_sum(edata,  algorithm)
-        edata = b64encode(edata).decode()
-        params = {
-            "data_hash": hashsum,
-            "algorithm": algorithm,
-            "public_certificate": self._get_public_auth_certificate(),
-            'person': self.person,
-            "code": edata,
-        }
-        result = self.requests.post(self.settings.fva_server_url + self.settings.login_person, json=params)
-        data = result.json()
-        self.settings.secret_auth_keys[self.serial] = data['token']
-        return data['token']
+        try:
+            print('register')
+            edata = self.sign_identification(self.person, slot=slot)
+            hashsum = get_hash_sum(edata,  algorithm)
+            edata = b64encode(edata).decode()
+            params = {
+                "data_hash": hashsum,
+                "algorithm": algorithm,
+                "public_certificate": self._get_public_auth_certificate(),
+                'person': self.person,
+                "code": edata
+            }
+            result = self.requests.post(self.settings.fva_server_url + self.settings.login_person, json=params)
+            data = result.json()
+            self.settings.secret_auth_keys[self.serial] = data['token']
+            return data['token']
+        except Exception as e:  # pin was not provided, we don't need to register or encode anything
+            return None
 
     def unregister(self):
         self.close()
