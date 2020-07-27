@@ -1,5 +1,8 @@
 #!/bin/bash
 
+function build_resources(){
+  pyrcc5 -o client_fva/ui/resources_rc.py  client_fva/ui/ui_elements/resources.qrc
+}
 
 function build_ui_py(){
   pyuic5 client_fva/ui/ui_elements/$1.ui -o client_fva/ui/$1ui.py -x
@@ -25,6 +28,7 @@ function build_all() {
   build_ui_py tabdefault
   build_ui_py validationinformation
   build_ui_py validationinformationcertificate
+  build_resources
 }
 
 if [ "$#" -eq  "0" ]

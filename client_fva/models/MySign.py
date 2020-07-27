@@ -1,13 +1,18 @@
 import logging
 import re
 
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtSql import QSqlQuery, QSqlQueryModel
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5.QtWidgets import QTableWidgetItem
 
 logger = logging.getLogger()
 DOCUMENT_NAME = 1
 DOCUMENT_PATH = 2
+DOCUMENT_STATUS = 3
+DOCUMENT_STATUS_TEXT = 4
 ID = 0
+
 
 class MySignModel(QSqlQueryModel):
 
@@ -27,40 +32,51 @@ class MySignModel(QSqlQueryModel):
     def set_mysign(self, mysign):
         self.mysign = mysign
 
-    # def setData(self, index, value, role):
-    #     if index.column() == DOCUMENT_NAME:
-    #         column = "documentname"
-    #     elif index.column() == DOCUMENT_PATH:
-    #         column = "documentpath"
-    #     else:
-    #         return False
-    #     primary_key_index = self.index(index.row(), 0)
-    #     id = self.data(primary_key_index)
-    #     self.clear()
-    #     self.update_contact_data(column, id, value)
-    #     self.refresh()
-    #     return True
+    def get_all(self):
+        sql = 'select document_name, sign_document_path, transaction_id, transaction_text from mysigns where userid=? order by id DESC'
+        query = QSqlQuery(self.db)
+        query.prepare(sql)
+        query.addBindValue(self.user)
+        if not query.exec_():
+            logger.error(query.lastError().text())
+        data = []
+        while query.next():
+            data.append((
+                    query.value(0),
+                    query.value(1),
+                    query.value(2),
+                    query.value(3),
+            ))
+        return data
 
-    # def update_contact_data(self, column, id, value):
-    #     strquery = 'update contacts set %s = ? where id = ? and userid = ? and groupid = ?' % (column)
-    #     query = QSqlQuery(db=self.db)
-    #     query.prepare(strquery)
-    #     query.addBindValue(value)
-    #     query.addBindValue(id)
-    #     query.addBindValue(self.user)
-    #     query.addBindValue(self.group)
-    #     if not query.exec_():
-    #         logger.error(query.lastError().text())
-
-
+    def filter(self, text):
+        sql = 'select document_name, sign_document_path, transaction_id, transaction_text from mysigns where document_name like "%?%" and  userid=? order by id DESC'
+        query = QSqlQuery(self.db)
+        query.prepare(sql)
+        query.addBindValue(text)
+        query.addBindValue(self.user)
+        if not query.exec_():
+            logger.error(query.lastError().text())
+        data = []
+        while query.next():
+            data.append((
+                    query.value(0),
+                    query.value(1),
+                    query.value(2),
+                    query.value(3),
+            ))
+        return data
     def refresh(self):
 
-        query = 'select id, document_name, sign_document_path from mysigns where userid=%d' % (self.user)
+        query = 'select id, document_name, sign_document_path, transaction_id, transaction_text from mysigns where userid=%d order by id DESC' % (self.user)
         self.setQuery(query, db=self.db)
         self.setHeaderData(ID, QtCore.Qt.Horizontal, "ID")
         self.setHeaderData(DOCUMENT_NAME, QtCore.Qt.Horizontal, "Nombre")
-        self.setHeaderData(DOCUMENT_PATH, QtCore.Qt.Horizontal, "Guardado")
+        self.setHeaderData(DOCUMENT_PATH, QtCore.Qt.Horizontal, "Ruta de guardado")
+        self.setHeaderData(DOCUMENT_STATUS, QtCore.Qt.Horizontal, "Estado")
+        self.setHeaderData(DOCUMENT_STATUS_TEXT, QtCore.Qt.Horizontal, "Texto de estado")
         self.tableview.setColumnHidden(ID, True)
+        self.tableview.setColumnHidden(DOCUMENT_STATUS_TEXT, True)
         self.tableview.resizeColumnsToContents()
         self.tableview.horizontalHeader().setStretchLastSection(True)
 
@@ -102,8 +118,12 @@ class MySignModel(QSqlQueryModel):
         querystr = 'update mysigns set %s where id = ?' % (", ".join(keysstr), )
         query.prepare(querystr)
         for k in keys:
-            query.addBindValue(k)
+            query.addBindValue(kwargs[k])
         query.addBindValue(id)
         if not query.exec_():
             logger.error(query.lastError().text())
+
+    def set_icon(self):
+        qti = QTableWidgetItem()
+        qti.setIcon(QtGui.QIcon(":/images/connecting.png"))
 

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_elements/mysignatures.ui'
+# Form implementation generated from reading ui file 'client_fva/ui/ui_elements/mysignatures.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -24,9 +24,16 @@ class Ui_MySignatures(object):
         self.titleLabel.setWordWrap(True)
         self.titleLabel.setObjectName("titleLabel")
         self.mySignaturesLayout.addWidget(self.titleLabel)
-        self.mySignaturesTableView = QtWidgets.QTableView(MySignatures)
-        self.mySignaturesTableView.setObjectName("mySignaturesTableView")
-        self.mySignaturesLayout.addWidget(self.mySignaturesTableView)
+        self.search = QtWidgets.QLineEdit(MySignatures)
+        self.search.setObjectName("search")
+        self.mySignaturesLayout.addWidget(self.search)
+        self.mySignatures = QtWidgets.QTableWidget(MySignatures)
+        self.mySignatures.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.mySignatures.setWordWrap(True)
+        self.mySignatures.setObjectName("mySignatures")
+        self.mySignatures.setColumnCount(0)
+        self.mySignatures.setRowCount(0)
+        self.mySignaturesLayout.addWidget(self.mySignatures)
 
         self.retranslateUi(MySignatures)
         QtCore.QMetaObject.connectSlotsByName(MySignatures)
@@ -35,7 +42,9 @@ class Ui_MySignatures(object):
         _translate = QtCore.QCoreApplication.translate
         MySignatures.setWindowTitle(_translate("MySignatures", "Mis Firmas"))
         self.titleLabel.setText(_translate("MySignatures", "Mis Firmas"))
+        self.search.setPlaceholderText(_translate("MySignatures", "Buscar nombre de documento"))
 
+from . import resources_rc
 
 if __name__ == "__main__":
     import sys

@@ -23,6 +23,10 @@ class PinNotProvided(Exception):
     pass
 
 
+class PinIncorrect(Exception):
+    pass
+
+
 class PKCS11Client:
     slot = None
     certificates = None
@@ -154,14 +158,16 @@ class PKCS11Client:
         """Obtiene o inicializa una sessión para el uso de la tarjeta.
         .. warning:: Ojo cachear la session y revisar si está activa
         """
-
-        if slot is None or slot not in self.session:
-            slotinst = self.get_slot(slot=slot)
-            token = slotinst.get_token()
-            session = token.open(user_pin=self.get_pin(pin=pin, slot=slot))
-            if slot is not None:
-                self.session[slot] = session
-            return session
+        try:
+            if slot is None or slot not in self.session:
+                slotinst = self.get_slot(slot=slot)
+                token = slotinst.get_token()
+                session = token.open(user_pin=self.get_pin(pin=pin, slot=slot))
+                if slot is not None:
+                    self.session[slot] = session
+                return session
+        except pkcs11.exceptions.PinIncorrect as e:
+            raise PinIncorrect("Pin incorrecto")
         return self.session[slot]
 
     def get_certificates(self, slot=None):
