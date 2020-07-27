@@ -28,13 +28,12 @@ class PersonSignOpers(QThread):
 
     def run(self):
         data = self.data
-
         mid = self.mysign.add_mysign(data["identification"], data["file_path"], data["file_name"],
                                      sign_document_path=data["save_path"])
-        self.result = self.person.sign(data["identification"],
-            data["document"], data["resume"], _format=data["_format"], file_path=data["file_path"],
-            algorithm=data["algorithm"], is_base64=data["is_base64"], wait=data["wait"], extras=data["extras"]
-        )
+        self.result = self.person.sign(data["identification"], data["document"], data["resume"],
+                                       _format=data["_format"], file_path=data["file_path"],
+                                       algorithm=data["algorithm"], is_base64=data["is_base64"],
+                                       wait=data["wait"], extras=data["extras"])
         self.mysign.update_mysign(mid, transaction_id=self.result["status"], transaction_text=self.result["status_text"])
 
         with open(data["save_path"], "wb") as arch:
@@ -78,10 +77,11 @@ class SignValidate(QWidget, Ui_SignValidate):
         self.sign.clicked.connect(self.sign_document)
         self.opers = []
 
-        self.person.process_status.connect(self.update_process_bar)
-        self.person.end_sign.connect(self.end_sign)
-        self.person.end_validate.connect(self.end_validate)
         self.filesWidget.contextMenuEvent = self.context_file_menu_event
+        if self.person:
+            self.person.process_status.connect(self.update_process_bar)
+            self.person.end_sign.connect(self.end_sign)
+            self.person.end_validate.connect(self.end_validate)
 
     def context_file_menu_event(self, pos):
         if self.filesWidget.selectedIndexes():
@@ -117,7 +117,7 @@ class SignValidate(QWidget, Ui_SignValidate):
 
     def get_format(self, validate=False):
         extension = "".join(Path(self.path).suffixes)
-        extension = extension.lower().replace(".", "")
+        extension = extension.split('.')[-1].lower().replace(".", "")
         support_extension = self.settings.file_supported_extensions
         if validate:
             support_extension = self.settings.validate_supported_extensions
@@ -147,7 +147,8 @@ class SignValidate(QWidget, Ui_SignValidate):
                                            "este sistema.")
             return
         validateprocess = PersonValidateOpers(len(self.opers), self.person, {"document": None, "file_path": self.path,
-            "algorithm": self.settings.algorithm, "is_base64": False, "_format": _format })
+                                                                             "algorithm": self.settings.algorithm,
+                                                                             "is_base64": False, "_format": _format})
         validateprocess.has_result.connect(self.validate_result)
         validateprocess.start()
         self.opers.append(validateprocess)

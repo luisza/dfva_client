@@ -1,5 +1,6 @@
 from Crypto.Random import get_random_bytes
 
+
 class SessionStorage(object):
 
     __instance = None

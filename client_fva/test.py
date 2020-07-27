@@ -11,4 +11,4 @@ client.sign('08-0888-0888',  None, "Readme file test", file_path='README.md', wa
 
 client.validate(None, file_path=os.path.abspath('../dfva_testdocument/files/certificado.der'))
 client.validate(None, file_path=os.path.abspath('../dfva_testdocument/files/test.pdf'), _format='pdf')
-client.is_suscriptor_connected('08-0888-0888')
+client.is_subscriber_connected('08-0888-0888')

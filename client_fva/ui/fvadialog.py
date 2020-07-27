@@ -47,12 +47,8 @@ class FVASpeakerClient(Ui_FVADialog):
         self.timeout = 0
         self.settings = UserSettings.getInstance()
         self.storage = SessionStorage.getInstance()
-        self.client = FVA_client(settings=self.settings,
-                                 slot=slot,
-                                 identification=identification,
-                                 daemon=self.settings.start_fva_bccr_client,
-                                 pkcs11client=self.storage.pkcs11_client
-                                 )
+        self.client = FVA_client(settings=self.settings, slot=slot, identification=identification,
+                                 daemon=self.settings.start_fva_bccr_client, pkcs11client=self.storage.pkcs11_client)
         self.client.status_signal.connect(self.change_fva_status)
         self.client.start()
 
@@ -91,7 +87,6 @@ class FVASpeakerClient(Ui_FVADialog):
     def request_pin_code(self, sender, obj):
         logger.info("Request fva speaker dialog %r" %
                     obj.data['M'][0]['A'][0]['c'])
-        #obj = kw['obj']
         self.obj = obj
         self.pin.setText('')
         self.code.setText('')
@@ -127,6 +122,7 @@ class FVASpeakerClient(Ui_FVADialog):
         elif status == self.ERROR:
             self.status_widget.setIcon(QtGui.QIcon(":/images/error.png"))
             self.status_widget.setToolTip("Error al conectar con el servicio de firmado")
+
 
 def run():
     import signal

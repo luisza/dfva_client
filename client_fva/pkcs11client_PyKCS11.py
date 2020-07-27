@@ -198,12 +198,7 @@ class PKCS11Client:
             except:
                 serial = 'N/D'
                 # Fixme: aqui debería manejarse mejor
-            respobj = signals.receive(
-                signals.send('pin', signals.SignalObject(
-                    signals.PIN_REQUEST,
-                    {'serial': serial})
-                )
-            )
+            respobj = signals.receive(signals.send('pin', signals.SignalObject(signals.PIN_REQUEST, {'serial': serial})))
             return respobj.response['pin']
 
         raise Exception(

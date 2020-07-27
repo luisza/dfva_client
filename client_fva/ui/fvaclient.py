@@ -98,7 +98,7 @@ class FVAClient(Ui_FVAClientUI):
 
     def setup_tab_layout(self, new_layout):
         if self.usrSlots.currentIndex() == DEFAULT_TAB_INDEX:
-            QtWidgets.QMessageBox.information(self.main_window, 'Seleccione Dispositivo',
+            QtWidgets.QMessageBox.information(self.usrSlots.currentWidget(), 'Seleccione Dispositivo',
                                               "Por favor seleccione una pestaña de dispositivo para acceder a "
                                               "esta opción.")
         else:
@@ -161,8 +161,7 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_layout(sign_validate_ui.signValidateLayout)
 
     def open_manage_contacts(self):
-        manage_contacts_ui = ManageContacts(
-            QtWidgets.QWidget(), main_app, self.db, self.current_user)
+        manage_contacts_ui = ManageContacts(QtWidgets.QWidget(), main_app, self.db, self.current_user)
         self.setup_tab_layout(manage_contacts_ui.manageContactsLayout)
 
     def open_logging_window(self):
@@ -179,12 +178,13 @@ class FVAClient(Ui_FVAClientUI):
 
     def request_pin(self, sender, obj):
         serial = obj.data['serial']
-        text, ok = QInputDialog.getText(None, "Atención", f"Ingrese su pin para {serial}", QLineEdit.Password)
+        text, ok = QInputDialog.getText(self.usrSlots.currentWidget(), "Atención", f"Ingrese su pin para {serial}", QLineEdit.Password)
         if ok:
             obj.response = {'pin': str(Secret(text)), 'serial': serial, 'rejected': False}
         else:
             obj.response = {'pin': "", 'serial': serial, 'rejected': True}
         signals.receive(obj, notify=True)
+
 
 def run():
     global main_app

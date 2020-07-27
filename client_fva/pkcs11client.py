@@ -147,11 +147,11 @@ class PKCS11Client:
 
             sobj = signals.SignalObject(signals.PIN_REQUEST, {'serial': serial})
             respobj = signals.receive(signals.send('pin', sobj))
-            if respobj.response['pin']:
+            if 'pin' in respobj.response:
                 pin = str(Secret(respobj.response['pin'], decode=True))
         if pin is None:
-            raise PinNotProvided('Sorry PIN is Needed, we will remove this, but for now use export \
-            PKCS11_PIN=<pin> before call python')
+            raise PinNotProvided('Sorry PIN is Needed, we will remove this, but for now use export PKCS11_PIN=<pin> '
+                                 'before call python')
         return pin
     
     def get_session(self, pin=None, slot=None):
@@ -252,8 +252,8 @@ class PKCS11Client:
                     key = 'sign'
 
                 keys[key] = {
-                    'pub_key': cert.public_key().public_bytes(
-                        serialization.Encoding.PEM, serialization.PublicFormat.PKCS1),
+                    'pub_key': cert.public_key().public_bytes(serialization.Encoding.PEM,
+                                                              serialization.PublicFormat.PKCS1),
                     'priv_key': list(session.get_objects(
                         {Attribute.CLASS: ObjectClass.PRIVATE_KEY, Attribute.LABEL: certificate[3]}))[0]
                 }
@@ -281,13 +281,8 @@ class PKCS11Client:
             try:
                 token = slot.get_token()
                 if token is not None:
-                    dev.append({
-                                'slot': slot.slot_id,
-                                'serial': token.serial.decode(),
-                                'label': token.label,
-                                'model': token.model,
-                                'manufacturer': token.manufacturer_id
-                            })
+                    dev.append({'slot': slot.slot_id, 'serial': token.serial.decode(), 'label': token.label,
+                                'model': token.model, 'manufacturer': token.manufacturer_id})
             except pkcs11.exceptions.TokenNotRecognised:
                 logger.warning("Token not found %r"%(slot))
         return dev
