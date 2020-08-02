@@ -359,7 +359,7 @@ background-color: rgb(229, 229, 229);</string>
       <enum>QProgressBar::BottomToTop</enum>
      </property>
      <property name="format">
-      <string>No archivo seleccionado....</string>
+      <string>Sin archivo seleccionado....</string>
      </property>
     </widget>
    </item>
