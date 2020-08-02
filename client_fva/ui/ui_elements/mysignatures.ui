@@ -41,9 +41,9 @@ background-color:rgb(216, 230, 225);</string>
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="search">
+    <widget class="QLineEdit" name="searchDocument">
      <property name="placeholderText">
-      <string>Buscar nombre de documento</string>
+      <string>Buscar nombre del documento...</string>
      </property>
     </widget>
    </item>
