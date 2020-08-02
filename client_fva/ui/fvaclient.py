@@ -154,13 +154,8 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_layout(request_signature_ui.requestSignatureLayout)
 
     def open_request_authentication(self):
-        #thread=QtCore.QThread.currentThread()
-        #print("OPEN: ", thread, self.main_thread)
-        #if thread != self.main_thread:
-        #    thread.moveToThread(self.main_thread)
-
         request_authentication_ui = RequestAuthentication(QtWidgets.QWidget(), main_app, self.db,
-                                                          self.current_user)
+                                                          self.usrSlots.currentIndex())
         self.setup_tab_layout(request_authentication_ui.requestAuthenticationLayout)
 
     def open_sign_validate(self):

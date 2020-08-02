@@ -51,7 +51,7 @@ background-color:rgb(216, 230, 225);</string>
         <x>0</x>
         <y>0</y>
         <width>595</width>
-        <height>328</height>
+        <height>326</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="scrollAreaLayout">
@@ -74,7 +74,7 @@ background-color:rgb(216, 230, 225);</string>
 font: bold;</string>
             </property>
             <property name="text">
-             <string>Seleccione Contacto</string>
+             <string>Seleccione Contacto o Ingrese Número de Identificación</string>
             </property>
             <property name="scaledContents">
              <bool>false</bool>
@@ -139,7 +139,7 @@ background-color: rgb(229, 229, 229);</string>
 background-color: rgb(229, 229, 229);</string>
             </property>
             <property name="text">
-             <string>Contacto</string>
+             <string>Agregar</string>
             </property>
             <property name="icon">
              <iconset resource="resources.qrc">

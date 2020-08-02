@@ -1,5 +1,5 @@
 import logging
-from typing import re
+import re
 
 from PyQt5.QtCore import QStringListModel
 from PyQt5.QtSql import QSqlQuery

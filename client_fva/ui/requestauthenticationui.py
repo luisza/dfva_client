@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_elements/requestauthentication.ui'
+# Form implementation generated from reading ui file 'client_fva/ui/ui_elements/requestauthentication.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -28,7 +28,7 @@ class Ui_RequestAuthentication(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 595, 328))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 595, 326))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.scrollAreaLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.scrollAreaLayout.setObjectName("scrollAreaLayout")
@@ -62,15 +62,15 @@ class Ui_RequestAuthentication(object):
         self.requestAuthentication.setIconSize(QtCore.QSize(16, 16))
         self.requestAuthentication.setObjectName("requestAuthentication")
         self.addContactFrameLayout.addWidget(self.requestAuthentication, 3, 0, 1, 3)
-        self.addContact = QtWidgets.QPushButton(self.addContactFrame)
-        self.addContact.setAutoFillBackground(False)
-        self.addContact.setStyleSheet("color: rgb(11, 35, 21);\n"
+        self.add_contact = QtWidgets.QPushButton(self.addContactFrame)
+        self.add_contact.setAutoFillBackground(False)
+        self.add_contact.setStyleSheet("color: rgb(11, 35, 21);\n"
 "background-color: rgb(229, 229, 229);")
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap(":/images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.addContact.setIcon(icon1)
-        self.addContact.setObjectName("add_contact")
-        self.addContactFrameLayout.addWidget(self.addContact, 1, 2, 1, 1)
+        self.add_contact.setIcon(icon1)
+        self.add_contact.setObjectName("add_contact")
+        self.addContactFrameLayout.addWidget(self.add_contact, 1, 2, 1, 1)
         self.searchContact = QtWidgets.QLineEdit(self.addContactFrame)
         self.searchContact.setObjectName("searchContact")
         self.addContactFrameLayout.addWidget(self.searchContact, 1, 0, 1, 1)
@@ -92,9 +92,9 @@ class Ui_RequestAuthentication(object):
         _translate = QtCore.QCoreApplication.translate
         RequestAuthentication.setWindowTitle(_translate("RequestAuthentication", "Solicitar Autenticación"))
         self.titleLabel.setText(_translate("RequestAuthentication", "Solicitar Autenticación"))
-        self.label.setText(_translate("RequestAuthentication", "Seleccione Contacto"))
+        self.label.setText(_translate("RequestAuthentication", "Seleccione Contacto o Ingrese Número de Identificación"))
         self.requestAuthentication.setText(_translate("RequestAuthentication", "Solicitar"))
-        self.addContact.setText(_translate("RequestAuthentication", "Contacto"))
+        self.add_contact.setText(_translate("RequestAuthentication", "Agregar"))
         self.searchContact.setPlaceholderText(_translate("RequestAuthentication", "Buscar..."))
         self.requestAuthProgressBar.setFormat(_translate("RequestAuthentication", "Solicitando..."))
 
