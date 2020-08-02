@@ -12,7 +12,7 @@ from client_fva.ui.requestsignature import RequestSignature
 from client_fva.ui.requestauthentication import RequestAuthentication
 from client_fva.ui.signvalidate import SignValidate
 from client_fva.ui.managecontacts import ManageContacts
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 from client_fva.ui.tabdefault import TabDefault
 from client_fva.user_settings import UserSettings
 from client_fva.ui.utils import apply_selected_appearance
@@ -59,6 +59,8 @@ class FVAClient(Ui_FVAClientUI):
         # TODO - CREATE METHODS TO POPULATE CURRENT USER ACCORDING TO TAB SO IT'S NOT 1 ALWAYS - ALSO ADD USER MODEL
         # AND ITS MANAGEMENT IN DATABASE - CONTACTS ARE RELATED TO USERS BUT RIGHT NOW THEY ARE ALWAYS RELATED TO 1
         self.current_user = 1
+
+        self.main_thread = QtCore.QThread.currentThread()
 
         # load initial app settings
         self.user_settings = usersettings
@@ -152,7 +154,13 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_layout(request_signature_ui.requestSignatureLayout)
 
     def open_request_authentication(self):
-        request_authentication_ui = RequestAuthentication(QtWidgets.QWidget(), main_app)
+        #thread=QtCore.QThread.currentThread()
+        #print("OPEN: ", thread, self.main_thread)
+        #if thread != self.main_thread:
+        #    thread.moveToThread(self.main_thread)
+
+        request_authentication_ui = RequestAuthentication(QtWidgets.QWidget(), main_app, self.db,
+                                                          self.current_user)
         self.setup_tab_layout(request_authentication_ui.requestAuthenticationLayout)
 
     def open_sign_validate(self):
