@@ -24,9 +24,9 @@ class Ui_MySignatures(object):
         self.titleLabel.setWordWrap(True)
         self.titleLabel.setObjectName("titleLabel")
         self.mySignaturesLayout.addWidget(self.titleLabel)
-        self.search = QtWidgets.QLineEdit(MySignatures)
-        self.search.setObjectName("search")
-        self.mySignaturesLayout.addWidget(self.search)
+        self.searchDocument = QtWidgets.QLineEdit(MySignatures)
+        self.searchDocument.setObjectName("searchDocument")
+        self.mySignaturesLayout.addWidget(self.searchDocument)
         self.mySignatures = QtWidgets.QTableWidget(MySignatures)
         self.mySignatures.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
         self.mySignatures.setWordWrap(True)
@@ -42,7 +42,7 @@ class Ui_MySignatures(object):
         _translate = QtCore.QCoreApplication.translate
         MySignatures.setWindowTitle(_translate("MySignatures", "Mis Firmas"))
         self.titleLabel.setText(_translate("MySignatures", "Mis Firmas"))
-        self.search.setPlaceholderText(_translate("MySignatures", "Buscar nombre de documento"))
+        self.searchDocument.setPlaceholderText(_translate("MySignatures", "Buscar nombre del documento..."))
 
 from . import resources_rc
 

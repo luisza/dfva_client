@@ -56,9 +56,6 @@ class FVAClient(Ui_FVAClientUI):
         self.db = None
         self.session_storage = SessionStorage.getInstance()
         self.session_storage.parent_widget = self.centralWidget
-        # TODO - CREATE METHODS TO POPULATE CURRENT USER ACCORDING TO TAB SO IT'S NOT 1 ALWAYS - ALSO ADD USER MODEL
-        # AND ITS MANAGEMENT IN DATABASE - CONTACTS ARE RELATED TO USERS BUT RIGHT NOW THEY ARE ALWAYS RELATED TO 1
-        self.current_user = 1
 
         self.main_thread = QtCore.QThread.currentThread()
 
@@ -142,7 +139,7 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_layout(my_requests_ui.myRequestsLayout)
 
     def open_my_signatures(self):
-        my_signatures_ui = MySignatures(QtWidgets.QWidget(), main_app, self.db, self.usrSlots.currentIndex())
+        my_signatures_ui = MySignatures(QtWidgets.QWidget(), main_app, self.db, index=self.usrSlots.currentIndex())
         self.setup_tab_layout(my_signatures_ui.mySignaturesLayout)
 
     def open_settings(self):
@@ -159,12 +156,11 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_layout(request_authentication_ui.requestAuthenticationLayout)
 
     def open_sign_validate(self):
-        sign_validate_ui = SignValidate(QtWidgets.QWidget(), main_app, storage=self.session_storage,
-                                        index=self.usrSlots.currentIndex())
+        sign_validate_ui = SignValidate(QtWidgets.QWidget(), main_app, index=self.usrSlots.currentIndex())
         self.setup_tab_layout(sign_validate_ui.signValidateLayout)
 
     def open_manage_contacts(self):
-        manage_contacts_ui = ManageContacts(QtWidgets.QWidget(), main_app, self.db, self.current_user)
+        manage_contacts_ui = ManageContacts(QtWidgets.QWidget(), main_app, self.db, index=self.usrSlots.currentIndex())
         self.setup_tab_layout(manage_contacts_ui.manageContactsLayout)
 
     def open_logging_window(self):

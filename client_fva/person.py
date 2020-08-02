@@ -412,7 +412,6 @@ class PKCS11PersonClient(OSPersonClient):
 
     def register(self, algorithm='sha512', slot=None):
         try:
-            print('register')
             edata = self.sign_identification(self.person, slot=slot)
             hashsum = get_hash_sum(edata,  algorithm)
             edata = b64encode(edata).decode()

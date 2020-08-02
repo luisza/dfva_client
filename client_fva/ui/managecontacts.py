@@ -1,3 +1,4 @@
+from client_fva.session_storage import SessionStorage
 from client_fva.ui.managecontactsui import Ui_ManageContacts
 from PyQt5 import QtWidgets, QtGui, QtCore
 from client_fva.models.Group import GroupModel
@@ -15,17 +16,18 @@ GROUPID = 5
 
 class ManageContacts(Ui_ManageContacts):
 
-    def __init__(self, widget, main_app, db, current_user):
+    def __init__(self, widget, main_app, db, index):
         Ui_ManageContacts.__init__(self)
         self.widget = widget
         self.main_app = main_app
         self.db = db
-        self.current_user = current_user
+        storage = SessionStorage.getInstance()
+        self.current_user = storage.users[index]
         self.setupUi(widget)
         self.selected_group = -1
-        self.contacts_model = ContactModel(user=current_user, db=self.db, tableview=self.contactsTableView,
+        self.contacts_model = ContactModel(user=self.current_user, db=self.db, tableview=self.contactsTableView,
                                            widget=self.widget)
-        self.groups_model = GroupModel(user=current_user, db=self.db, tableview=self.groupsTableView)
+        self.groups_model = GroupModel(user=self.current_user, db=self.db, tableview=self.groupsTableView)
         self.proxy_model_contact = QtCore.QSortFilterProxyModel()  # to allow contacts search
         self.initialize_and_populate_groups()
         self.initialize_and_populate_contacts()

@@ -23,12 +23,6 @@ class MySignModel(QSqlQueryModel):
         self.mysign = None
         super(MySignModel, self).__init__(*args, **kwargs)
 
-    # def flags(self, index):
-    #     flags = super(MySignModel, self).flags(index)
-    #     if index.column() in (FIRSTNAME, LASTNAME, IDENTIFICATION):
-    #         flags |= QtCore.Qt.ItemIsEditable
-    #     return flags
-
     def set_mysign(self, mysign):
         self.mysign = mysign
 
@@ -50,24 +44,19 @@ class MySignModel(QSqlQueryModel):
         return data
 
     def filter(self, text):
-        sql = 'select document_name, sign_document_path, transaction_id, transaction_text from mysigns where document_name like "%?%" and  userid=? order by id DESC'
+        sql = 'select document_name, sign_document_path, transaction_id, transaction_text from mysigns where document_name like ? and  userid=? order by id DESC'
         query = QSqlQuery(self.db)
         query.prepare(sql)
-        query.addBindValue(text)
+        query.addBindValue("%{}%".format(text))
         query.addBindValue(self.user)
         if not query.exec_():
             logger.error(query.lastError().text())
         data = []
         while query.next():
-            data.append((
-                    query.value(0),
-                    query.value(1),
-                    query.value(2),
-                    query.value(3),
-            ))
+            data.append((query.value(0), query.value(1), query.value(2), query.value(3)))
         return data
-    def refresh(self):
 
+    def refresh(self):
         query = 'select id, document_name, sign_document_path, transaction_id, transaction_text from mysigns where userid=%d order by id DESC' % (self.user)
         self.setQuery(query, db=self.db)
         self.setHeaderData(ID, QtCore.Qt.Horizontal, "ID")

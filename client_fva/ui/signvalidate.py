@@ -60,7 +60,7 @@ class PersonValidateOpers(QThread):
 
 class SignValidate(QWidget, Ui_SignValidate):
 
-    def __init__(self, widget, main_app, index=None, storage=None):
+    def __init__(self, widget, main_app, index=None):
         Ui_SignValidate.__init__(self)
         super().__init__(widget)
         self.widget = widget
@@ -70,8 +70,8 @@ class SignValidate(QWidget, Ui_SignValidate):
         self.filesWidget.set_parent(self)
         self.path = None
         self.index = index
-        self.session_storage = storage
-        self.person = storage.persons[index]
+        self.storage = SessionStorage.getInstance()
+        self.person = self.storage.persons[index]
         self.browseFiles.clicked.connect(self.get_document_path)
         self.validate.clicked.connect(self.validate_document)
         self.sign.clicked.connect(self.sign_document)
@@ -203,7 +203,7 @@ class SignValidate(QWidget, Ui_SignValidate):
                                            "este sistema.")
             return
         resume = self.resumen.toPlainText()
-        persont = PersonSignOpers(len(self.opers), self.person, self.session_storage.users[self.index],
+        persont = PersonSignOpers(len(self.opers), self.person, self.storage.users[self.index],
                                   {"identification": self.person.person, "document": None, "resume": resume,
                                    "_format": _format, "algorithm": self.settings.algorithm, "is_base64": False,
                                    "wait": True, "extras": extras,  "file_path": self.path,
