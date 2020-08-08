@@ -15,7 +15,7 @@ class MySignatures(Ui_MySignatures):
         self.main_app = main_app
         self.setupUi(widget)
         storage = SessionStorage.getInstance()
-        self.my_signatures_model = MySignModel(db=db, user=storage.users[index], tableview=self.mySignatures)
+        self.my_signatures_model = MySignModel(db=db, user=storage.users[index])
         self.initialize_and_populate_my_signatures()
         self.searchDocument.textChanged.connect(lambda x: self.search_documents(x))
 

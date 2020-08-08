@@ -29,7 +29,7 @@ class PersonAuthenticationOpers(QThread):
                                        _format=data["_format"], file_path=data["file_path"],
                                        algorithm=data["algorithm"], is_base64=data["is_base64"],
                                        wait=data["wait"], extras=data["extras"])
-        self.mysign.update_mysign(mid, transaction_id=self.result["status"], transaction_text=self.result["status_text"])
+        self.mysign.update_mysign(mid, transaction_status=self.result["status"], transaction_text=self.result["status_text"])
 
         with open(data["save_path"], "wb") as arch:
             arch.write(b64decode(self.result["signed_document"]))

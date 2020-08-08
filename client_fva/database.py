@@ -26,7 +26,7 @@ def createDB():
 
     query.exec_("""create table if not exists mysigns(id integer primary key autoincrement unique not null,
                    identification varchar(20), document_path varchar(500), document_name varchar(200), 
-                   sign_document_path varchar(500), transaction_id integer not null, 
+                   sign_document_path varchar(500), transaction_status integer not null, 
                    transaction_text varchar(250) not null, userid integer not null,
                    FOREIGN KEY (userid) REFERENCES users)""")
     return True, db
