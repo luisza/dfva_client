@@ -19,7 +19,7 @@ class MySignModel(QSqlQueryModel):
         super(MySignModel, self).__init__(*args, **kwargs)
 
     def get_all(self):
-        sql = 'select document_name, sign_document_path, transaction_status, transaction_text from mysigns where userid=? order by id DESC'
+        sql = 'select document_name, signed_document_path, transaction_status, transaction_text from mysigns where userid=? order by id DESC'
         query = QSqlQuery(self.db)
         query.prepare(sql)
         query.addBindValue(self.user)
@@ -36,7 +36,7 @@ class MySignModel(QSqlQueryModel):
         return data
 
     def filter(self, text):
-        sql = 'select document_name, sign_document_path, transaction_status, transaction_text from mysigns where document_name like ? and  userid=? order by id DESC'
+        sql = 'select document_name, signed_document_path, transaction_status, transaction_text from mysigns where document_name like ? and  userid=? order by id DESC'
         query = QSqlQuery(self.db)
         query.prepare(sql)
         query.addBindValue("%{}%".format(text))
@@ -57,9 +57,9 @@ class MySignModel(QSqlQueryModel):
             logger.error(query.lastError().text())
         self.refresh()
 
-    def add_mysign(self, identification, document_path, document_name, sign_document_path="", transaction_status=0,
+    def add_mysign(self, identification, document_path, document_name, signed_document_path="", transaction_status=0,
                    transaction_text=""):
-        querystr = """insert into mysigns(identification, document_path, document_name, sign_document_path, 
+        querystr = """insert into mysigns(identification, document_path, document_name, signed_document_path, 
                       transaction_status,transaction_text, userid) values(?, ?, ?, ?, ?, ?, ?) """
 
         query = QSqlQuery(self.db)
@@ -67,7 +67,7 @@ class MySignModel(QSqlQueryModel):
         query.addBindValue(identification)
         query.addBindValue(document_path)
         query.addBindValue(document_name)
-        query.addBindValue(sign_document_path)
+        query.addBindValue(signed_document_path)
         query.addBindValue(transaction_status)
         query.addBindValue(transaction_text)
         query.addBindValue(self.user)

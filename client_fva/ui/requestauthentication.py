@@ -24,7 +24,7 @@ class PersonAuthenticationOpers(QThread):
     def run(self):
         data = self.data
         mid = self.mysign.add_mysign(data["identification"], data["file_path"], data["file_name"],
-                                     sign_document_path=data["save_path"])
+                                     signed_document_path=data["save_path"])
         self.result = self.person.sign(data["identification"], data["document"], data["resume"],
                                        _format=data["_format"], file_path=data["file_path"],
                                        algorithm=data["algorithm"], is_base64=data["is_base64"],
