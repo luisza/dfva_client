@@ -90,10 +90,7 @@ font: bold;</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="0" colspan="3">
-           <widget class="QListWidget" name="contactsListWidget"/>
-          </item>
-          <item row="3" column="0" colspan="3">
+          <item row="10" column="0" colspan="2">
            <widget class="QPushButton" name="requestAuthentication">
             <property name="enabled">
              <bool>true</bool>
@@ -129,7 +126,14 @@ background-color: rgb(229, 229, 229);</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="2">
+          <item row="1" column="0">
+           <widget class="QLineEdit" name="searchContact">
+            <property name="placeholderText">
+             <string>Buscar...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
            <widget class="QPushButton" name="add_contact">
             <property name="autoFillBackground">
              <bool>false</bool>
@@ -147,14 +151,44 @@ background-color: rgb(229, 229, 229);</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QLineEdit" name="searchContact">
-            <property name="placeholderText">
-             <string>Buscar...</string>
-            </property>
-           </widget>
+          <item row="3" column="0">
+           <widget class="QTableWidget" name="contacts"/>
+          </item>
+          <item row="3" column="1">
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="cleanbtn">
+              <property name="text">
+               <string>Limpiar</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources.qrc">
+                <normaloff>:/images/delete.png</normaloff>:/images/delete.png</iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
+         <zorder>contacts</zorder>
+         <zorder>label</zorder>
+         <zorder>requestAuthentication</zorder>
+         <zorder>add_contact</zorder>
+         <zorder>searchContact</zorder>
+         <zorder>verticalLayoutWidget</zorder>
         </widget>
        </item>
        <item>
