@@ -102,9 +102,11 @@ class FVAClient(Ui_FVAClientUI):
                                               "esta opción.")
         else:
             tab = self.usrSlots.currentWidget()
+            old_layout=tab.layout()
             # cleans current tab layout so a new one can be assigned
             QtWidgets.QWidget().setLayout(tab.layout())
             tab.setLayout(new_layout)
+            del old_layout
 
     def setup_general_tab_layout(self, new_layout):
         tab = self.tab1
@@ -147,7 +149,7 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_general_tab_layout(settings_ui.settingsLayout)
 
     def open_request_signature(self):
-        request_signature_ui = RequestSignature(QtWidgets.QWidget(), main_app)
+        request_signature_ui = RequestSignature(QtWidgets.QWidget(), main_app, self.db, self.usrSlots.currentIndex())
         self.setup_tab_layout(request_signature_ui.requestSignatureLayout)
 
     def open_request_authentication(self):

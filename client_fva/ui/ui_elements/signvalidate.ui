@@ -23,31 +23,12 @@ background-color:rgb(216, 230, 225);</string>
   </property>
   <layout class="QVBoxLayout" name="signValidateLayout">
    <item>
-    <widget class="QLabel" name="titleLabel">
-     <property name="acceptDrops">
-      <bool>false</bool>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: bold;</string>
-     </property>
-     <property name="text">
-      <string>Firmar - Validar Documentos</string>
-     </property>
-     <property name="scaledContents">
-      <bool>true</bool>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QScrollArea" name="scrollArea">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="lineWidth">
+      <number>0</number>
      </property>
      <property name="midLineWidth">
       <number>0</number>
@@ -69,8 +50,8 @@ background-color:rgb(216, 230, 225);</string>
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>592</width>
-        <height>290</height>
+        <width>598</width>
+        <height>313</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="scrollAreaWidgetLayout">

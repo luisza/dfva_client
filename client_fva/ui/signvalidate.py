@@ -84,6 +84,11 @@ class SignValidate(QWidget, Ui_SignValidate):
             self.person.end_sign.connect(self.end_sign)
             self.person.end_validate.connect(self.end_validate)
 
+    def __del__(self):
+        self.person.process_status.disconnect(self.update_process_bar)
+        self.person.end_sign.disconnect(self.end_sign)
+        self.person.end_validate.disconnect(self.end_validate)
+
     def context_file_menu_event(self, pos):
         if self.filesWidget.selectedIndexes():
             selected = self.filesWidget.currentRow()  # user can only select one file at the time
@@ -241,4 +246,5 @@ class SignValidate(QWidget, Ui_SignValidate):
                 vi.add_errors(error['detail'])
             vi.set_status_icon(self.opers[tid].result['status'] == 0)
             vi.show()
+
 
