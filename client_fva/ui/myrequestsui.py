@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_elements/myrequests.ui'
+# Form implementation generated from reading ui file 'client_fva/ui/ui_elements/myrequests.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -23,9 +23,15 @@ class Ui_MyRequests(object):
         self.titleLabel.setWordWrap(True)
         self.titleLabel.setObjectName("titleLabel")
         self.myRequestsLayout.addWidget(self.titleLabel)
-        self.myRequestsTableView = QtWidgets.QTableView(MyRequests)
-        self.myRequestsTableView.setObjectName("myRequestsTableView")
-        self.myRequestsLayout.addWidget(self.myRequestsTableView)
+        self.searchIdentification = QtWidgets.QLineEdit(MyRequests)
+        self.searchIdentification.setObjectName("searchIdentification")
+        self.myRequestsLayout.addWidget(self.searchIdentification)
+        self.myRequests = QtWidgets.QTableWidget(MyRequests)
+        self.myRequests.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.myRequests.setObjectName("myRequests")
+        self.myRequests.setColumnCount(0)
+        self.myRequests.setRowCount(0)
+        self.myRequestsLayout.addWidget(self.myRequests)
 
         self.retranslateUi(MyRequests)
         QtCore.QMetaObject.connectSlotsByName(MyRequests)
@@ -34,6 +40,7 @@ class Ui_MyRequests(object):
         _translate = QtCore.QCoreApplication.translate
         MyRequests.setWindowTitle(_translate("MyRequests", "Mis Solicitudes"))
         self.titleLabel.setText(_translate("MyRequests", "Mis Solicitudes"))
+        self.searchIdentification.setPlaceholderText(_translate("MyRequests", "Buscar identificación..."))
 
 
 if __name__ == "__main__":

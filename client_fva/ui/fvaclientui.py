@@ -66,7 +66,7 @@ class Ui_FVAClientUI(object):
         FVAClientUI.setCentralWidget(self.centralWidget)
         self.menuBar = QtWidgets.QMenuBar(FVAClientUI)
         self.menuBar.setEnabled(True)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 638, 24))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 638, 22))
         self.menuBar.setAcceptDrops(False)
         self.menuBar.setStyleSheet("QMenu::item{color:rgb(76, 118, 82);\n"
 "background-color:rgb(216, 230, 225);}")
@@ -175,7 +175,7 @@ class Ui_FVAClientUI(object):
         self.actionMyRequests.setShortcut(_translate("FVAClientUI", "Ctrl+S"))
         self.actionExit.setText(_translate("FVAClientUI", "Cerrar"))
         self.actionExit.setShortcut(_translate("FVAClientUI", "Ctrl+X"))
-        self.actionSignAuthenticate.setText(_translate("FVAClientUI", "Firmar - Autenticar"))
+        self.actionSignAuthenticate.setText(_translate("FVAClientUI", "Firmar - Validar"))
         self.actionSignAuthenticate.setShortcut(_translate("FVAClientUI", "Ctrl+D"))
         self.actionBitacoras.setText(_translate("FVAClientUI", "Bitacoras"))
         self.actionBitacoras.setShortcut(_translate("FVAClientUI", "Ctrl+L"))
