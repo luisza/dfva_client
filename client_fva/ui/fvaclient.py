@@ -135,7 +135,7 @@ class FVAClient(Ui_FVAClientUI):
                 self.show()
 
     def open_my_requests(self):
-        my_requests_ui = MyRequests(QtWidgets.QWidget(), main_app)
+        my_requests_ui = MyRequests(QtWidgets.QWidget(), main_app, self.db, index=self.usrSlots.currentIndex())
         self.setup_tab_layout(my_requests_ui.myRequestsLayout)
 
     def open_my_signatures(self):

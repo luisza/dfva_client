@@ -1,5 +1,3 @@
-from PyQt5.QtWidgets import QTableWidgetItem
-
 from client_fva.models.MySign import MySignModel
 from client_fva.session_storage import SessionStorage
 from client_fva.ui.mysignaturesui import Ui_MySignatures
@@ -15,25 +13,25 @@ class MySignatures(Ui_MySignatures):
         self.main_app = main_app
         self.setupUi(widget)
         storage = SessionStorage.getInstance()
-        self.my_signatures_model = MySignModel(db=db, user=storage.users[index])
+        self.my_signatures_model = MySignModel(db=self.db, user=storage.users[index])
         self.initialize_and_populate_my_signatures()
         self.searchDocument.textChanged.connect(lambda x: self.search_documents(x))
 
     def fill_data(self, data_list):
-        self.mySignatures.setHorizontalHeaderItem(0, QTableWidgetItem("Nombre"))
-        self.mySignatures.setHorizontalHeaderItem(1, QTableWidgetItem("Ruta de guardado"))
-        self.mySignatures.setHorizontalHeaderItem(2, QTableWidgetItem("Estado"))
+        self.mySignatures.setHorizontalHeaderItem(0, QtWidgets.QTableWidgetItem("Nombre"))
+        self.mySignatures.setHorizontalHeaderItem(1, QtWidgets.QTableWidgetItem("Ruta de Guardado"))
+        self.mySignatures.setHorizontalHeaderItem(2, QtWidgets.QTableWidgetItem("Estado"))
         count = 0
         for data in data_list:
             self.mySignatures.insertRow(self.mySignatures.rowCount())
-            status = QTableWidgetItem()
+            status = QtWidgets.QTableWidgetItem()
             if data[2] == 0:
                 status.setIcon(QtGui.QIcon(":/images/connected.png"))
             else:
                 status.setIcon(QtGui.QIcon(":/images/error.png"))
             status.setToolTip(data[3])
-            self.mySignatures.setItem(count, 0, QTableWidgetItem(data[0]))
-            self.mySignatures.setItem(count, 1, QTableWidgetItem(data[1]))
+            self.mySignatures.setItem(count, 0, QtWidgets.QTableWidgetItem(data[0]))
+            self.mySignatures.setItem(count, 1, QtWidgets.QTableWidgetItem(data[1]))
             self.mySignatures.setItem(count, 2, status)
             count += 1
 

@@ -5,7 +5,7 @@ from client_fva.models.User import UserModel
 from client_fva.monitor import Monitor
 from client_fva.person import PersonClient
 from client_fva.session_storage import SessionStorage
-from client_fva.ui.myrequests import MyRequests
+from client_fva.ui.signvalidate import SignValidate
 from client_fva import signals
 import logging
 from client_fva.ui.fvadialog import FVASpeakerClient
@@ -84,7 +84,7 @@ class TabManager(QObject):
         return user
 
     def create_tab(self, name, slot, serial):
-        my_requests_ui = MyRequests(QtWidgets.QWidget(), self.main_app)
+        my_requests_ui = SignValidate(QtWidgets.QWidget(), self.main_app, slot)
         FVADialog = QtWidgets.QDialog()
         ui = FVASpeakerClient(FVADialog, slot, name)
         person = PersonClient(slot=slot, person=name, serial=serial)

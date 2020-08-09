@@ -6,7 +6,6 @@ from client_fva.ui.filechooser import FileChooser
 from client_fva.ui.requestsignatureui import Ui_RequestSignature
 
 
-
 class RequestSignature(QWidget, Ui_RequestSignature):
 
     def __init__(self, widget, main_app):
