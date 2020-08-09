@@ -1,4 +1,4 @@
-from base64 import b64decode
+import time
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import Qt, pyqtSlot, QThread, pyqtSignal
@@ -7,36 +7,46 @@ from PyQt5.QtWidgets import QCompleter, QTableWidgetItem
 from client_fva.models.ContactDropDown import ContactModel
 from client_fva.session_storage import SessionStorage
 from client_fva.ui.requestauthenticationui import Ui_RequestAuthentication
+from client_fva.user_settings import UserSettings
 
 
 class PersonAuthenticationOpers(QThread):
     has_result = pyqtSignal(int)
+    has_changes = pyqtSignal(str, int, bool, str)
+    remove_check = pyqtSignal(str)
 
-    def __init__(self, tid, person, user, data):
-        self.data = data
+    def __init__(self, tid, person, identifications):
+        self.identifications = identifications
         self.person = person
         super(PersonAuthenticationOpers, self).__init__()
         self.tid = tid
         self.result = None
-        storage = SessionStorage.getInstance()
+        self.pending_check = {}
+        self.wait_time = UserSettings.getInstance().check_wait_time
 
+    def log_transaction(self, identification, data):
+        self.has_changes.emit(identification, data['status'], False, data['status_text'])
+
+    def log_check_transaction(self, identification, data):
+        self.has_changes.emit(identification, data['status'], data['received_notification'], data['status_text'])
 
     def run(self):
-        data = self.data
-        mid = self.mysign.add_mysign(data["identification"], data["file_path"], data["file_name"],
-                                     sign_document_path=data["save_path"])
-        self.result = self.person.sign(data["identification"], data["document"], data["resume"],
-                                       _format=data["_format"], file_path=data["file_path"],
-                                       algorithm=data["algorithm"], is_base64=data["is_base64"],
-                                       wait=data["wait"], extras=data["extras"])
-        self.mysign.update_mysign(mid, transaction_id=self.result["status"], transaction_text=self.result["status_text"])
-
-        with open(data["save_path"], "wb") as arch:
-            arch.write(b64decode(self.result["signed_document"]))
-
+        for identification in self.identifications:
+            result = self.person.authenticate(identification)
+            self.log_transaction(identification, result)
+            if result['status'] == 0:
+                self.pending_check[identification] = result['id']
+            else:
+                self.remove_check.emit(identification)
+        while self.pending_check:
+            for identification in list(self.pending_check.keys()):
+                result = self.person.check_authenticate(self.pending_check[identification])
+                self.log_check_transaction(identification, result)
+                if result['received_notification']:
+                    del self.pending_check[identification]
+                    self.remove_check.emit(identification)
+            time.sleep(self.wait_time)
         self.has_result.emit(self.tid)
-
-
 
 
 class RequestAuthentication(Ui_RequestAuthentication):
@@ -53,7 +63,7 @@ class RequestAuthentication(Ui_RequestAuthentication):
         self.main_app = main_app
         self.session_storage = SessionStorage.getInstance()
         self.setupUi(self.widget)
-
+        self.person = self.session_storage.persons[index]
         self.contacts_model = ContactModel(user=self.session_storage.users[index], db=db)
 
         completer = QCompleter()
@@ -69,6 +79,7 @@ class RequestAuthentication(Ui_RequestAuthentication):
         self.status_widgets = {}
         self.initialize()
 
+
     def initialize(self):
         self.contacts.setColumnCount(3)
         self.contacts.setHorizontalHeaderItem(0, QTableWidgetItem("Estado"))
@@ -77,6 +88,17 @@ class RequestAuthentication(Ui_RequestAuthentication):
         self.contacts.resizeColumnsToContents()
         self.contacts_count = 0
         self.contacts.contextMenuEvent = self.context_element_menu_event
+
+    def inactive_btn(self):
+        self.cleanbtn.setEnabled(False)
+        self.add_contact.setEnabled(False)
+        self.requestAuthentication.setEnabled(False)
+
+    def active_btn(self):
+        self.cleanbtn.setEnabled(True)
+        self.add_contact.setEnabled(True)
+        self.requestAuthentication.setEnabled(True)
+
 
     def insert_item(self, identification, name):
 
@@ -109,18 +131,31 @@ class RequestAuthentication(Ui_RequestAuthentication):
         txt = self.searchContact.text()
         id = self.contacts_model.deserialize_contact(txt)
         if id:
-            if id != txt:
-                self.insert_item(id, txt)
+            if id not in self.auth_list:
+                if id != txt:
+                    self.insert_item(id, txt)
+                else:
+                    self.insert_item(id, '')
+                self.auth_list.append(id)
+                self.searchContact.setText('')
             else:
-                self.insert_item(id, '')
-            self.auth_list.append(id)
-            self.searchContact.setText('')
+                QtWidgets.QMessageBox.warning(self.widget, 'Contacto ya existente',
+                                              "El contacto seleccionado fue agregado a la lista anteriormente.")
+
         else:
             QtWidgets.QMessageBox.warning(self.widget, 'Contacto no identificado',
                  "Lo ingresado no es un nombre de contacto o un número de identificación válido.")
 
     def request_authentication(self):
-        print("REQUEST", self.auth_list)
+        self.inactive_btn()
+        self.requestAuthProgressBar.setRange(0, len(self.auth_list))
+        self.auth_pending = len(self.auth_list)
+        self.update_process_bar(0, "Enviando peticiones de autenticación")
+        self.pao = PersonAuthenticationOpers(1, self.person, self.auth_list)
+        self.pao.has_result.connect(self.end_authentication)
+        self.pao.has_changes.connect(self.check_transaction_change)
+        self.pao.remove_check.connect(self.check_transaction_end)
+        self.pao.start()
 
     def context_element_menu_event(self, pos):
         if self.contacts.selectedIndexes():
@@ -146,3 +181,38 @@ class RequestAuthentication(Ui_RequestAuthentication):
             self.auth_list.pop()
         self.contacts.setRowCount(0)
         self.contacts_count=0
+
+    def update_process_bar(self, value, text):
+        self.requestAuthProgressBar.setValue(value)
+        if text:
+            self.requestAuthProgressBar.setFormat(text)
+
+    #@pyqtSlot()
+    def end_authentication(self, id):
+        self.update_process_bar(len(self.auth_list), 'Solicitud de autorizaciones completo')
+        self.active_btn()
+
+    # @pyqtSlot()
+    def check_transaction_end(self, identification):
+        self.auth_pending -= 1
+        self.update_process_bar(len(self.auth_list) - self.auth_pending,
+                                'Solicitudes faltantes %d'%self.auth_pending)
+
+
+    #@pyqtSlot()
+    def check_transaction_change(self, identification, status, recieved, text):
+        # transaction_status
+        icon_status = 0
+        icon_tooltip = ''
+        if status == 0:
+            if recieved:
+                icon_status = self.CONNECTED
+            else:
+                icon_status = self.CONNECTING
+        elif status == 2:
+            icon_status = self.REJECTED
+            icon_tooltip = text
+        else:
+            icon_status = self.ERROR
+            icon_tooltip = text
+        self.change_person_status(self.status_widgets[identification], icon_status, icon_tooltip)

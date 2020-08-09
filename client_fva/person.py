@@ -427,6 +427,8 @@ class PKCS11PersonClient(OSPersonClient):
             self.settings.secret_auth_keys[self.serial] = data['token']
             return data['token']
         except Exception as e:  # pin was not provided, we don't need to register or encode anything
+            print(e)
+
             return None
 
     def unregister(self):
