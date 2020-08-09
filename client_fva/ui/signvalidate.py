@@ -36,8 +36,9 @@ class PersonSignOpers(QThread):
                                        wait=data["wait"], extras=data["extras"])
         self.mysign.update_mysign(mid, transaction_status=self.result["status"], transaction_text=self.result["status_text"])
 
-        with open(data["save_path"], "wb") as arch:
-            arch.write(b64decode(self.result["signed_document"]))
+        if self.result.get('signed_document'):
+            with open(data["save_path"], "wb") as arch:
+                arch.write(b64decode(self.result["signed_document"]))
 
         self.has_result.emit(self.tid)
 
