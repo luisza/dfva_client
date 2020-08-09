@@ -84,7 +84,7 @@ class SignValidate(QWidget, Ui_SignValidate):
             self.person.end_sign.connect(self.end_sign)
             self.person.end_validate.connect(self.end_validate)
 
-    def __del__(self):
+    def disconnect(self):
         self.person.process_status.disconnect(self.update_process_bar)
         self.person.end_sign.disconnect(self.end_sign)
         self.person.end_validate.disconnect(self.end_validate)

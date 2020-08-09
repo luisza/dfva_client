@@ -25,3 +25,4 @@ class SessionStorage(object):
         self.persons = [None]
         self.users = [None, ]
         self.session_key = get_random_bytes(16)
+        self.last_layout = None

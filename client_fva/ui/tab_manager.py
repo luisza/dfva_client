@@ -93,6 +93,7 @@ class TabManager(QObject):
         position = len(self.session_storage.tabs)
         self.speakers[serial] = ui
         sign_validate_ui = SignValidate(QtWidgets.QWidget(), self.main_app, len(self.session_storage.persons) - 1)
+        self.session_storage.last_layout = sign_validate_ui
         self.controller.usrSlots.insertTab(position, sign_validate_ui.widget, "%s: %s" % (serial[-4:], name))
         self.controller.set_enabled_specific_menu_actions(True)
         user = self.create_list_menu(ui, name, serial, slot)

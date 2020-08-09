@@ -57,6 +57,7 @@ class FVAClient(Ui_FVAClientUI):
         self.session_storage = SessionStorage.getInstance()
         self.session_storage.parent_widget = self.centralWidget
 
+
         self.main_thread = QtCore.QThread.currentThread()
 
         # load initial app settings
@@ -102,11 +103,14 @@ class FVAClient(Ui_FVAClientUI):
                                               "esta opción.")
         else:
             tab = self.usrSlots.currentWidget()
-            old_layout=tab.layout()
+
             # cleans current tab layout so a new one can be assigned
             QtWidgets.QWidget().setLayout(tab.layout())
             tab.setLayout(new_layout)
-            del old_layout
+            if self.session_storage.last_layout:
+                if hasattr(self.session_storage.last_layout, 'disconnect'):
+                    self.session_storage.last_layout.disconnect()
+                    self.session_storage.last_layout = None
 
     def setup_general_tab_layout(self, new_layout):
         tab = self.tab1
@@ -151,6 +155,7 @@ class FVAClient(Ui_FVAClientUI):
     def open_request_signature(self):
         request_signature_ui = RequestSignature(QtWidgets.QWidget(), main_app, self.db, self.usrSlots.currentIndex())
         self.setup_tab_layout(request_signature_ui.requestSignatureLayout)
+        self.session_storage.last_layout = request_signature_ui
 
     def open_request_authentication(self):
         request_authentication_ui = RequestAuthentication(QtWidgets.QWidget(), main_app, self.db,
@@ -160,6 +165,7 @@ class FVAClient(Ui_FVAClientUI):
     def open_sign_validate(self):
         sign_validate_ui = SignValidate(QtWidgets.QWidget(), main_app, index=self.usrSlots.currentIndex())
         self.setup_tab_layout(sign_validate_ui.signValidateLayout)
+        self.session_storage.last_layout = sign_validate_ui
 
     def open_manage_contacts(self):
         manage_contacts_ui = ManageContacts(QtWidgets.QWidget(), main_app, self.db, index=self.usrSlots.currentIndex())

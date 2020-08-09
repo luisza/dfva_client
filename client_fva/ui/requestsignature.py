@@ -18,7 +18,7 @@ from client_fva.user_settings import UserSettings
 
 
 class PersonSignOpers(QThread):
-    has_result = pyqtSignal(int)
+    has_result = pyqtSignal()
     has_changes = pyqtSignal(str, int, bool, str)
     remove_check = pyqtSignal(str)
 
@@ -54,15 +54,15 @@ class PersonSignOpers(QThread):
         if status == 0:
             pending_check = self.result[identification]['id']
             received = False
-            while received:
-                self.result[identification] = self.person.sign_authenticate(pending_check)
+            while not received:
+                self.result[identification] = self.person.check_sign(pending_check)
                 self.log_check_transaction(identification, self.result[identification])
                 status=self.result[identification]['status']
                 if self.result[identification]['received_notification']:
                     received = True
                     if self.result[identification].get('signed_document'):
                         with open(data["save_path"], "wb") as arch:
-                            arch.write(b64decode(self.result["signed_document"]))
+                            arch.write(b64decode(self.result[identification]["signed_document"]))
                     self.remove_check.emit(identification)
             time.sleep(self.wait_time)
         return status
@@ -72,7 +72,7 @@ class PersonSignOpers(QThread):
         pending = []
         for identification in self.identifications:
             status = self.sign_document(identification, data)
-            if status == 0:
+            if status == 0 and self.result[identification]['received_notification']:
                 data["file_path"] = data["save_path"]
             else:
                 pending.append(identification)
@@ -120,6 +120,7 @@ class RequestSignature(QWidget, Ui_RequestSignature):
         self.add_contact.clicked.connect(lambda: self.add_contact_to_list())
         self.requestSignature.clicked.connect(self.request_signature)
         self.initialize()
+        self.sign_pending = 0
 
     def add_file(self, path):
         if path:  # only add it to the list if something was actually selected - none if user clicked cancel
@@ -188,7 +189,7 @@ class RequestSignature(QWidget, Ui_RequestSignature):
         self.status_widgets[identification] = status_widget
         self.contacts.resizeColumnsToContents()
 
-    def change_person_status(self,status_widget,  status, error_text="Error o rechazo por parte del usuario"):
+    def change_person_status(self, status_widget,  status, error_text="Error o rechazo por parte del usuario"):
         if status == self.CONNECTING:
             status_widget.setIcon(QtGui.QIcon(":/images/connecting.png"))
             status_widget.setToolTip('Conectando al servicio de firmado')
@@ -228,10 +229,10 @@ class RequestSignature(QWidget, Ui_RequestSignature):
     def request_signature(self):
         self.start_sign()
         self.sign_document()
-        self.end_sign()
 
     def start_sign(self):
         self.inactive_btn()
+        self.sign_pending = len(self.sign_list)
         self.progress.setRange(0, len(self.sign_list))
 
     def end_sign(self):
@@ -271,8 +272,6 @@ class RequestSignature(QWidget, Ui_RequestSignature):
         self.pso.has_changes.connect(self.check_transaction_change)
         self.pso.remove_check.connect(self.check_transaction_end)
         self.pso.start()
-
-
 
     def check_transaction_end(self, identification):
         self.sign_pending -= 1
