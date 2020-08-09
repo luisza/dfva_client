@@ -5,6 +5,7 @@ from PyQt5.QtCore import Qt, pyqtSlot, QThread, pyqtSignal
 from PyQt5.QtWidgets import QCompleter, QTableWidgetItem
 
 from client_fva.models.ContactDropDown import ContactModel
+from client_fva.models.MyRequest import MyRequestModel
 from client_fva.session_storage import SessionStorage
 from client_fva.ui.requestauthenticationui import Ui_RequestAuthentication
 from client_fva.user_settings import UserSettings
@@ -15,7 +16,7 @@ class PersonAuthenticationOpers(QThread):
     has_changes = pyqtSignal(str, int, bool, str)
     remove_check = pyqtSignal(str)
 
-    def __init__(self, tid, person, identifications):
+    def __init__(self, tid, person, identifications, user):
         self.identifications = identifications
         self.person = person
         super(PersonAuthenticationOpers, self).__init__()
@@ -23,12 +24,19 @@ class PersonAuthenticationOpers(QThread):
         self.result = None
         self.pending_check = {}
         self.wait_time = UserSettings.getInstance().check_wait_time
+        storage = SessionStorage.getInstance()
+        self.myrequest = MyRequestModel(db=storage.db, user=user)
+
 
     def log_transaction(self, identification, data):
         self.has_changes.emit(identification, data['status'], False, data['status_text'])
+        self.myid = self.myrequest.add_myrequest(identification, 'autenticación', '', '', signed_document_path="",
+                      transaction_status=data['status'], transaction_text=data['status_text'])
 
     def log_check_transaction(self, identification, data):
         self.has_changes.emit(identification, data['status'], data['received_notification'], data['status_text'])
+        self.myrequest.update_myrequest(self.myid, transaction_status=data['status'],
+                                        transaction_text=data['status_text'])
 
     def run(self):
         for identification in self.identifications:
@@ -56,7 +64,6 @@ class RequestAuthentication(Ui_RequestAuthentication):
     REJECTED = 2
     ERROR = 3
 
-
     def __init__(self, widget, main_app, db, index):
         Ui_RequestAuthentication.__init__(self)
         self.widget = widget
@@ -64,7 +71,10 @@ class RequestAuthentication(Ui_RequestAuthentication):
         self.session_storage = SessionStorage.getInstance()
         self.setupUi(self.widget)
         self.person = self.session_storage.persons[index]
-        self.contacts_model = ContactModel(user=self.session_storage.users[index], db=db)
+        self.user = self.session_storage.users[index]
+
+
+        self.contacts_model = ContactModel(user=self.user, db=db)
 
         completer = QCompleter()
         completer.setModel(self.contacts_model)
@@ -151,7 +161,7 @@ class RequestAuthentication(Ui_RequestAuthentication):
         self.requestAuthProgressBar.setRange(0, len(self.auth_list))
         self.auth_pending = len(self.auth_list)
         self.update_process_bar(0, "Enviando peticiones de autenticación")
-        self.pao = PersonAuthenticationOpers(1, self.person, self.auth_list)
+        self.pao = PersonAuthenticationOpers(1, self.person, self.auth_list, self.user)
         self.pao.has_result.connect(self.end_authentication)
         self.pao.has_changes.connect(self.check_transaction_change)
         self.pao.remove_check.connect(self.check_transaction_end)
@@ -187,19 +197,16 @@ class RequestAuthentication(Ui_RequestAuthentication):
         if text:
             self.requestAuthProgressBar.setFormat(text)
 
-    #@pyqtSlot()
     def end_authentication(self, id):
         self.update_process_bar(len(self.auth_list), 'Solicitud de autorizaciones completo')
         self.active_btn()
 
-    # @pyqtSlot()
+
     def check_transaction_end(self, identification):
         self.auth_pending -= 1
         self.update_process_bar(len(self.auth_list) - self.auth_pending,
                                 'Solicitudes faltantes %d'%self.auth_pending)
 
-
-    #@pyqtSlot()
     def check_transaction_change(self, identification, status, recieved, text):
         # transaction_status
         icon_status = 0
