@@ -35,4 +35,7 @@ def createDB():
                    document_name varchar(200), signed_document_path varchar(500), 
                    transaction_status integer not null, transaction_text varchar(250) not null, 
                    userid integer not null, FOREIGN KEY (userid) REFERENCES users)""")
+
+    query.exec_("""create table if not exists serialalias(serial varchar(30) unique not null,
+                   alias varchar(20) )""")
     return True, db

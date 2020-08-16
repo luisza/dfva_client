@@ -1,5 +1,7 @@
 from Crypto.Random import get_random_bytes
 
+from client_fva.models.Alias import Alias
+
 
 class SessionStorage(object):
 
@@ -26,3 +28,7 @@ class SessionStorage(object):
         self.users = [None, ]
         self.session_key = get_random_bytes(16)
         self.last_layout = None
+
+    def set_db(self, db):
+        self.db = db
+        self.alias = Alias(db=db)

@@ -47,12 +47,15 @@ class PKCS11Client:
         self.keys = {}
         self.lib = None
 
-    def get_slots(self):
+    def get_slots(self, filter=[]):
         slots = None
         try:
             if self.lib is None:
                 self.lib = pkcs11.lib(self.get_module_lib())
+
             slots = self.lib.get_slots()
+            if filter:
+                slots = [slot for slot in slots if slot.slot_id in filter]
         except Exception as e:
             signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR,
                                                         {'message': "La biblioteca instalada no funciona para leer "
@@ -73,8 +76,12 @@ class PKCS11Client:
 
         if self.slot and slot is None:
             return self.slot
-        slots = self.get_slots()
-        self.slot = slots[slot or self.slot_number]
+
+        filter = []
+        if slot is not None:
+            filter.append(slot)
+        slots = self.get_slots(filter=filter)
+        self.slot = slots[0]
         return self.slot
 
     def get_module_lib(self):

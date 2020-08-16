@@ -56,8 +56,6 @@ class FVAClient(Ui_FVAClientUI):
         self.db = None
         self.session_storage = SessionStorage.getInstance()
         self.session_storage.parent_widget = self.centralWidget
-
-
         self.main_thread = QtCore.QThread.currentThread()
 
         # load initial app settings
@@ -68,7 +66,7 @@ class FVAClient(Ui_FVAClientUI):
 
     def set_db(self, db):
         self.db = db
-        self.session_storage.db = db
+        self.session_storage.set_db(db)
 
     def closeEvent(self, event):
         # it will minimize or close it depending on what the user setup in their settings - if the user selected exit
@@ -77,7 +75,6 @@ class FVAClient(Ui_FVAClientUI):
         if self.close_window or self.force_exit:
             event.accept()
             self.tabmanager.close()
-            sys.exit(0)
         else:
             event.ignore()
             self.hide()
@@ -185,7 +182,9 @@ class FVAClient(Ui_FVAClientUI):
 
     def request_pin(self, sender, obj):
         serial = obj.data['serial']
-        text, ok = QInputDialog.getText(self.usrSlots.currentWidget(), "Atención", f"Ingrese su pin para {serial}", QLineEdit.Password)
+        alias = self.session_storage.alias.filter(serial)
+        alias_text = alias[0] if alias else serial
+        text, ok = QInputDialog.getText(self.usrSlots.currentWidget(), "Atención", f"Ingrese su pin para {alias_text}", QLineEdit.Password)
         if ok:
             obj.response = {'pin': str(Secret(text)), 'serial': serial, 'rejected': False}
         else:
@@ -210,3 +209,4 @@ def run():
                                        "contacte un administrador.")
         sys.exit(1)
     sys.exit(main_app.exec_())
+    print("Cerrando APP")

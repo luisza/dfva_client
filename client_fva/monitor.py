@@ -82,11 +82,11 @@ class Monitor(QRunnable):
         self.pkcs11client = PKCS11Client(*args, **kwargs)
         self.session_storage.pkcs11_client = self.pkcs11client
         QRunnable.__init__(self)
-
         self.setAutoDelete(True)
         self.cardmonitor = None
         self.cardobserver = None
         self.mutex = QMutex()
+        self.run_mutex = QMutex()
 
     @pyqtSlot()
     def run(self):
@@ -97,9 +97,10 @@ class Monitor(QRunnable):
         self.readerobserver = DFVAReaderObserver(eventmanager=self)
         self.cardmonitor.addObserver(self.cardobserver)
         self.readermonitor.addObserver(self.readerobserver)
+        self.run_mutex.lock()
+        self.run_mutex.lock()
 
-        while True:
-            time.sleep(self.settings.wait_for_scan_new_device)
+
 
     def detect_device(self, notify_exception=False):
         """
@@ -159,9 +160,17 @@ class Monitor(QRunnable):
 
     def close(self):
         logger.info("Terminando monitor")
-        if self.cardmonitor and self.cardmonitor.countObservers() <= 0:
-            self.cardmonitor.rmthread.stopEvent.set()
-            self.cardmonitor = None
+
         if self.cardmonitor and self.cardobserver:
             self.cardmonitor.deleteObserver(self.cardobserver)
-            self.cardobserver = None
+
+        if self.cardmonitor and self.readermonitor:
+            self.readermonitor.deleteObserver(self.readerobserver)
+
+        if self.cardmonitor:
+            self.cardmonitor.rmthread.stop()
+
+        self.run_mutex.unlock()
+        del self.cardobserver
+        del self.readerobserver
+        del self.cardmonitor

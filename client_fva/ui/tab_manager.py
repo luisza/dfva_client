@@ -49,14 +49,20 @@ class TabManager(QObject):
             self.card_information.setRowCount(0)
             # set column count
             self.card_information.setColumnCount(7)
-            self.card_information.setHorizontalHeaderItem(0, QTableWidgetItem("Identificación"))
-            self.card_information.setHorizontalHeaderItem(1, QTableWidgetItem("Nombre"))
-            self.card_information.setHorizontalHeaderItem(2, QTableWidgetItem("Emisión"))
-            self.card_information.setHorizontalHeaderItem(3, QTableWidgetItem("Vencimiento"))
-            self.card_information.setHorizontalHeaderItem(4, QTableWidgetItem("Tipo"))
-            self.card_information.setHorizontalHeaderItem(5, QTableWidgetItem("Serial"))
-            self.card_information.setHorizontalHeaderItem(6, QTableWidgetItem("Estado"))
+            self.card_information.setHorizontalHeaderItem(0, QTableWidgetItem("Alias"))
+            self.card_information.setHorizontalHeaderItem(1, QTableWidgetItem("Identificación"))
+            self.card_information.setHorizontalHeaderItem(2, QTableWidgetItem("Nombre"))
+            self.card_information.setHorizontalHeaderItem(3, QTableWidgetItem("Emisión"))
+            self.card_information.setHorizontalHeaderItem(4, QTableWidgetItem("Vencimiento"))
+            self.card_information.setHorizontalHeaderItem(5, QTableWidgetItem("Tipo"))
+            self.card_information.setHorizontalHeaderItem(6, QTableWidgetItem("Serial"))
+            self.card_information.setHorizontalHeaderItem(7, QTableWidgetItem("Estado"))
+            self.card_information.setColumnHidden(0, True)
             layout.addWidget(self.card_information, 1, 0, 1, 2)
+            self.card_information.contextMenuEvent = self.edit_serial_menu_event
+
+
+
             #headers = self.card_information.horizontalHeader()
             # headers.setResizeMode(QtWidgets.QtHeaderView.ResizeToContents)
 
@@ -67,15 +73,16 @@ class TabManager(QObject):
             user = usercontrol.get_or_create_user(name,cert['first_name'], cert['last_name'])
             #index = len(self.session_storage.tabs)
             self.card_information.insertRow(self.card_information.rowCount())
-            self.card_information.setItem(self.card_count, 0, QTableWidgetItem(name))
-            self.card_information.setItem(self.card_count, 1, QTableWidgetItem(cert['name']))
-            self.card_information.setItem(self.card_count, 2, QTableWidgetItem(
-                cert['cert_start'].strftime("%Y-%m-%d %H:%M")))
+            self.card_information.setItem(self.card_count, 0, QTableWidgetItem(serial))
+            self.card_information.setItem(self.card_count, 1, QTableWidgetItem(name))
+            self.card_information.setItem(self.card_count, 2, QTableWidgetItem(cert['name']))
             self.card_information.setItem(self.card_count, 3, QTableWidgetItem(
+                cert['cert_start'].strftime("%Y-%m-%d %H:%M")))
+            self.card_information.setItem(self.card_count, 4, QTableWidgetItem(
                 cert['cert_expire'].strftime("%Y-%m-%d %H:%M")))
-            self.card_information.setItem(self.card_count, 4, QTableWidgetItem(cert['type']))
-            self.card_information.setItem(self.card_count, 5, QTableWidgetItem(serial))
-            self.card_information.setItem(self.card_count, 6, fvaspeaker.status_widget)
+            self.card_information.setItem(self.card_count, 5, QTableWidgetItem(cert['type']))
+            self.card_information.setItem(self.card_count, 6, QTableWidgetItem(serial))
+            self.card_information.setItem(self.card_count, 7, fvaspeaker.status_widget)
 
             self.card_count += 1
             self.card_information.resizeColumnsToContents()
@@ -94,7 +101,10 @@ class TabManager(QObject):
         self.speakers[serial] = ui
         sign_validate_ui = SignValidate(QtWidgets.QWidget(), self.main_app, len(self.session_storage.persons) - 1)
         self.session_storage.last_layout = sign_validate_ui
-        self.controller.usrSlots.insertTab(position, sign_validate_ui.widget, "%s: %s" % (serial[-4:], name))
+        tab_name = "%s: %s" % (serial[-4:], name)
+        alias = self.session_storage.alias.filter(serial)
+        tab_name = alias[0] if alias else tab_name
+        self.controller.usrSlots.insertTab(position, sign_validate_ui.widget, tab_name)
         self.controller.set_enabled_specific_menu_actions(True)
         user = self.create_list_menu(ui, name, serial, slot)
         self.session_storage.users.append(user)
@@ -121,3 +131,22 @@ class TabManager(QObject):
             self.speakers[name].closeEvent(None)
             self.speakers[name].close()
             del self.speakers[name]
+
+    def edit_serial_menu_event(self, pos):
+        if self.card_information.selectedIndexes():
+            selected = self.card_information.currentIndex()  # user can only select one contact at the time
+            if selected.isValid():
+                row, column = selected.row(), selected.column()
+                menu = QtWidgets.QMenu()
+                menu.setStyleSheet("QMenu::item{color:rgb(76, 118, 82);background-color:rgb(216, 230, 225);}")
+                edit_action = menu.addAction("Asignar Alias")
+                #delete_action.setIcon(QtGui.QIcon(":images/delete.png"))
+                action = menu.exec_(self.card_information.mapToGlobal(pos.pos()))
+                if action == edit_action:
+                    self.edit_serial(row, column)
+
+    def edit_serial(self, row, column):
+        alias_name, done1 = QtWidgets.QInputDialog.getText(self.session_storage.parent_widget, 'Ingrese un alias para esta tarjeta', 'Alias:')
+        if done1:
+            serial = self.card_information.item(row, 0).text()
+            alias = self.session_storage.alias.create_update(serial, alias_name)
