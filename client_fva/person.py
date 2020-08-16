@@ -1,3 +1,4 @@
+import pkcs11
 import requests
 import time
 from datetime import datetime
@@ -5,11 +6,16 @@ from base64 import b64encode
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
+from decorators import decore_pkcs11
+from . import signals
+from .exception import UserRejectPin, SinPerson, PinNotProvided, PinIncorrect
 from .rsa import get_hash_sum
 from pytz import timezone
 from client_fva.user_settings import UserSettings
 from .session_storage import SessionStorage
+import logging
 
+logger = logging.getLogger()
 
 class PersonClientInterface:
     """
@@ -388,7 +394,7 @@ class PKCS11PersonClient(OSPersonClient):
         self.person = kwargs.get('person', None)
 
         if self.person is None:
-            raise Exception("Person cannot be created, sorry read certificates failed")
+            raise SinPerson("No pudimos leer la información de su tarjeta, la identificación de la persona es requerida")
 
     def get_person(self):
         if self.person is None:
@@ -410,6 +416,7 @@ class PKCS11PersonClient(OSPersonClient):
         keys = self.pkcs11client.get_keys(slot=slot)
         return keys['authentication']['priv_key'].sign(identification)
 
+    @decore_pkcs11
     def register(self, algorithm='sha512', slot=None):
         try:
             edata = self.sign_identification(self.person, slot=slot)
@@ -422,14 +429,15 @@ class PKCS11PersonClient(OSPersonClient):
                 'person': self.person,
                 "code": edata
             }
+
             result = self.requests.post(self.settings.fva_server_url + self.settings.login_person, json=params)
             data = result.json()
             self.settings.secret_auth_keys[self.serial] = data['token']
             return data['token']
-        except Exception as e:  # pin was not provided, we don't need to register or encode anything
-            print(e)
-            # pkcs11.exceptions.DataInvalid
-            return None
+        except UserRejectPin as e:
+            signals.send('notify', signals.SignalObject(signals.NOTIFTY_INFO, {
+                'message': "El usuario ha rechazado autenticarse en la plataforma de firma, se requerirá autenticarse al momento de intentar firmar o validar un documento"}))
+            logger.info("El usuario rechazó la solicitud del pin, sesión sin registro")
 
     def unregister(self):
         self.close()

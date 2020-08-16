@@ -63,6 +63,7 @@ class FVAClient(Ui_FVAClientUI):
         apply_selected_appearance(main_app, self.user_settings)
         self.tabmanager = TabManager(self, main_app)
         signals.connect('pin', self.request_pin)
+        signals.connect('notify', self.notify_user)
 
     def set_db(self, db):
         self.db = db
@@ -191,6 +192,12 @@ class FVAClient(Ui_FVAClientUI):
             obj.response = {'pin': "", 'serial': serial, 'rejected': True}
         signals.receive(obj, notify=True)
 
+    def notify_user(self, sender, obj):
+        if obj._type == signals.NOTIFTY_INFO:
+            QtWidgets.QMessageBox.information(self.session_storage.parent_widget, 'Información importante', obj.data['message'])
+        elif obj._type == signals.NOTIFTY_ERROR:
+            QtWidgets.QMessageBox.warning(self.session_storage.parent_widget, 'Ha ocurrido un error', obj.data['message'])
+        signals.receive(obj, notify=True)
 
 def run():
     global main_app

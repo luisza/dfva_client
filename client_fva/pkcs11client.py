@@ -10,21 +10,9 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.x509.oid import NameOID, ExtensionOID
 from client_fva.models.Pin import Secret
-
+from .exception import *
 
 logger = logging.getLogger()
-
-
-class SlotNotFound(Exception):
-    pass
-
-
-class PinNotProvided(Exception):
-    pass
-
-
-class PinIncorrect(Exception):
-    pass
 
 
 class PKCS11Client:
@@ -159,8 +147,10 @@ class PKCS11Client:
 
             sobj = signals.SignalObject(signals.PIN_REQUEST, {'serial': serial})
             respobj = signals.receive(signals.send('pin', sobj))
-            if 'pin' in respobj.response:
+            if 'pin' in respobj.response and respobj.response['pin']:
                 pin = str(Secret(respobj.response['pin'], decode=True))
+            if respobj.response['rejected']:
+                raise UserRejectPin()
         if pin is None:
             raise PinNotProvided('Sorry PIN is Needed, we will remove this, but for now use export PKCS11_PIN=<pin> '
                                  'before call python')
@@ -170,16 +160,15 @@ class PKCS11Client:
         """Obtiene o inicializa una sessión para el uso de la tarjeta.
         .. warning:: Ojo cachear la session y revisar si está activa
         """
-        try:
-            if slot is None or slot not in self.session:
-                slotinst = self.get_slot(slot=slot)
-                token = slotinst.get_token()
-                session = token.open(user_pin=self.get_pin(pin=pin, slot=slot))
-                if slot is not None:
-                    self.session[slot] = session
-                return session
-        except pkcs11.exceptions.PinIncorrect as e:
-            raise PinIncorrect("Pin incorrecto")
+
+        if slot is None or slot not in self.session:
+            slotinst = self.get_slot(slot=slot)
+            token = slotinst.get_token()
+            session = token.open(user_pin=self.get_pin(pin=pin, slot=slot))
+            if slot is not None:
+                self.session[slot] = session
+            return session
+
         return self.session[slot]
 
     def get_certificates(self, slot=None):
@@ -274,15 +263,7 @@ class PKCS11Client:
         return self.keys[slot]
 
     def get_identification(self, slot=None):
-        info = None
-        try:
-            info = self.get_certificate_info(slot=slot)
-        except pkcs11.exceptions.TokenNotRecognised as e:
-            signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR,
-                                                        {'message': "No se puede obtener la identificación de la "
-                                                                    "persona, posiblemente porque la tarjeta está "
-                                                                    "mal conectada"}))
-            logger.error("Tarjeta no detectada %r" % (e, ))
+        info = self.get_certificate_info(slot=slot)
         if info:
             self.identification = info['authentication']['identification']
         return self.identification
