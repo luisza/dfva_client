@@ -78,6 +78,11 @@ class PKCS11Client:
         return self.slot
 
     def get_module_lib(self):
+        dev = self._get_module_lib()
+        logger.debug('Module Lib: '+str(dev))
+        return dev
+
+    def _get_module_lib(self):
         """Obtiene la biblioteca de comunicación con la tarjeta """
 
         if hasattr(self.settings, 'module_path') and self.settings.module_path:

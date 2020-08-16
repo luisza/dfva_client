@@ -111,6 +111,4 @@ def receive(obj, notify=False):
         if obj.status == 0:
             obj.status = 1
             obj.mutex.lock()
-        #obj.mutex.lock()
-        #obj.mutex.unlock()
     return obj

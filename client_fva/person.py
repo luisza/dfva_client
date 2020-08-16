@@ -428,7 +428,7 @@ class PKCS11PersonClient(OSPersonClient):
             return data['token']
         except Exception as e:  # pin was not provided, we don't need to register or encode anything
             print(e)
-
+            # pkcs11.exceptions.DataInvalid
             return None
 
     def unregister(self):
