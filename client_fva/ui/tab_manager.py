@@ -117,6 +117,7 @@ class TabManager(QObject):
             self.controller.usrSlots.removeTab(index)
             self.speakers[serial].closeEvent(None)
             self.speakers[serial].close()
+            self.session_storage.persons[index].clear_keys()
             del self.speakers[serial]
             self.card_information.removeRow(index-1)
             del self.session_storage.tabs[index]

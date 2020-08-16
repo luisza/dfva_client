@@ -5,6 +5,7 @@ from datetime import datetime
 from base64 import b64encode
 
 from PyQt5.QtCore import QObject, pyqtSignal
+from pkcs11 import Mechanism
 
 from decorators import decore_pkcs11
 from . import signals
@@ -414,7 +415,7 @@ class PKCS11PersonClient(OSPersonClient):
         persona que dice ser (validación en DFVA).
         """
         keys = self.pkcs11client.get_keys(slot=slot)
-        return keys['authentication']['priv_key'].sign(identification)
+        return keys['authentication']['priv_key'].sign(identification, mechanism=Mechanism.SHA256_RSA_PKCS)
 
     @decore_pkcs11
     def register(self, algorithm='sha512', slot=None):
@@ -443,6 +444,9 @@ class PKCS11PersonClient(OSPersonClient):
         self.close()
         self.key_token = None
 
+    def clear_keys(self):
+        self.pkcs11client.keys.clear()
+        self.pkcs11client.session.clear()
 
 class QTObjPerson(PKCS11PersonClient, QObject):
     process_status = pyqtSignal(int, str)

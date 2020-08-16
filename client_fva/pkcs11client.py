@@ -279,3 +279,4 @@ class PKCS11Client:
             except pkcs11.exceptions.TokenNotRecognised:
                 logger.warning("Token not found %r"%(slot))
         return dev
+
