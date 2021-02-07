@@ -1,17 +1,26 @@
 <RCC>
-    <qresource prefix="/">
-        <file>images/manage_contacts.png</file>
-        <file>images/autentication.png</file>
-        <file>images/configure_module.png</file>
-        <file>images/sign.png</file>
-        <file>images/icon.png</file>
-        <file>images/my_signatures.png</file>
-        <file>images/my_requests.png</file>
-        <file>images/exit.png</file>
-        <file>images/refresh.png</file>
-        <file>images/add.png</file>
-        <file>images/edit.png</file>
-        <file>images/send.png</file>
-        <file>images/validate.png</file>
-    </qresource>
+  <qresource prefix="/">
+    <file>images/manage_contacts.png</file>
+    <file>images/autentication.png</file>
+    <file>images/configure_module.png</file>
+    <file>images/sign.png</file>
+    <file>images/icon.png</file>
+    <file>images/my_signatures.png</file>
+    <file>images/my_requests.png</file>
+    <file>images/exit.png</file>
+    <file>images/refresh.png</file>
+    <file>images/add.png</file>
+    <file>images/edit.png</file>
+    <file>images/send.png</file>
+    <file>images/validate.png</file>
+    <file>images/log.png</file>
+    <file>images/delete.png</file>
+    <file>images/maximize.png</file>
+    <file>images/close.png</file>
+    <file>images/error.png</file>
+    <file>images/connecting.png</file>
+	<file>images/rejected.png</file>
+    <file>images/connected.png</file>
+    <file>images/search.png</file>
+  </qresource>
 </RCC>

@@ -41,10 +41,26 @@ background-color:rgb(216, 230, 225);</string>
     </widget>
    </item>
    <item>
-    <widget class="QTableView" name="mySignaturesTableView"/>
+    <widget class="QLineEdit" name="searchDocument">
+     <property name="placeholderText">
+      <string>Buscar nombre del documento...</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTableWidget" name="mySignatures">
+     <property name="sizeAdjustPolicy">
+      <enum>QAbstractScrollArea::AdjustToContents</enum>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

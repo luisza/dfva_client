@@ -13,10 +13,13 @@ from smartcard.CardMonitoring import CardMonitor, CardObserver
 from smartcard.ReaderMonitoring import ReaderMonitor, ReaderObserver
 
 from client_fva import signals
-from client_fva.pkcs11client import PKCS11Client
+
+
+from client_fva.pkcs11client import PKCS11Client, SlotNotFound
+from client_fva.session_storage import SessionStorage
 from client_fva.user_settings import UserSettings
 
-logger = logging.getLogger('dfva_client')
+logger = logging.getLogger()
 
 
 class DFVAReaderObserver(ReaderObserver):
@@ -85,12 +88,12 @@ class Monitor(QRunnable):
         self.settings = kwargs.get('settings', UserSettings.getInstance())
         kwargs['settings'] = self.settings
         kwargs['cached'] = False
+        self.session_storage = SessionStorage.getInstance()
         self.pkcs11client = PKCS11Client(*args, **kwargs)
-
         self.settings = kwargs.get('settings', {})
         self.module_lib = self.pkcs11client.get_module_lib()
         self.signal = kwargs.get('signal', signal('fva_client'))
-
+        self.session_storage.pkcs11_client = self.pkcs11client
         QRunnable.__init__(self)
 
         self.setAutoDelete(True)
@@ -122,35 +125,32 @@ class Monitor(QRunnable):
         self.mutex.lock()
         tmp_device = []
         added_device = {}
-        for tokeninfo in self.pkcs11client.get_tokens_information():
-            slot = tokeninfo['slot']
-            try:
-                self.slot = slot
+        try:
+            for tokeninfo in self.pkcs11client.get_tokens_information():
+                slot = tokeninfo['slot']
                 serial = tokeninfo['serial']
                 if serial in self.connected_device:
                     tmp_device.append(serial)
                 else:
                     tmp_device.append(serial)
-
-                    self.pkcs11client.cached = False
-                    person = self.pkcs11client.get_identification()
-                    data = {'slot': slot,
-                            'person': person}
+                    person = self.pkcs11client.get_identification(slot=slot)
+                    data = {'slot': slot, 'person': person, 'serial': serial}
                     added_device[serial] = data
                     self.send_add_signal(data)
+        except SlotNotFound as notoken:
+            pass
+        except Exception as noToken:
+            if notify_exception:
+                signals.send('notify', {'message': "Un dispositivo ha sido encontrado, pero ninguna tarjeta pudo ser "
+                                                   "leída, por favor verifique que la tarjeta esté correctamente "
+                                                   "insertada"})
+            logger.error("%r"%(noToken,))
+            # except Exception as e:
+            #     if notify_exception:
+            #         signals.result.emit('notify',  {
+            #             'message': "Ha ocurrido un error inesperado leyendo alguno de los dispositivos"
+            #         })
 
-
-            except Exception as noToken:
-
-                if notify_exception:
-                    signals.send('notify', {
-                        'message': "Un dispositivo ha sido encontrado, pero ninguna tarjeta pudo ser leída, por favor verifique que la tarjeta esté correctamente insertada"
-                    })
-            except Exception as e:
-                if notify_exception:
-                    signals.result.emit('notify',  {
-                        'message': "Ha ocurrido un error inesperado leyendo alguno de los dispositivos"
-                    })
 
         self.connected_device.update(added_device)
 

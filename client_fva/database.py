@@ -1,7 +1,7 @@
 from PyQt5 import QtSql
 import logging
 
-logger = logging.getLogger('dfva_client')
+logger = logging.getLogger()
 
 
 def createDB():
@@ -23,4 +23,16 @@ def createDB():
                    firstname varchar(20), lastname varchar(20), identification varchar(20),
                    userid integer not null, groupid integer not null,
                    FOREIGN KEY (userid) REFERENCES users, FOREIGN KEY (groupid) REFERENCES groups)""")
+
+    query.exec_("""create table if not exists mysigns(id integer primary key autoincrement unique not null,
+                   identification varchar(20), document_path varchar(500), document_name varchar(200), 
+                   signed_document_path varchar(500), transaction_status integer not null, 
+                   transaction_text varchar(250) not null, userid integer not null,
+                   FOREIGN KEY (userid) REFERENCES users)""")
+
+    query.exec_("""create table if not exists myrequests(id integer primary key autoincrement unique not null,
+                   identification varchar(20), request_type varchar(250) not null, document_path varchar(500), 
+                   document_name varchar(200), signed_document_path varchar(500), 
+                   transaction_status integer not null, transaction_text varchar(250) not null, 
+                   userid integer not null, FOREIGN KEY (userid) REFERENCES users)""")
     return True, db

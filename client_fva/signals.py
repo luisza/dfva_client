@@ -1,12 +1,7 @@
-'''
-
-@author: luis
-'''
-
-import time
-from PyQt5.QtCore import QMutex, QObject, pyqtSignal, QSharedMemory
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QMutex, QObject, pyqtSignal
 from uuid import uuid4
+import logging
+
 # Return response = {'pin': xxx, 'rejected': False}
 PIN_REQUEST = 1
 # Return response =  {'pin': xxx, 'code': xxx, 'rejected': False}
@@ -15,6 +10,8 @@ USB_CONNECTED = 3
 USB_DISCONNECTED = 4
 NOTIFTY_ERROR = 5
 NOTIFTY_INFO = 6
+
+logger = logging.getLogger()
 
 
 class SignalObject(object):
@@ -36,7 +33,7 @@ class SignalObject(object):
     Datos enviados:
 
         * notify  {'message': 'XXX' }
-        * monitor_usb  {'person': 'identificacion', 'slot': slot_obj }
+        * monitor_usb  {'person': 'identificacion', 'slot': slot_obj, 'serial': '0001' }
         * pin {'serial': 'id slot'}
         * fva_speaker  {
               'a': HashAFirmarDocumento,
@@ -58,6 +55,7 @@ class SignalObject(object):
         * fva_speaker  {'pin': 99999, 'rejected': false, 'code': 'UY12345ZL'}
 
     '''
+
     _type = None
     data = None
     response = None
@@ -66,6 +64,7 @@ class SignalObject(object):
         self._type = _type
         self.data = data
         self.response = {}
+        self.status = 0   # 0 initial, 1 in progress, 2 finished
         self.sid = uuid4().hex
         self.mutex = QMutex()
 
@@ -86,7 +85,6 @@ available_signals = {
 
 
 def send(key, data):
-    print("send: ", key)
     if key in available_signals:
         available_signals[key].result.emit(key, data)
         return data
@@ -95,7 +93,6 @@ def send(key, data):
 
 
 def connect(key, func):
-    print("connect: ", key)
     if key in available_signals:
         available_signals[key].result.connect(func)
     else:
@@ -107,10 +104,13 @@ objs = {}
 
 def receive(obj, notify=False):
     if notify:
-        obj.mutex.unlock()
+        if obj.status == 1:
+            obj.mutex.unlock()
+        obj.status = 2
     else:
-        print("Entrada: ", obj.sid, objs)
-        obj.mutex.lock()
-        obj.mutex.lock()
-        obj.mutex.unlock()
+        if obj.status == 0:
+            obj.status = 1
+            obj.mutex.lock()
+        #obj.mutex.lock()
+        #obj.mutex.unlock()
     return obj

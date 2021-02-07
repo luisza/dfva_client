@@ -1,22 +1,26 @@
 import sys
+from PyQt5.QtWidgets import QInputDialog, QLineEdit
+
+from client_fva.models.Pin import Secret
+from client_fva.session_storage import SessionStorage
 from client_fva.ui.fvaclientui import Ui_FVAClientUI
 from client_fva.ui.myrequests import MyRequests
 from client_fva.ui.mysignatures import MySignatures
 from client_fva.ui.tab_manager import TabManager
-from client_fva.ui.tabdefault import TabDefault
 from client_fva.ui.settings import Settings
 from client_fva.ui.requestsignature import RequestSignature
 from client_fva.ui.requestauthentication import RequestAuthentication
 from client_fva.ui.signvalidate import SignValidate
 from client_fva.ui.managecontacts import ManageContacts
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 from client_fva.ui.tabdefault import TabDefault
 from client_fva.user_settings import UserSettings
 from client_fva.ui.utils import apply_selected_appearance
 from client_fva.database import createDB
 import logging
 
-from fva_logging import get_loggin_window, configure_settings
+from  client_fva.fva_logging import get_logging_window, configure_settings
+from client_fva import signals
 
 logger = logging.getLogger('dfva_client')
 main_app = None
@@ -38,66 +42,75 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_default_layout()
         self.set_enabled_specific_menu_actions(False)
         self.main_window.closeEvent = self.closeEvent
-        self.actionExit.triggered.connect(self.hide)
+        self.actionExit.triggered.connect(self.main_window.close)
         self.actionMyRequests.triggered.connect(self.open_my_requests)
         self.actionMySignatures.triggered.connect(self.open_my_signatures)
         self.actionBitacoras.triggered.connect(self.open_logging_window)
         self.actionPreferences.triggered.connect(self.open_settings)
-        self.actionRequestSignature.triggered.connect(
-            self.open_request_signature)
-        self.actionRequestAuthentication.triggered.connect(
-            self.open_request_authentication)
+        self.actionRequestSignature.triggered.connect(self.open_request_signature)
+        self.actionRequestAuthentication.triggered.connect(self.open_request_authentication)
         self.actionSignAuthenticate.triggered.connect(self.open_sign_validate)
         self.actionManageContacts.triggered.connect(self.open_manage_contacts)
         self.close_window = False  # by default window is only minimized
+        self.force_exit = False  # the exit button was pressed (from the tray icon) so we need to exit it all
         self.db = None
-        # TODO - CREATE METHODS TO POPULATE CURRENT USER ACCORDING TO TAB SO
-        # IT'S NOT 1 ALWAYS
-        self.current_user = 1
+        self.session_storage = SessionStorage.getInstance()
+        self.session_storage.parent_widget = self.centralWidget
+
+
+        self.main_thread = QtCore.QThread.currentThread()
 
         # load initial app settings
         self.user_settings = usersettings
         apply_selected_appearance(main_app, self.user_settings)
         self.tabmanager = TabManager(self, main_app)
+        signals.connect('pin', self.request_pin)
 
-        # TODO - Delete this code because it's for testing
-        #my_requests_ui = MyRequests(QtWidgets.QWidget(), main_app)
-        #self.usrSlots.insertTab(self.usrSlots.count(), my_requests_ui.widget, "test")
-        # self.set_enabled_specific_menu_actions(True)
+    def set_db(self, db):
+        self.db = db
+        self.session_storage.db = db
 
     def closeEvent(self, event):
-        if not self.user_settings.hide_on_close:
-            self.close_window = True
-        if self.close_window:
+        # it will minimize or close it depending on what the user setup in their settings - if the user selected exit
+        # from the tray icon then it will be closed no matter what
+        self.close_window = not self.user_settings.hide_on_close
+        if self.close_window or self.force_exit:
             event.accept()
             self.tabmanager.close()
+            sys.exit(0)
         else:
             event.ignore()
             self.hide()
 
     def setup_tray_icon(self):
-        self.trayIcon = QtWidgets.QSystemTrayIcon(
-            QtGui.QIcon(":/images/icon.png"), self.main_window)
-        self.trayIconMenu = menu = QtWidgets.QMenu()
-        self.trayIconOpenAction = menu.addAction("Abrir")
+        self.trayIcon = QtWidgets.QSystemTrayIcon(QtGui.QIcon(":/images/icon.png"), self.main_window)
+        self.trayIconMenu = QtWidgets.QMenu()
+        self.trayIconOpenAction = self.trayIconMenu.addAction("Abrir")
+        self.trayIconOpenAction.setIcon(QtGui.QIcon(":images/maximize.png"))
         self.trayIconOpenAction.triggered.connect(self.show)
-        self.trayIconExitAction = menu.addAction("Salir")
+        self.trayIconExitAction = self.trayIconMenu.addAction("Salir")
+        self.trayIconExitAction.setIcon(QtGui.QIcon(":images/exit.png"))
         self.trayIconExitAction.triggered.connect(self.exit)
-        self.trayIcon.setContextMenu(menu)
+        self.trayIcon.setContextMenu(self.trayIconMenu)
         self.trayIcon.setToolTip("Cliente FVA")
         self.trayIcon.activated.connect(self.toggle)
         self.trayIcon.show()
 
     def setup_tab_layout(self, new_layout):
         if self.usrSlots.currentIndex() == DEFAULT_TAB_INDEX:
-            QtWidgets.QMessageBox.information(self.main_window, 'Seleccione Dispositivo',
+            QtWidgets.QMessageBox.information(self.usrSlots.currentWidget(), 'Seleccione Dispositivo',
                                               "Por favor seleccione una pestaña de dispositivo para acceder a "
                                               "esta opción.")
         else:
             tab = self.usrSlots.currentWidget()
+
             # cleans current tab layout so a new one can be assigned
             QtWidgets.QWidget().setLayout(tab.layout())
             tab.setLayout(new_layout)
+            if self.session_storage.last_layout:
+                if hasattr(self.session_storage.last_layout, 'disconnect'):
+                    self.session_storage.last_layout.disconnect()
+                    self.session_storage.last_layout = None
 
     def setup_general_tab_layout(self, new_layout):
         tab = self.tab1
@@ -117,10 +130,8 @@ class FVAClient(Ui_FVAClientUI):
         self.main_window.hide()
 
     def exit(self):
-        self.close_window = True
-        self.tabmanager.close()
+        self.force_exit = True
         self.main_window.close()
-        sys.exit()
 
     def toggle(self, reason):
         if reason == QtWidgets.QSystemTrayIcon.DoubleClick:
@@ -130,40 +141,38 @@ class FVAClient(Ui_FVAClientUI):
                 self.show()
 
     def open_my_requests(self):
-        my_requests_ui = MyRequests(QtWidgets.QWidget(), main_app)
+        my_requests_ui = MyRequests(QtWidgets.QWidget(), main_app, self.db, index=self.usrSlots.currentIndex())
         self.setup_tab_layout(my_requests_ui.myRequestsLayout)
 
     def open_my_signatures(self):
-        my_signatures_ui = MySignatures(QtWidgets.QWidget(), main_app)
+        my_signatures_ui = MySignatures(QtWidgets.QWidget(), main_app, self.db, index=self.usrSlots.currentIndex())
         self.setup_tab_layout(my_signatures_ui.mySignaturesLayout)
 
     def open_settings(self):
-        settings_ui = Settings(QtWidgets.QWidget(),
-                               main_app, fva_client_ui, self.user_settings)
+        settings_ui = Settings(QtWidgets.QWidget(), main_app, fva_client_ui, self.user_settings)
         self.setup_general_tab_layout(settings_ui.settingsLayout)
 
     def open_request_signature(self):
-        request_signature_ui = RequestSignature(QtWidgets.QWidget(), main_app)
+        request_signature_ui = RequestSignature(QtWidgets.QWidget(), main_app, self.db, self.usrSlots.currentIndex())
         self.setup_tab_layout(request_signature_ui.requestSignatureLayout)
+        self.session_storage.last_layout = request_signature_ui
 
     def open_request_authentication(self):
-        request_authentication_ui = RequestAuthentication(
-            QtWidgets.QWidget(), main_app)
-        self.setup_tab_layout(
-            request_authentication_ui.requestAuthenticationLayout)
+        request_authentication_ui = RequestAuthentication(QtWidgets.QWidget(), main_app, self.db,
+                                                          self.usrSlots.currentIndex())
+        self.setup_tab_layout(request_authentication_ui.requestAuthenticationLayout)
 
     def open_sign_validate(self):
-        sign_validate_ui = SignValidate(QtWidgets.QWidget(), main_app)
+        sign_validate_ui = SignValidate(QtWidgets.QWidget(), main_app, index=self.usrSlots.currentIndex())
         self.setup_tab_layout(sign_validate_ui.signValidateLayout)
+        self.session_storage.last_layout = sign_validate_ui
 
     def open_manage_contacts(self):
-        manage_contacts_ui = ManageContacts(
-            QtWidgets.QWidget(), main_app, self.db, self.current_user)
+        manage_contacts_ui = ManageContacts(QtWidgets.QWidget(), main_app, self.db, index=self.usrSlots.currentIndex())
         self.setup_tab_layout(manage_contacts_ui.manageContactsLayout)
 
     def open_logging_window(self):
-
-        logging_window = get_loggin_window()
+        logging_window = get_logging_window()
         logging_window.show()
         logging_window.raise_()
 
@@ -173,6 +182,15 @@ class FVAClient(Ui_FVAClientUI):
                                  self.actionManageContacts]
         for action in slot_specific_actions:
             action.setEnabled(enabled)
+
+    def request_pin(self, sender, obj):
+        serial = obj.data['serial']
+        text, ok = QInputDialog.getText(self.usrSlots.currentWidget(), "Atención", f"Ingrese su pin para {serial}", QLineEdit.Password)
+        if ok:
+            obj.response = {'pin': str(Secret(text)), 'serial': serial, 'rejected': False}
+        else:
+            obj.response = {'pin': "", 'serial': serial, 'rejected': True}
+        signals.receive(obj, notify=True)
 
 
 def run():
@@ -184,7 +202,8 @@ def run():
     configure_settings(user_settings)
     fva_client_ui = FVAClient(QtWidgets.QMainWindow(), usersettings=user_settings)
     fva_client_ui.show()
-    ok, fva_client_ui.db = createDB()
+    ok, db = createDB()
+    fva_client_ui.set_db(db)
     if not ok:
         QtWidgets.QMessageBox.critical(None, "Error en la Base de Datos",
                                        "Hubo un problema cargando la base de datos, por favor intente más tarde o "

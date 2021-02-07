@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'contactAddDialog.ui'
+# Form implementation generated from reading ui file 'client_fva/ui/ui_elements/contactAddDialog.ui'
 #
 # Created by: PyQt5 UI code generator 5.10.1
 #
@@ -12,6 +12,9 @@ class Ui_AddContactDialog(object):
     def setupUi(self, AddContactDialog):
         AddContactDialog.setObjectName("AddContactDialog")
         AddContactDialog.resize(495, 265)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        AddContactDialog.setWindowIcon(icon)
         self.dialogbox = QtWidgets.QDialogButtonBox(AddContactDialog)
         self.dialogbox.setGeometry(QtCore.QRect(280, 230, 166, 23))
         self.dialogbox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)

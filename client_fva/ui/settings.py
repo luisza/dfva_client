@@ -27,6 +27,7 @@ class Settings(Ui_Settings):
         self.fontComboBox.setCurrentText(self.user_settings.font_family)
         # security
         self.savePassword.setChecked(self.user_settings.save_password_in_manager)
+        self.hideOnClose.setChecked(self.user_settings.hide_on_close)
         self.requestsBeforeError.setValue(self.user_settings.number_requests_before_fail)
         self.saveDocsPath.setText(self.user_settings.save_signed_docs_path)
         # module
@@ -39,6 +40,7 @@ class Settings(Ui_Settings):
         self.user_settings.theme = self.theme.currentText()
         # security
         self.user_settings.save_password_in_manager = self.savePassword.isChecked()
+        self.user_settings.hide_on_close = self.hideOnClose.isChecked()
         self.user_settings.number_requests_before_fail = self.requestsBeforeError.value()
         self.user_settings.save_signed_docs_path = self.saveDocsPath.text()
         # module
