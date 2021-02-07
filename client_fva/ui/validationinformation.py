@@ -17,7 +17,7 @@ class ValidationInformation(QtWidgets.QDialog, Ui_Dialog):
         self.signers.setColumnCount(3)
         self.signers.setHorizontalHeaderItem(0, QTableWidgetItem("Identificación"))
         self.signers.setHorizontalHeaderItem(1, QTableWidgetItem("Nombre"))
-        self.signers.setHorizontalHeaderItem(2, QTableWidgetItem("Fecha de firma"))
+        self.signers.setHorizontalHeaderItem(2, QTableWidgetItem("Fecha de Firma"))
         
     def add_signer(self, identification, name, date):
         self.signers.insertRow(self.signers.rowCount())

@@ -27,15 +27,19 @@ class Ui_Dialog(object):
         self.information.setObjectName("information")
         self.label_2 = QtWidgets.QLabel(self.information)
         self.label_2.setGeometry(QtCore.QRect(10, 20, 67, 19))
+        self.label_2.setStyleSheet("color: rgb(0, 0, 0);\n"
+"font: bold;")
         self.label_2.setObjectName("label_2")
         self.label = QtWidgets.QLabel(self.information)
-        self.label.setGeometry(QtCore.QRect(10, 50, 81, 19))
+        self.label.setGeometry(QtCore.QRect(10, 60, 81, 19))
+        self.label.setStyleSheet("color: rgb(0, 0, 0);\n"
+"font: bold;")
         self.label.setObjectName("label")
         self.status = QtWidgets.QLabel(self.information)
-        self.status.setGeometry(QtCore.QRect(90, 20, 301, 19))
+        self.status.setGeometry(QtCore.QRect(80, 20, 301, 19))
         self.status.setObjectName("status")
         self.signers = QtWidgets.QTableWidget(self.information)
-        self.signers.setGeometry(QtCore.QRect(10, 80, 561, 241))
+        self.signers.setGeometry(QtCore.QRect(10, 90, 561, 241))
         self.signers.setTextElideMode(QtCore.Qt.ElideNone)
         self.signers.setObjectName("signers")
         self.signers.setColumnCount(0)
@@ -50,9 +54,13 @@ class Ui_Dialog(object):
         self.tab_2.setObjectName("tab_2")
         self.label_4 = QtWidgets.QLabel(self.tab_2)
         self.label_4.setGeometry(QtCore.QRect(10, 10, 231, 19))
+        self.label_4.setStyleSheet("color: rgb(0, 0, 0);\n"
+"font: bold;")
         self.label_4.setObjectName("label_4")
         self.label_5 = QtWidgets.QLabel(self.tab_2)
         self.label_5.setGeometry(QtCore.QRect(10, 150, 67, 19))
+        self.label_5.setStyleSheet("color: rgb(0, 0, 0);\n"
+"font: bold;")
         self.label_5.setObjectName("label_5")
         self.warnings = QtWidgets.QListWidget(self.tab_2)
         self.warnings.setGeometry(QtCore.QRect(10, 30, 561, 111))
@@ -69,14 +77,14 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Información del documento"))
-        self.label_2.setText(_translate("Dialog", "Estado:"))
-        self.label.setText(_translate("Dialog", "Firmantes:"))
-        self.status.setText(_translate("Dialog", "Información de estado de la validación"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.information), _translate("Dialog", "Información de firma"))
+        Dialog.setWindowTitle(_translate("Dialog", "Información del Documento"))
+        self.label_2.setText(_translate("Dialog", "Estado"))
+        self.label.setText(_translate("Dialog", "Firmantes"))
+        self.status.setText(_translate("Dialog", "Información de Estado de la Validación"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.information), _translate("Dialog", "Información de Firma"))
         self.label_4.setText(_translate("Dialog", "Advertencias"))
         self.label_5.setText(_translate("Dialog", "Errores"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Dialog", "Advertencias y errores"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Dialog", "Advertencias y Errores"))
 
 from . import resources_rc
 

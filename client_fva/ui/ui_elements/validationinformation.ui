@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Información del documento</string>
+   <string>Información del Documento</string>
   </property>
   <property name="windowIcon">
    <iconset resource="resources.qrc">
@@ -47,7 +47,7 @@
    </property>
    <widget class="QWidget" name="information">
     <attribute name="title">
-     <string>Información de firma</string>
+     <string>Información de Firma</string>
     </attribute>
     <widget class="QLabel" name="label_2">
      <property name="geometry">
@@ -58,41 +58,49 @@
        <height>19</height>
       </rect>
      </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+font: bold;</string>
+     </property>
      <property name="text">
-      <string>Estado:</string>
+      <string>Estado</string>
      </property>
     </widget>
     <widget class="QLabel" name="label">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>50</y>
+       <y>60</y>
        <width>81</width>
        <height>19</height>
       </rect>
      </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+font: bold;</string>
+     </property>
      <property name="text">
-      <string>Firmantes:</string>
+      <string>Firmantes</string>
      </property>
     </widget>
     <widget class="QLabel" name="status">
      <property name="geometry">
       <rect>
-       <x>90</x>
+       <x>80</x>
        <y>20</y>
        <width>301</width>
        <height>19</height>
       </rect>
      </property>
      <property name="text">
-      <string>Información de estado de la validación</string>
+      <string>Información de Estado de la Validación</string>
      </property>
     </widget>
     <widget class="QTableWidget" name="signers">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>80</y>
+       <y>90</y>
        <width>561</width>
        <height>241</height>
       </rect>
@@ -120,7 +128,7 @@
    </widget>
    <widget class="QWidget" name="tab_2">
     <attribute name="title">
-     <string>Advertencias y errores</string>
+     <string>Advertencias y Errores</string>
     </attribute>
     <widget class="QLabel" name="label_4">
      <property name="geometry">
@@ -130,6 +138,10 @@
        <width>231</width>
        <height>19</height>
       </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+font: bold;</string>
      </property>
      <property name="text">
       <string>Advertencias</string>
@@ -143,6 +155,10 @@
        <width>67</width>
        <height>19</height>
       </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+font: bold;</string>
      </property>
      <property name="text">
       <string>Errores</string>

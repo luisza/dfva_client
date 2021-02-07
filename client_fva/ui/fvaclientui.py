@@ -177,7 +177,7 @@ class Ui_FVAClientUI(object):
         self.actionExit.setShortcut(_translate("FVAClientUI", "Ctrl+X"))
         self.actionSignAuthenticate.setText(_translate("FVAClientUI", "Firmar - Validar"))
         self.actionSignAuthenticate.setShortcut(_translate("FVAClientUI", "Ctrl+D"))
-        self.actionBitacoras.setText(_translate("FVAClientUI", "Bitacoras"))
+        self.actionBitacoras.setText(_translate("FVAClientUI", "Bitácora"))
         self.actionBitacoras.setShortcut(_translate("FVAClientUI", "Ctrl+L"))
 
 from . import resources_rc

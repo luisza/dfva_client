@@ -3,7 +3,7 @@ cryptography==3.2
 dateutils==0.6.8
 pycparser==2.18
 pycryptodome==3.9.8
-PyQt5==5.10.1
+PyQt5==5.15.0
 python-dateutil==2.7.1
 python-pkcs11==0.6.0
 requests==2.24.0

@@ -295,7 +295,7 @@ background-color:rgb(216, 230, 225);}</string>
      <normaloff>:/images/log.png</normaloff>:/images/log.png</iconset>
    </property>
    <property name="text">
-    <string>Bitacoras</string>
+    <string>Bitácora</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+L</string>

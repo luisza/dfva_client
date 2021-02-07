@@ -33,7 +33,7 @@ class Ui_RequestSignature(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 598, 322))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 592, 314))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.scrollAreaLayout = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
         self.scrollAreaLayout.setObjectName("scrollAreaLayout")
@@ -80,12 +80,18 @@ class Ui_RequestSignature(object):
         self.filesFrameLayout = QtWidgets.QGridLayout(self.filesFrame)
         self.filesFrameLayout.setObjectName("filesFrameLayout")
         self.label_resumen = QtWidgets.QLabel(self.filesFrame)
+        self.label_resumen.setStyleSheet("color: rgb(0, 0, 0);\n"
+"font: bold;")
         self.label_resumen.setObjectName("label_resumen")
         self.filesFrameLayout.addWidget(self.label_resumen, 5, 0, 1, 1)
         self.label_lugar = QtWidgets.QLabel(self.filesFrame)
+        self.label_lugar.setStyleSheet("color: rgb(0, 0, 0);\n"
+"font: bold;")
         self.label_lugar.setObjectName("label_lugar")
         self.filesFrameLayout.addWidget(self.label_lugar, 6, 0, 1, 1)
         self.label_3 = QtWidgets.QLabel(self.filesFrame)
+        self.label_3.setStyleSheet("color: rgb(0, 0, 0);\n"
+"font: bold;")
         self.label_3.setObjectName("label_3")
         self.filesFrameLayout.addWidget(self.label_3, 7, 0, 1, 1)
         self.label = QtWidgets.QLabel(self.filesFrame)

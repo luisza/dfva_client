@@ -244,7 +244,7 @@ class SignValidate(QWidget, Ui_SignValidate):
 
             for error in self.opers[tid].result['errors']:
                 vi.add_errors(error['detail'])
-            vi.set_status_icon(self.opers[tid].result['status'] == 0)
+            vi.set_status_icon(self.opers[tid].result['status'])
             vi.show()
 
 

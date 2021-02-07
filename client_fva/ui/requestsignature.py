@@ -102,6 +102,7 @@ class RequestSignature(QWidget, Ui_RequestSignature):
         self.person = self.session_storage.persons[index]
         self.user = self.session_storage.users[index]
         self.contacts_count = 0
+        self.path = None
         self.settings = UserSettings.getInstance()
         self.browseFiles.clicked.connect(self.get_document_path)
         self.filesWidget.set_parent(self)
