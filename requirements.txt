@@ -1,7 +1,10 @@
-cryptography==3.0
+blinker==1.4
+cryptography==3.2
 dateutils==0.6.8
+pycparser==2.18
 pycryptodome==3.9.8
-PyQt5==5.15.0
+PyQt5==5.10.1
+python-dateutil==2.7.1
 python-pkcs11==0.6.0
 requests==2.24.0
 pyscard==1.9.9
