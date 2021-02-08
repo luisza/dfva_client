@@ -61,11 +61,6 @@ class TabManager(QObject):
             layout.addWidget(self.card_information, 1, 0, 1, 2)
             self.card_information.contextMenuEvent = self.edit_serial_menu_event
 
-
-
-            #headers = self.card_information.horizontalHeader()
-            # headers.setResizeMode(QtWidgets.QtHeaderView.ResizeToContents)
-
         certs = fvaspeaker.client.pkcs11client.get_certificate_info(slot=slot)
         if certs:
             cert = certs['authentication']
@@ -112,7 +107,7 @@ class TabManager(QObject):
 
     def remove_tab(self, name, slot):
         index = self.session_storage.tabs.index(slot)
-        if index >=0:
+        if index >= 0:
             serial = self.session_storage.serials[index]
             self.controller.usrSlots.removeTab(index)
             self.speakers[serial].closeEvent(None)
@@ -141,13 +136,13 @@ class TabManager(QObject):
                 menu = QtWidgets.QMenu()
                 menu.setStyleSheet("QMenu::item{color:rgb(76, 118, 82);background-color:rgb(216, 230, 225);}")
                 edit_action = menu.addAction("Asignar Alias")
-                #delete_action.setIcon(QtGui.QIcon(":images/delete.png"))
                 action = menu.exec_(self.card_information.mapToGlobal(pos.pos()))
                 if action == edit_action:
                     self.edit_serial(row, column)
 
     def edit_serial(self, row, column):
-        alias_name, done1 = QtWidgets.QInputDialog.getText(self.session_storage.parent_widget, 'Ingrese un alias para esta tarjeta', 'Alias:')
+        alias_name, done1 = QtWidgets.QInputDialog.getText(self.session_storage.parent_widget,
+                                                           'Ingrese un alias para esta tarjeta', 'Alias:')
         if done1:
             serial = self.card_information.item(row, 0).text()
             alias = self.session_storage.alias.create_update(serial, alias_name)

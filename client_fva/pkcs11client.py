@@ -128,7 +128,7 @@ class PKCS11Client:
                        "instalado las bibliotecas necesarias o porque el sistema operativo no está soportado"}))
 
     def get_pin(self, pin=None, slot=None):
-        """Obtiene el pin de la tarjeta para iniciar sessión"""
+        """Obtiene el pin de la tarjeta para iniciar sesión"""
 
         if isinstance(pin, Secret):
             return str(pin)
@@ -152,8 +152,8 @@ class PKCS11Client:
             if respobj.response['rejected']:
                 raise UserRejectPin()
         if pin is None:
-            raise PinNotProvided('Sorry PIN is Needed, we will remove this, but for now use export PKCS11_PIN=<pin> '
-                                 'before call python')
+            raise PinNotProvided('Sorry PIN is needed, we will remove this, but for now use export PKCS11_PIN=<pin> '
+                                 'before call python.')
         return pin
     
     def get_session(self, pin=None, slot=None):
