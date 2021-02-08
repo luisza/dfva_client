@@ -7,11 +7,15 @@
     <x>0</x>
     <y>0</y>
     <width>615</width>
-    <height>371</height>
+    <height>385</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Preferencias</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset>
   </property>
   <property name="styleSheet">
    <string notr="true">color:rgb(76, 118, 82);
@@ -421,6 +425,8 @@ background-color: rgb(229, 229, 229);</string>
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
