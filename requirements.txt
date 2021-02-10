@@ -1,5 +1,5 @@
 blinker==1.4
-cryptography==3.2
+cryptography==3.3.2
 dateutils==0.6.8
 pycparser==2.18
 pycryptodome==3.9.8
