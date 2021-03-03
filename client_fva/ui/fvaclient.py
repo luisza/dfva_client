@@ -144,7 +144,7 @@ class FVAClient(Ui_FVAClientUI):
         return serial
 
     def open_my_requests(self):
-        my_requests_ui = MyRequests(QtWidgets.QWidget(), main_app, self.db, index=self.usrSlots.currentIndex())
+        my_requests_ui = MyRequests(QtWidgets.QWidget(), main_app, self.db, self.get_serial_by_tabindex(self.usrSlots.currentIndex()))
         self.setup_tab_layout(my_requests_ui.myRequestsLayout)
 
     def open_my_signatures(self):
