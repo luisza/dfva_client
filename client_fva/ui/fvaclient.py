@@ -19,7 +19,7 @@ from client_fva.ui.utils import apply_selected_appearance
 from client_fva.database import createDB
 import logging
 
-from  client_fva.fva_logging import get_logging_window, configure_settings
+from client_fva.fva_logging import get_logging_window, configure_settings
 from client_fva import signals
 
 logger = logging.getLogger('dfva_client')
@@ -110,16 +110,13 @@ class FVAClient(Ui_FVAClientUI):
                     self.session_storage.last_layout.disconnect()
                     self.session_storage.last_layout = None
 
-    def setup_general_tab_layout(self, new_layout):
+    def setup_tab_default_layout(self):
         tab = self.tab1
         self.usrSlots.setCurrentIndex(DEFAULT_TAB_INDEX)  # move to general tab
-        # cleans current tab layout so a new one can be assigned
+        # cleans the current tab layout and assigns the default one
         QtWidgets.QWidget().setLayout(tab.layout())
-        tab.setLayout(new_layout)
-
-    def setup_tab_default_layout(self):
         tab_default = TabDefault(QtWidgets.QWidget(), main_app)
-        self.setup_general_tab_layout(tab_default.tabDefaultLayout)
+        tab.setLayout(tab_default.tabDefaultLayout)
 
     def show(self):
         self.main_window.show()
@@ -155,8 +152,10 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_tab_layout(my_signatures_ui.mySignaturesLayout)
 
     def open_settings(self):
-        settings_ui = Settings(QtWidgets.QWidget(), main_app, fva_client_ui, self.user_settings)
-        self.setup_general_tab_layout(settings_ui.settingsLayout)
+        settings_dialog = QtWidgets.QDialog()  # settings will open on a new window
+        settings_ui = Settings(settings_dialog, main_app, fva_client_ui, self.user_settings)
+        settings_dialog.setLayout(settings_ui.settingsLayout)
+        settings_dialog.show()
 
     def open_request_signature(self):
         request_signature_ui = RequestSignature(QtWidgets.QWidget(), main_app, self.db, self.get_serial_by_tabindex(self.usrSlots.currentIndex()))
@@ -177,7 +176,8 @@ class FVAClient(Ui_FVAClientUI):
         manage_contacts_ui = ManageContacts(QtWidgets.QWidget(), main_app, self.db,  self.get_serial_by_tabindex(self.usrSlots.currentIndex()))
         self.setup_tab_layout(manage_contacts_ui.manageContactsLayout)
 
-    def open_logging_window(self):
+    @staticmethod
+    def open_logging_window():
         logging_window = get_logging_window()
         logging_window.show()
         logging_window.raise_()
@@ -193,8 +193,9 @@ class FVAClient(Ui_FVAClientUI):
         serial = obj.data['serial']
         alias = self.session_storage.alias.filter(serial)
         alias_text = alias[0] if alias else serial
-        text, ok = QInputDialog.getText(self.usrSlots.currentWidget(), "Atención", f"Ingrese su pin para {alias_text}", QLineEdit.Password)
-        if ok:
+        text, ok = QInputDialog.getText(self.usrSlots.currentWidget(), "Atención", f"Ingrese su pin para {alias_text}",
+                                        QLineEdit.Password)
+        if ok and text:
             obj.response = {'pin': str(Secret(text)), 'serial': serial, 'rejected': False}
         else:
             obj.response = {'pin': "", 'serial': serial, 'rejected': True}
@@ -202,10 +203,14 @@ class FVAClient(Ui_FVAClientUI):
 
     def notify_user(self, sender, obj):
         if obj._type == signals.NOTIFTY_INFO:
-            QtWidgets.QMessageBox.information(self.session_storage.parent_widget, 'Información importante', obj.data['message'])
+            QtWidgets.QMessageBox.information(self.usrSlots.currentWidget(), 'Información Importante',
+                                              obj.data['message'])
         elif obj._type == signals.NOTIFTY_ERROR:
-            QtWidgets.QMessageBox.warning(self.session_storage.parent_widget, 'Ha ocurrido un error', obj.data['message'])
+            QtWidgets.QMessageBox.critical(self.usrSlots.currentWidget(), 'Error', obj.data['message'])
+        elif obj._type == signals.NOTIFY_WARNING:
+            QtWidgets.QMessageBox.warning(self.usrSlots.currentWidget(), 'Atención', obj.data['message'])
         signals.receive(obj, notify=True)
+
 
 def run():
     global main_app
@@ -224,4 +229,3 @@ def run():
                                        "contacte un administrador.")
         sys.exit(1)
     sys.exit(main_app.exec_())
-    print("Cerrando APP")

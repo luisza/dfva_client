@@ -430,15 +430,15 @@ class PKCS11PersonClient(OSPersonClient):
                 'person': self.person,
                 "code": edata
             }
-
             result = self.requests.post(self.settings.fva_server_url + self.settings.login_person, json=params)
             data = result.json()
             self.settings.secret_auth_keys[self.serial] = data['token']
             return data['token']
         except UserRejectPin as e:
             signals.send('notify', signals.SignalObject(signals.NOTIFTY_INFO, {
-                'message': "El usuario ha rechazado autenticarse en la plataforma de firma, se requerirá autenticarse al momento de intentar firmar o validar un documento"}))
-            logger.info("El usuario rechazó la solicitud del pin, sesión sin registro")
+                'message': "La autenticación en la plataforma de firma no ha sido realizada debido a que el PIN no fue "
+                           "provisto, se solicitará nuevamente al intentar firmar o validar un documento."}))
+            logger.info("El usuario rechazó la solicitud del pin, sesión sin registro.")
 
     def unregister(self):
         self.close()

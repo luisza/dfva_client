@@ -5,15 +5,15 @@ from PyQt5 import QtWidgets
 
 class Settings(Ui_Settings):
 
-    def __init__(self, widget, main_app, fva_client_ui, user_settings):
+    def __init__(self, dialog, main_app, fva_client_ui, user_settings):
         Ui_Settings.__init__(self)
-        self.widget = widget
-        self.setupUi(widget)
+        self.dialog = dialog
+        self.setupUi(dialog)
         self.main_app = main_app
         self.fva_client_ui = fva_client_ui
         self.theme.addItems(QtWidgets.QStyleFactory.keys())
         self.apply.clicked.connect(lambda: self.apply_selected_settings())
-        self.cancel.clicked.connect(self.go_to_home)
+        self.cancel.clicked.connect(self.close_dialog)
         self.ok.clicked.connect(self.ok_settings)
         self.selectModulePath.clicked.connect(self.open_select_module_dialog)
         self.selectPathSaveDocs.clicked.connect(self.open_select_docs_path_dialog)
@@ -51,12 +51,12 @@ class Settings(Ui_Settings):
         apply_selected_appearance(self.main_app, self.user_settings)
         self.user_settings.save()  # save applied settings to file
 
-    def go_to_home(self):
-        self.fva_client_ui.setup_tab_default_layout()
+    def close_dialog(self):
+        self.dialog.close()
 
     def ok_settings(self):
         self.apply_selected_settings()
-        self.go_to_home()
+        self.close_dialog()
 
     def open_select_module_dialog(self):
         file_name, lib_type = QtWidgets.QFileDialog.getOpenFileName(self.fva_client_ui.main_window, "Seleccione Modulo",
