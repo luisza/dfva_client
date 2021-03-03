@@ -22,6 +22,18 @@ class SessionStorage(object):
 
         self.pkcs11_client = None
         self.parent_widget = None
+        self.session_info = {}
+        """  
+        'serial': {
+            'tabnumber': 0,
+            'slot': 0,
+            'identification': '888888',
+            'session_key': None,
+            'user': None
+        }
+        """
+
+
         self.tabs = ['General']
         self.serials = ['nd']
         self.persons = [None]

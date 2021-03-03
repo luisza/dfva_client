@@ -8,10 +8,12 @@ import urllib
 from base64 import b64decode, b64encode
 import requests
 from PyQt5 import QtCore
+from PyQt5.QtCore import QMutex
 from pkcs11.mechanisms import Mechanism
 from client_fva import signals
 from client_fva.models.Pin import Secret
 from client_fva.rsa import pem_to_base64
+from client_fva.session_storage import SessionStorage
 from client_fva.user_settings import UserSettings
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -28,11 +30,13 @@ class FVA_Base_client(object):
     def __init__(self, *args, **kwargs):
         self.settings = kwargs.get('settings', UserSettings.getInstance())
         self.slot_number = kwargs.pop('slot')
-        self.pkcs11client = kwargs.get('pkcs11client', None)
+        self.pkcs11client = SessionStorage.getInstance().pkcs11_client
         self.response = None
+        self.pin_response = None
         if self.pkcs11client is None:
             raise Exception("Pkcs11Client not found")
         self.identification = self.pkcs11client.get_identification(slot=self.slot_number)
+        self.mutex = QMutex()
 
     def start_the_negotiation(self):
         """
@@ -193,16 +197,20 @@ class FVA_Base_client(object):
             "I": 0
 
         }
-        sobj = signals.SignalObject(signals.PIN_CODE_REQUEST, data)
-        respobj = signals.receive(signals.send('fva_speaker', sobj))
+
+        self.password_request.emit(data)
+        self.mutex.lock()
+        self.mutex.lock()
+        #sobj = signals.SignalObject(signals.PIN_CODE_REQUEST, data)
+        #respobj = signals.receive(signals.send('fva_speaker', sobj))
 
         dev = {}
         dev["e"] = data['M'][0]['A'][0]['g']
-        dev["d"] = 2 if respobj.response['rejected'] else 0
+        dev["d"] = 2 if self.pin_response['rejected'] else 0
         dev["c"] = ""
-        if not respobj.response['rejected']:
-            dev["c"] = respobj.response['code']
-            dev['b'], pin = self.get_signed_hash(data['M'][0]['A'][0]['b'], pin=respobj.response['pin'],
+        if not self.pin_response['rejected']:
+            dev["c"] = self.pin_response['code']
+            dev['b'], pin = self.get_signed_hash(data['M'][0]['A'][0]['b'], pin=self.pin_response['pin'],
                                                  data=data)
             dev['a'], pin = self.get_signed_hash(data['M'][0]['A'][0]['a'], pin=pin, data=data)
 
@@ -212,7 +220,7 @@ class FVA_Base_client(object):
             else:
                 dev['b'] = dev['b'].decode()
                 dev['a'] = dev['a'].decode()
-
+        self.mutex.unlock()
         params['A'].append(dev)
 
         url = self.base_url + '/send'
@@ -275,9 +283,11 @@ class FVA_Base_client(object):
 
             except pkcs11.exceptions.PinIncorrect as e:
                 data['message'] = "Error PIN de %s incorrecto, por favor vuelvalo a ingresar" % (self.identification,)
-                sobj = signals.SignalObject(signals.PIN_REQUEST, data)
-                respobj = signals.receive(signals.send('fva_speaker', sobj))
-                pin = respobj.response['pin']
+                self.password_request.emit(data)
+                self.mutex.lock()
+                #self.mutex.lock()
+                pin = self.pin_response['pin']
+
             except Exception as e:
                 logger.error("Error get_signed_hash %r" % (e, ))
 
@@ -292,9 +302,14 @@ class FVA_Base_client(object):
         d = certificates['sign']['priv_key'].sign(b64decode(_hash), mechanism=Mechanism.SHA256_RSA_PKCS)
         return b64encode(d)
 
+    def set_pin_response(self, response):
+        self.pin_response = response
+        self.mutex.unlock()
 
 class FVA_client(FVA_Base_client, QtCore.QThread):
     status_signal = QtCore.pyqtSignal(int)
+    password_request = QtCore.pyqtSignal(dict)
+
     CONNECTING = 0
     CONNECTED = 1
     ERROR = 2
@@ -303,6 +318,8 @@ class FVA_client(FVA_Base_client, QtCore.QThread):
         FVA_Base_client.__init__(self, *args, **kwargs)
         QtCore.QThread.__init__(self, None)
         self.internal_daemon = kwargs.get('daemon', True)
+        #self.serial = kwargs.get('serial', None)  # serial must be set
+
         self.connection_tries = 0
         self.daemon_active = False
 

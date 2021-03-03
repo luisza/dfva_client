@@ -24,20 +24,11 @@ class TabManager(QObject):
         self.card_information = None
         self.card_count = 0
         self.session_storage = SessionStorage.getInstance()
-        self.threadpool = QThreadPool()
-        logger.info("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
-        self.monitor = Monitor()
-        signals.connect('monitor_usb', self.token_information_event)
+        self.monitor = Monitor(session_storage=self.session_storage)
+        self.monitor.start()
+        self.monitor.add_card.connect(self.add_card)
+        self.monitor.rm_card.connect(self.rm_card)
 
-        self.threadpool.start(self.monitor)
-
-    def token_information_event(self, sender, obj):
-        if sender == 'monitor_usb':
-            if obj._type == signals.USB_CONNECTED:
-                self.create_tab(obj.data['person'], obj.data['slot'], obj.data['serial'])
-            elif obj._type == signals.USB_DISCONNECTED:
-                self.remove_tab(obj.data['person'], obj.data['slot'])
-            return obj
 
     def create_list_menu(self, fvaspeaker, name, serial, slot):
         user = None
@@ -90,48 +81,63 @@ class TabManager(QObject):
             self.card_information.setRowCount(0)
         return user
 
+    def add_card(self, slot, name,  serial):
+        self.session_storage.session_info[serial] = {
+            'tabnumber': 0,
+            'slot': slot,
+            'identification':  name,
+            'session_key': None,
+            'user': None,
+            'personclient': None,
+            'fvaspeaker': None,
+            'alias': "%s: %s" % (serial[-4:], name)
+        }
+        self.create_tab(name, slot, serial)
+
+    def rm_card(self, slot, name,  serial):
+        self.remove_tab(serial)
+        del self.session_storage.session_info[serial]
+
     def create_tab(self, name, slot, serial):
         FVADialog = QtWidgets.QDialog()
-        ui = FVASpeakerClient(FVADialog, slot, name)
-        person = PersonClient(slot=slot, person=name, serial=serial)
-        self.session_storage.tabs.append(slot)
-        self.session_storage.serials.append(serial)
-        self.session_storage.persons.append(person)
-        position = len(self.session_storage.tabs)
-        self.speakers[serial] = ui
-        sign_validate_ui = SignValidate(QtWidgets.QWidget(), self.main_app, len(self.session_storage.persons) - 1)
-        self.session_storage.last_layout = sign_validate_ui
-        tab_name = "%s: %s" % (serial[-4:], name)
-        alias = self.session_storage.alias.filter(serial)
-        tab_name = alias[0] if alias else tab_name
-        self.controller.usrSlots.insertTab(position, sign_validate_ui.widget, tab_name)
-        self.controller.set_enabled_specific_menu_actions(True)
-        user = self.create_list_menu(ui, name, serial, slot)
-        self.session_storage.users.append(user)
-        person.register(slot=slot)
+        self.session_storage.session_info[serial]['tabnumber'] = self.controller.usrSlots.count()
+        self.session_storage.session_info[serial]['personclient'] = PersonClient(slot=slot, person=name, serial=serial)
+        self.session_storage.session_info[serial]['fvaspeaker'] = FVASpeakerClient(FVADialog, slot, name)
 
-    def remove_tab(self, name, slot):
-        index = self.session_storage.tabs.index(slot)
+        sign_validate_ui = SignValidate(QtWidgets.QWidget(), self.main_app, self.session_storage.session_info[serial]['tabnumber'] - 1)
+        self.session_storage.last_layout = sign_validate_ui
+        alias = self.session_storage.alias.filter(serial)
+        self.session_storage.session_info[serial]['alias'] = alias[0] if alias else self.session_storage.session_info[serial]['alias']
+
+        self.controller.usrSlots.insertTab(self.controller.usrSlots.count(), sign_validate_ui.widget,
+                                           self.session_storage.session_info[serial]['alias'])
+        self.controller.set_enabled_specific_menu_actions(True)
+        user = self.create_list_menu(self.session_storage.session_info[serial]['fvaspeaker'], name, serial, slot)
+        self.session_storage.session_info[serial]['user'] = user
+
+    def re_index_tabnumber(self):
+        for x in range(0, self.controller.usrSlots.count()):
+            text = self.controller.usrSlots.tabText(x)
+            for serial in self.session_storage.session_info:
+                if self.session_storage.session_info[serial]['alias'] == text:
+                    self.session_storage.session_info[serial]['tabnumber'] = x
+
+
+    def remove_tab(self, serial):
+        index = self.session_storage.session_info[serial]['tabnumber']
         if index >=0:
-            serial = self.session_storage.serials[index]
             self.controller.usrSlots.removeTab(index)
-            self.speakers[serial].closeEvent(None)
-            self.speakers[serial].close()
-            self.session_storage.persons[index].clear_keys()
-            del self.speakers[serial]
-            self.card_information.removeRow(index-1)
-            del self.session_storage.tabs[index]
-            del self.session_storage.serials[index]
-            del self.session_storage.persons[index]
-            del self.session_storage.users[index]
+            self.session_storage.session_info[serial]['fvaspeaker'].closeEvent(None)
+            self.session_storage.session_info[serial]['fvaspeaker'].close()
+            del self.session_storage.session_info[serial]['fvaspeaker']
+            self.card_information.removeRow(index)
             self.card_count -= 1
+            self.re_index_tabnumber()
 
     def close(self):
         self.monitor.close()
-        for name in list(self.speakers.keys()):
-            self.speakers[name].closeEvent(None)
-            self.speakers[name].close()
-            del self.speakers[name]
+        for serial in self.session_storage.session_info:
+            self.remove_tab(serial)
 
     def edit_serial_menu_event(self, pos):
         if self.card_information.selectedIndexes():
@@ -146,8 +152,13 @@ class TabManager(QObject):
                 if action == edit_action:
                     self.edit_serial(row, column)
 
+    def re_alias(self):
+        pass
+
     def edit_serial(self, row, column):
         alias_name, done1 = QtWidgets.QInputDialog.getText(self.session_storage.parent_widget, 'Ingrese un alias para esta tarjeta', 'Alias:')
         if done1:
             serial = self.card_information.item(row, 0).text()
             alias = self.session_storage.alias.create_update(serial, alias_name)
+            self.session_storage.session_info[serial]['alias'] = alias
+            self.re_alias()

@@ -50,6 +50,7 @@ class FVASpeakerClient(Ui_FVADialog):
         self.client = FVA_client(settings=self.settings, slot=slot, identification=identification,
                                  daemon=self.settings.start_fva_bccr_client, pkcs11client=self.storage.pkcs11_client)
         self.client.status_signal.connect(self.change_fva_status)
+        self.client.password_request.connect(self.request_pin_dialog)
         self.client.start()
 
         signals.connect('fva_speaker', self.request_pin_code)
@@ -77,28 +78,32 @@ class FVASpeakerClient(Ui_FVADialog):
         self.notify()
 
     def notify(self):
-        self.obj.response['pin'] = str(Secret(self.pin.text()))
-        self.obj.response['code'] = self.code.text()
-        self.obj.response['rejected'] = self.rejected
-        signals.receive(self.obj, notify=True)
+        response = {}
+        response['pin'] = str(Secret(self.pin.text()))
+        response['code'] = self.code.text()
+        response['rejected'] = self.rejected
+        self.client.set_pin_response(response)
         self.pin.setText('')
         self.code.setText('')
 
-    def request_pin_code(self, sender, obj):
+    def request_pin_dialog(self, data):
+        self.request_pin_code(data)
+
+    def request_pin_code(self, data):
         logger.info("Request fva speaker dialog %r" %
-                    obj.data['M'][0]['A'][0]['c'])
-        self.obj = obj
+                    data['M'][0]['A'][0]['c'])
+
         self.pin.setText('')
         self.code.setText('')
 
-        self.requesting.setText(obj.data['M'][0]['A'][0]['d'])
-        self.information.setText(obj.data['M'][0]['A'][0]['c'])
+        self.requesting.setText( data['M'][0]['A'][0]['d'])
+        self.information.setText( data['M'][0]['A'][0]['c'])
         self.operation_finished = False
-        img = QtGui.QImage.fromData(b64decode(obj.data['M'][0]['A'][0]['e']))
+        img = QtGui.QImage.fromData(b64decode( data['M'][0]['A'][0]['e']))
         pixmap = QtGui.QPixmap.fromImage(img)
         self.image.setPixmap(pixmap)
         self.dialog.show()
-        self.timeout = int(obj.data['M'][0]['A'][0]['f'])
+        self.timeout = int( data['M'][0]['A'][0]['f'])
         self.timer = Timer(self)
         self.threadpool.start(self.timer)
 

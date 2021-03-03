@@ -56,7 +56,7 @@ class UserSettings:
         self.algorithm = 'sha512'
         # how much time to wait before the verification of the status of the sign or authentication request
         self.check_wait_time = 10
-        self.start_fva_bccr_client = False
+        self.start_fva_bccr_client = True
         self.config = configparser.ConfigParser()
         self.settings_file_path = os.path.join(os.environ.get('HOME'), ".fva_client")
         self.settings_file_name = "client.conf"

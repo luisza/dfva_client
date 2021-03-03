@@ -1,116 +1,41 @@
+
+from PyQt5.QtCore import QThread
 import logging
 import time
-
-from PyQt5.QtCore import QMutex, QObject, QRunnable, pyqtSignal, pyqtSlot
-
-from client_fva import signals
-from client_fva.pkcs11client import PKCS11Client, SlotNotFound
-from client_fva.session_storage import SessionStorage
 from client_fva.user_settings import UserSettings
-from smartcard.CardMonitoring import CardMonitor, CardObserver
-from smartcard.ReaderMonitoring import ReaderMonitor, ReaderObserver
-
+from client_fva.pkcs11client import PKCS11Client, SlotNotFound
+from client_fva import signals
+from PyQt5.QtCore import  pyqtSignal
 logger = logging.getLogger()
 
 
-class DFVAReaderObserver(ReaderObserver):
-    def __init__(self, *args, **kwargs):
-        self.eventmanager = kwargs.pop('eventmanager')
-        super(DFVAReaderObserver, self).__init__(*args, **kwargs)
-
-    def update(self, observable, actions):
-        (addedreaders, removedreaders) = actions
-        logger.debug("Added readers %r" % addedreaders)
-        logger.debug("Removed readers %r" % removedreaders)
-        self.eventmanager.detect_device()
-
-
-class DfvaCardObserver(CardObserver):
-    def __init__(self, *args, **kwargs):
-        self.eventmanager = kwargs.pop('eventmanager')
-        super(DfvaCardObserver, self).__init__(*args, **kwargs)
-
-    def update(self, observable, actions):
-        (addedcards, removedcards) = actions
-        self.eventmanager.detect_device()
-
-
-class WorkerObject(QObject):
-    result = pyqtSignal(str, signals.SignalObject)
-
-
-class Monitor(QRunnable):
-    """
-    Monitoriza los dispositivos pkcs11 conectados a la computadora.
-    Lanza 2 eventos:
-
-    * Dispositivo conectado (signals.USB_CONNECTED)
-    * Dispositivo desconectado (signals.USB_DISCONNECTED)
-
-    Este módulo utiliza blinker para emitir las señales. Un ejemplo de uso puede ser:
-
-    .. code:: python 
-
-        from client_fva.monitor import Monitor
-        from client_fva import signals
-        class OSDummyClient:
-            def __init__(self):
-                self.client = Monitor()
-                self.client.start()
-                self.client.signal.connect(self.token_information_event)
-
-            def token_information_event(self, sender, **kw):
-
-                obj = kw['obj']
-                if obj._type == signals.USB_CONNECTED:
-                    print("Conectando ", obj._type)
-                elif obj._type == signals.USB_DISCONNECTED:
-                    print("Desconectando ", obj._type)
-                print(obj.data)
-                return obj
-
-    No se requiere devolver nada, pero es bueno para seguir con el formato, de otras señales
-    """
+class Monitor(QThread):
     connected_device = {}
-    lib = None
+    add_card = pyqtSignal(int, str, str)
+    rm_card = pyqtSignal(int, str, str)
 
     def __init__(self, *args, **kwargs):
+        self.session_storage = kwargs['session_storage']
+
         self.settings = kwargs.get('settings', UserSettings.getInstance())
+        self.devices = {}
         kwargs['settings'] = self.settings
         kwargs['cached'] = False
-        self.session_storage = SessionStorage.getInstance()
         self.pkcs11client = PKCS11Client(*args, **kwargs)
         self.session_storage.pkcs11_client = self.pkcs11client
-        QRunnable.__init__(self)
-        self.setAutoDelete(True)
-        self.cardmonitor = None
-        self.cardobserver = None
-        self.mutex = QMutex()
-        self.run_mutex = QMutex()
-
-    @pyqtSlot()
-    def run(self):
-        logger.info("Iniciando monitor")
-        self.readermonitor = ReaderMonitor()
-        self.cardmonitor = CardMonitor()
-        self.cardobserver = DfvaCardObserver(eventmanager=self)
-        self.readerobserver = DFVAReaderObserver(eventmanager=self)
-        self.cardmonitor.addObserver(self.cardobserver)
-        self.readermonitor.addObserver(self.readerobserver)
-        self.run_mutex.lock()
-        self.run_mutex.lock()
+        super().__init__()
+        self.enabled = True
 
 
 
     def detect_device(self, notify_exception=False):
         """
-        Identifica cambios en las tarjetas conectadas, es utilizado 
-        normalmente de forma automática con el monitor, pero se puede llamar 
-        usando detect_device( notify_exception=True) para que envíe notificaciones 
+        Identifica cambios en las tarjetas conectadas, es utilizado
+        normalmente de forma automática con el monitor, pero se puede llamar
+        usando detect_device( notify_exception=True) para que envíe notificaciones
         de los errores presentados al detectar las tarjetas.
         """
         logger.debug("Monitor: detect device")
-        self.mutex.lock()
         tmp_device = []
         added_device = {}
         try:
@@ -132,7 +57,7 @@ class Monitor(QRunnable):
                 signals.send('notify', {'message': "Un dispositivo ha sido encontrado, pero ninguna tarjeta pudo ser "
                                                    "leída, por favor verifique que la tarjeta esté correctamente "
                                                    "insertada"})
-            logger.error("%r"%(noToken,))
+            logger.error("%r" % (noToken,))
             # except Exception as e:
             #     if notify_exception:
             #         signals.result.emit('notify',  {
@@ -146,31 +71,26 @@ class Monitor(QRunnable):
                 self.send_removed_signal(
                     self.connected_device[connected_serial])
                 self.connected_device.pop(connected_serial)
-        self.mutex.unlock()
+
+    def run(self):
+        logger.info("Iniciando monitor")
+        while self.enabled:
+            self.detect_device()
+            time.sleep(10)
 
     def send_add_signal(self, data):
-        sobj = signals.SignalObject(signals.USB_CONNECTED, data)
+        #sobj = signals.SignalObject(signals.USB_CONNECTED, data)
         logger.info("Tarjeta conectada %s" % (data['person'],))
-        signals.send('monitor_usb', sobj)
+        #self.tab_manager.add_card( data['person'], data['slot'], data['serial'])
+        #signals.send('monitor_usb', sobj)
+        self.add_card.emit(int(data['slot']), data['person'], data['serial'])
 
     def send_removed_signal(self, data):
-        sobj = signals.SignalObject(signals.USB_DISCONNECTED, data)
+        #sobj = signals.SignalObject(signals.USB_DISCONNECTED, data)
         logger.info("Tarjeta desconectada %s" % (data['person'],))
-        signals.send('monitor_usb', sobj)
+        #self.tab_manager.remove_card(data['person'], data['slot'], data['serial'])
+        #signals.send('monitor_usb', sobj)
+        self.rm_card.emit(int(data['slot']), data['person'], data['serial'])
 
     def close(self):
-        logger.info("Terminando monitor")
-
-        if self.cardmonitor and self.cardobserver:
-            self.cardmonitor.deleteObserver(self.cardobserver)
-
-        if self.cardmonitor and self.readermonitor:
-            self.readermonitor.deleteObserver(self.readerobserver)
-
-        if self.cardmonitor:
-            self.cardmonitor.rmthread.stop()
-
-        self.run_mutex.unlock()
-        del self.cardobserver
-        del self.readerobserver
-        del self.cardmonitor
+        self.enabled = False
