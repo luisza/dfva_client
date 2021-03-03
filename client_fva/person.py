@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 from base64 import b64encode
 
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal, QMutex
 from pkcs11 import Mechanism
 
 from decorators import decore_pkcs11

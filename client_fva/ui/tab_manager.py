@@ -104,7 +104,7 @@ class TabManager(QObject):
         self.session_storage.session_info[serial]['personclient'] = PersonClient(slot=slot, person=name, serial=serial)
         self.session_storage.session_info[serial]['fvaspeaker'] = FVASpeakerClient(FVADialog, slot, name)
 
-        sign_validate_ui = SignValidate(QtWidgets.QWidget(), self.main_app, self.session_storage.session_info[serial]['tabnumber'] - 1)
+        sign_validate_ui = SignValidate(QtWidgets.QWidget(), self.main_app, serial)
         self.session_storage.last_layout = sign_validate_ui
         alias = self.session_storage.alias.filter(serial)
         self.session_storage.session_info[serial]['alias'] = alias[0] if alias else self.session_storage.session_info[serial]['alias']
@@ -114,6 +114,8 @@ class TabManager(QObject):
         self.controller.set_enabled_specific_menu_actions(True)
         user = self.create_list_menu(self.session_storage.session_info[serial]['fvaspeaker'], name, serial, slot)
         self.session_storage.session_info[serial]['user'] = user
+
+        self.session_storage.session_info[serial]['personclient'].register(slot=slot)
 
     def re_index_tabnumber(self):
         for x in range(0, self.controller.usrSlots.count()):

@@ -29,7 +29,10 @@ class SessionStorage(object):
             'slot': 0,
             'identification': '888888',
             'session_key': None,
-            'user': None
+            'user': None,
+            'personclient': None,
+            'fvaspeaker': None,
+            'alias': ""
         }
         """
 

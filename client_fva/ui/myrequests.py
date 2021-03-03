@@ -6,14 +6,14 @@ from PyQt5 import QtWidgets, QtGui
 
 class MyRequests(Ui_MyRequests):
 
-    def __init__(self, widget, main_app, db, index):
+    def __init__(self, widget, main_app, db, serial):
         Ui_MyRequests.__init__(self)
         self.db = db
         self.widget = widget
         self.main_app = main_app
         self.setupUi(widget)
-        storage = SessionStorage.getInstance()
-        self.my_requests_model = MyRequestModel(db=self.db, user=storage.users[index])
+        self.session_storage = SessionStorage.getInstance()
+        self.my_requests_model = MyRequestModel(db=self.db, user=self.session_storage.session_info[serial]['user'])
         self.initialize_and_populate_my_requests()
         self.searchIdentification.textChanged.connect(lambda x: self.search_requests(x))
 

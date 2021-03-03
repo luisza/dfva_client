@@ -138,12 +138,20 @@ class FVAClient(Ui_FVAClientUI):
             else:
                 self.show()
 
+    def get_serial_by_tabindex(self, index):
+        serial = None
+        for key in self.session_storage.session_info:
+            if self.session_storage.session_info[key]['tabnumber'] == index:
+                serial = key
+                break
+        return serial
+
     def open_my_requests(self):
         my_requests_ui = MyRequests(QtWidgets.QWidget(), main_app, self.db, index=self.usrSlots.currentIndex())
         self.setup_tab_layout(my_requests_ui.myRequestsLayout)
 
     def open_my_signatures(self):
-        my_signatures_ui = MySignatures(QtWidgets.QWidget(), main_app, self.db, index=self.usrSlots.currentIndex())
+        my_signatures_ui = MySignatures(QtWidgets.QWidget(), main_app, self.db, self.get_serial_by_tabindex(self.usrSlots.currentIndex()))
         self.setup_tab_layout(my_signatures_ui.mySignaturesLayout)
 
     def open_settings(self):
@@ -151,22 +159,22 @@ class FVAClient(Ui_FVAClientUI):
         self.setup_general_tab_layout(settings_ui.settingsLayout)
 
     def open_request_signature(self):
-        request_signature_ui = RequestSignature(QtWidgets.QWidget(), main_app, self.db, self.usrSlots.currentIndex())
+        request_signature_ui = RequestSignature(QtWidgets.QWidget(), main_app, self.db, self.get_serial_by_tabindex(self.usrSlots.currentIndex()))
         self.setup_tab_layout(request_signature_ui.requestSignatureLayout)
         self.session_storage.last_layout = request_signature_ui
 
     def open_request_authentication(self):
         request_authentication_ui = RequestAuthentication(QtWidgets.QWidget(), main_app, self.db,
-                                                          self.usrSlots.currentIndex())
+                                                          self.get_serial_by_tabindex(self.usrSlots.currentIndex()))
         self.setup_tab_layout(request_authentication_ui.requestAuthenticationLayout)
 
     def open_sign_validate(self):
-        sign_validate_ui = SignValidate(QtWidgets.QWidget(), main_app, index=self.usrSlots.currentIndex())
+        sign_validate_ui = SignValidate(QtWidgets.QWidget(), main_app, self.get_serial_by_tabindex(self.usrSlots.currentIndex()))
         self.setup_tab_layout(sign_validate_ui.signValidateLayout)
         self.session_storage.last_layout = sign_validate_ui
 
     def open_manage_contacts(self):
-        manage_contacts_ui = ManageContacts(QtWidgets.QWidget(), main_app, self.db, index=self.usrSlots.currentIndex())
+        manage_contacts_ui = ManageContacts(QtWidgets.QWidget(), main_app, self.db,  self.get_serial_by_tabindex(self.usrSlots.currentIndex()))
         self.setup_tab_layout(manage_contacts_ui.manageContactsLayout)
 
     def open_logging_window(self):

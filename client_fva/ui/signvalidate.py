@@ -61,28 +61,28 @@ class PersonValidateOpers(QThread):
 
 class SignValidate(QWidget, Ui_SignValidate):
 
-    def __init__(self, widget, main_app, index=None):
+    def __init__(self, widget, main_app, serial):
         Ui_SignValidate.__init__(self)
         super().__init__(widget)
+        self.storage = SessionStorage.getInstance()
         self.widget = widget
         self.main_app = main_app
         self.setupUi(widget)
         self.settings = UserSettings.getInstance()
         self.filesWidget.set_parent(self)
         self.path = None
-        self.index = index
-        self.storage = SessionStorage.getInstance()
-        self.person = self.storage.persons[index]
+        self.serial = serial
+        self.person = self.storage.session_info[serial]['personclient']
         self.browseFiles.clicked.connect(self.get_document_path)
         self.validate.clicked.connect(self.validate_document)
         self.sign.clicked.connect(self.sign_document)
         self.opers = []
 
         self.filesWidget.contextMenuEvent = self.context_file_menu_event
-        if self.person:
-            self.person.process_status.connect(self.update_process_bar)
-            self.person.end_sign.connect(self.end_sign)
-            self.person.end_validate.connect(self.end_validate)
+
+        self.person.process_status.connect(self.update_process_bar)
+        self.person.end_sign.connect(self.end_sign)
+        self.person.end_validate.connect(self.end_validate)
 
     def disconnect(self):
         self.person.process_status.disconnect(self.update_process_bar)
@@ -209,7 +209,7 @@ class SignValidate(QWidget, Ui_SignValidate):
                                            "este sistema.")
             return
         resume = self.resumen.toPlainText()
-        persont = PersonSignOpers(len(self.opers), self.person, self.storage.users[self.index],
+        persont = PersonSignOpers(len(self.opers), self.person, self.storage.session_info[self.serial]['user'],
                                   {"identification": self.person.person, "document": None, "resume": resume,
                                    "_format": _format, "algorithm": self.settings.algorithm, "is_base64": False,
                                    "wait": True, "extras": extras,  "file_path": self.path,

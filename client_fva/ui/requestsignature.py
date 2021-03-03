@@ -92,15 +92,15 @@ class RequestSignature(QWidget, Ui_RequestSignature):
     REJECTED = 2
     ERROR = 3
 
-    def __init__(self, widget, main_app, db, index):
+    def __init__(self, widget, main_app, db, serial):
         Ui_RequestSignature.__init__(self)
         super().__init__(widget)
         self.widget = widget
         self.main_app = main_app
         self.setupUi(widget)
         self.session_storage = SessionStorage.getInstance()
-        self.person = self.session_storage.persons[index]
-        self.user = self.session_storage.users[index]
+        self.person = self.session_storage.session_info[serial]['personclient']
+        self.user = self.session_storage.session_info[serial]['user']
         self.contacts_count = 0
         self.path = None
         self.settings = UserSettings.getInstance()

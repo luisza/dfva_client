@@ -64,14 +64,14 @@ class RequestAuthentication(Ui_RequestAuthentication):
     REJECTED = 2
     ERROR = 3
 
-    def __init__(self, widget, main_app, db, index):
+    def __init__(self, widget, main_app, db, serial):
         Ui_RequestAuthentication.__init__(self)
         self.widget = widget
         self.main_app = main_app
         self.session_storage = SessionStorage.getInstance()
         self.setupUi(self.widget)
-        self.person = self.session_storage.persons[index]
-        self.user = self.session_storage.users[index]
+        self.person = self.session_storage.session_info[serial]['personclient']
+        self.user = self.session_storage.session_info[serial]['user']
 
 
         self.contacts_model = ContactModel(user=self.user, db=db)
@@ -154,7 +154,7 @@ class RequestAuthentication(Ui_RequestAuthentication):
 
         else:
             QtWidgets.QMessageBox.warning(self.widget, 'Contacto no identificado',
-                 "Lo ingresado no es un nombre de contacto o un número de identificación válido.")
+                 "Lo ingresado no es un nombre de contacto o un número de identificación válido. Formato: 08-8888-8888 o 15 números para extranjeros")
 
     def request_authentication(self):
         self.inactive_btn()

@@ -16,13 +16,13 @@ GROUPID = 5
 
 class ManageContacts(Ui_ManageContacts):
 
-    def __init__(self, widget, main_app, db, index):
+    def __init__(self, widget, main_app, db, serial):
         Ui_ManageContacts.__init__(self)
         self.widget = widget
         self.main_app = main_app
         self.db = db
-        storage = SessionStorage.getInstance()
-        self.current_user = storage.users[index]
+        self.session_storage = SessionStorage.getInstance()
+        self.current_user = self.session_storage.session_info[serial]['user']
         self.setupUi(widget)
         self.selected_group = -1
         self.contacts_model = ContactModel(user=self.current_user, db=self.db, tableview=self.contactsTableView,
