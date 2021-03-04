@@ -15,9 +15,11 @@ from client_fva.models.Pin import Secret
 from client_fva.rsa import pem_to_base64
 from client_fva.session_storage import SessionStorage
 from client_fva.user_settings import UserSettings
+import platform
+from pathlib import Path
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ca_bundle = os.path.join(BASE_DIR, 'certs/ca_bundle.pem')
+ca_bundle = Path(BASE_DIR) + 'certs/ca_bundle.pem'
 
 
 logger = logging.getLogger()
@@ -108,16 +110,16 @@ class FVA_Base_client(object):
         url = self.settings.bccr_fva_domain + \
             self.settings.bccr_fva_url_connect % (data['Url'])
 
-        uname = os.uname()
+        arch = platform.architecture()[0]
         headers = {
             'Accept': 'text/event-stream',
             'CertificadoAutenticacion': pem_to_base64(certificates['authentication'].decode()),
             'CertificadoFirmante': pem_to_base64(certificates['sign'].decode()),
-            'NombreDelSistemaOperativo': uname[0],
-            'VersionDelSistemaOperativo': uname[3],
+            'NombreDelSistemaOperativo': platform.system(),
+            'VersionDelSistemaOperativo': platform.release(),
             'IpPrivada': '127.0.0.1',
-            'Arquitectura': 'amd64' if uname[4] == 'x86_64' else 'x86',
-            'NombreDelHost': uname[1],
+            'Arquitectura': 'amd64' if arch == '64bit' else 'x86',
+            'NombreDelHost': platform.node(),
             'User-Agent': self.settings.user_agent,
             'Content-Encoding': 'gzip'
         }
