@@ -19,7 +19,7 @@ import platform
 from pathlib import Path
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ca_bundle = Path(BASE_DIR) + 'certs/ca_bundle.pem'
+ca_bundle = Path(BASE_DIR) / Path('certs/ca_bundle.pem')
 
 
 logger = logging.getLogger()

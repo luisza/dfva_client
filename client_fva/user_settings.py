@@ -2,7 +2,7 @@ import configparser
 import os
 import stat
 import logging
-
+from pathlib import Path
 
 class UserSettings:
     __instance = None
@@ -58,7 +58,7 @@ class UserSettings:
         self.check_wait_time = 10
         self.start_fva_bccr_client = True
         self.config = configparser.ConfigParser()
-        self.settings_file_path = os.path.join(os.environ.get('HOME'), ".fva_client")
+        self.settings_file_path = str( Path.home() / ".fva_client" )
         self.settings_file_name = "client.conf"
 
         self.secret_auth_keys = {}
