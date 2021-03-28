@@ -6,6 +6,7 @@ Dependencias necesarias
     sudo apt install swig libpcsclite-dep pcscd
 
 O en fedora
+
     sudo dnf install swig pcsc-lite-devel pcsc-lite
  
 Habilitar el servicio de PCSCD
