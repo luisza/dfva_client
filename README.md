@@ -18,8 +18,9 @@ Crear el archivo para reconocer la tarjeta (si no existe)
     sudo mkdir -p /etc/Athena/
     sudo wget -O /etc/Athena/IDPClientDB.xml https://raw.githubusercontent.com/luisza/dfva_client/master/os_libs/Athena/IDPClientDB.xml
     
+Puede descargar el ejecutable desde la sección release de este repositorio
 
-# Pasos para generar ejecutable
+# Pasos para generar ejecutable (para desarrolladores)
 
 Instale dependencias 
 
@@ -33,7 +34,7 @@ Cree un entorno virtual e instale las dependencias
      pip install -r requirements.txt
      
   
-# solo para debian estable
+# Solo para debian estable
 
 Debian estable tiene una dependencia no cumplida con la última versión de QT5, por lo que hay que instalar la dependencia manual
 
