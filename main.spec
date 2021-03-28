@@ -16,28 +16,30 @@ def resource_path(relative):
     )
 
 binaries=[]
-if _os == 'linux':
-    binaries.append((resource_path('os_libs/%s/%s/libASEP11.so' % (_os, _os_arch)), 
-                     'os_libs/%s/%s' % (_os, _os_arch)  ))
-if _os == "darwin":
-    binaries.append((resource_path('os_libs/macos/libASEP11.dylib'), 'os_libs/macos/'))
-if _os == "windows":
-    binaries.append( (resource_path('os_libs/windows/asepkcs.dll'), 
-                      'os_libs/windows'))
-
 
 datas = [
 (resource_path('certs/ca_bundle.pem'), 'certs'),
 (resource_path('LICENSE'), '.')
 ]
 
+if _os == 'linux':
+    datas.append((resource_path('os_libs/%s/%s/libASEP11.so' % (_os, _os_arch)), 
+                     'os_libs/%s/%s' % (_os, _os_arch)  ))
+if _os == "darwin":
+    datas.append((resource_path('os_libs/macos/libASEP11.dylib'), 'os_libs/macos/'))
+if _os == "windows":
+    datas.append( (resource_path('os_libs/windows/asepkcs.dll'), 
+                      'os_libs/windows'))
+
+
+
 
 a = Analysis(['main.py'],
              pathex=[resource_path('client_fva/')],
              binaries=binaries,
              datas=datas,
-             hiddenimports=['cryptography.hazmat.backends.openssl', 'cffi', 'cryptography.fernet'],
-             hookspath=[resource_path('hooks')],
+             hiddenimports=['pkcs11.defaults'], #['cryptography.hazmat.backends.openssl', 'cffi', 'cryptography.fernet'],
+             hookspath=[],
              runtime_hooks=[],
              excludes=[],
              win_no_prefer_redirects=False,
@@ -48,7 +50,7 @@ pyz = PYZ(a.pure, a.zipped_data,
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
-          name='main',
+          name='dfva',
           debug=False,
           strip=False,
           upx=True,
@@ -59,7 +61,7 @@ coll = COLLECT(exe,
                a.datas,
                strip=False,
                upx=True,
-               name='main')
+               name='dfva')
 if _os == "darwin":
     app = BUNDLE(exe,
              name='dfva_client.app',
