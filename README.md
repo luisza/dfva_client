@@ -8,6 +8,10 @@ Dependencias necesarias
 O en fedora
 
     sudo dnf install swig pcsc-lite-devel pcsc-lite
+    
+En Centos 8
+
+    sudo yum install opensc pcsc-lite pcsc-lite-libs
  
 Habilitar el servicio de PCSCD
 
@@ -26,6 +30,10 @@ Instale dependencias
 
      sudo apt install virtualenv python3-dev libxcb-xinerama0 libxcb-icccm4 libxcb-image0 libxkbcommon-x11-0 libxcb-xkb1 libxcb-render-util0 libxcb-keysyms1 libxcb-util0 libxcb-randr0
      sudo dfn install python-virtualenv python-devel
+
+En centos 8 
+    dnf group install "Development Tools"
+    sudo yum install virtualenv python3-devel
      
 Cree un entorno virtual e instale las dependencias
 
