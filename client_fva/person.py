@@ -1,4 +1,5 @@
-import pkcs11
+import random
+
 import requests
 import time
 from datetime import datetime
@@ -17,6 +18,37 @@ from .session_storage import SessionStorage
 import logging
 
 logger = logging.getLogger()
+
+
+class OperandLogin:
+    operands = ['+', '-', '*', '/', '%', '//', '**']
+
+    @classmethod
+    def operate(cls, oper1, oper2, oper):
+        dev = 0
+        if oper not in cls.operands:
+            return
+        if oper == '+':
+            dev = oper1+oper2
+        elif oper == '-':
+            dev = oper1-oper2
+        elif oper == '*':
+            dev = oper1*oper2
+        elif oper == '/':
+            dev = oper1/oper2
+        elif oper == '%':
+            dev = oper1%oper2
+        elif oper == '//':
+            dev = oper1//oper2
+        elif oper == '**':
+            dev = oper1**oper2
+        return dev
+
+    @classmethod
+    def get_operand(cls):
+        num = random.randint(0, len(cls.operands)-1)
+        return cls.operands[num]
+
 
 class PersonClientInterface:
     """
@@ -426,13 +458,25 @@ class PKCS11PersonClient(OSPersonClient):
         keys = self.pkcs11client.get_keys(slot=slot)
         return keys['authentication']['priv_key'].sign(identification, mechanism=Mechanism.SHA256_RSA_PKCS)
 
+    def get_login_code(self, slot=None):
+        params = {
+            'serial': self.serial,
+            'identification': self.person
+        }
+        result = self.requests.get(self.settings.fva_server_url + self.settings.login_person, json=params)
+        data = result.json()
+
+        return OperandLogin.operate(data['operatorA'], data['operatorB'], data['operand']), data['transaction_id']
+
     @decore_pkcs11
     def register(self, algorithm='sha512', slot=None):
         try:
-            edata = self.sign_identification(self.person, slot=slot)
+            code, transaction = self.get_login_code(slot=slot)
+            edata = self.sign_identification(str(code), slot=slot)
             hashsum = get_hash_sum(edata,  algorithm)
             edata = b64encode(edata).decode()
             params = {
+                "transaction_id": transaction,
                 "data_hash": hashsum,
                 "algorithm": algorithm,
                 "public_certificate": self._get_public_auth_certificate(),
