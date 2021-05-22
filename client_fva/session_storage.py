@@ -23,6 +23,7 @@ class SessionStorage(object):
         self.pkcs11_client = None
         self.parent_widget = None
         self.session_info = {}
+        self.transactions = {}
         """  
         'serial': {
             'tabnumber': 0,

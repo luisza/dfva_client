@@ -244,8 +244,11 @@ class PersonBaseClient(PersonClientInterface):
 
     def sign(self, identification, document, resume, _format="xml_cofirma", file_path=None, is_base64=False,
              algorithm='sha512', wait=False, extras=None):
+
         if extras is None:
             extras = {}
+        doc_hash = get_hash_sum(document, algorithm)
+
         if not is_base64:
             document = b64encode(document).decode()
 
@@ -254,7 +257,7 @@ class PersonBaseClient(PersonClientInterface):
             'document': document,
             'format': _format,
             'algorithm_hash': algorithm,
-            'document_hash': get_hash_sum(document,  algorithm),
+            'document_hash': doc_hash,
             'identification': identification,
             'resume': resume,
             'request_datetime': self._get_time(),
@@ -270,14 +273,20 @@ class PersonBaseClient(PersonClientInterface):
         sign_id = data['id']
         if data['status'] != 0:
             wait = False
+        else:
+            self.session_storage.transactions[data['id_transaction']] = data['code']
         if wait:
             wait_count = 1
             while not data['received_notification']:
-                self.notify('process', 5, f'Verificando estado {wait_count}')
+                self.notify('process', 5, f'Verificando estado %d identificación %s código %s'%(wait_count,
+                                                                                                identification,
+                                                                                                data['code']))
                 time.sleep(self.wait_time)
                 data = self.check_sign(sign_id)
                 wait_count += 1
             self.delete_sign(sign_id)
+        if 'id_transaction' in data and data['id_transaction'] in self.session_storage.transactions:
+            del self.session_storage.transactions[data['id_transaction']]
         self.notify('process', 6, 'Transacción completa')
         return data
 
@@ -388,9 +397,9 @@ class PKCS11PersonClient(OSPersonClient):
         self.settings = UserSettings.getInstance()
         self.slot = kwargs.get('slot')
         self.serial = kwargs.get('serial')
-        storage = SessionStorage.getInstance()
+        self.session_storage = SessionStorage.getInstance()
         self.wait_time = self.settings.check_wait_time
-        self.pkcs11client = storage.pkcs11_client
+        self.pkcs11client = self.session_storage.pkcs11_client
 
         self.person = kwargs.get('person', None)
 

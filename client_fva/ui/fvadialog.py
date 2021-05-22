@@ -85,6 +85,7 @@ class FVASpeakerClient(Ui_FVADialog):
         self.client.set_pin_response(response)
         self.pin.setText('')
         self.code.setText('')
+        self.transaction_id = None
 
     def request_pin_dialog(self, data):
         self.request_pin_code(data)
@@ -95,7 +96,7 @@ class FVASpeakerClient(Ui_FVADialog):
 
         self.pin.setText('')
         self.code.setText('')
-
+        self.transaction_id = data['M'][0]['A'][0]['g']
         self.requesting.setText( data['M'][0]['A'][0]['d'])
         self.information.setText( data['M'][0]['A'][0]['c'])
         self.operation_finished = False
@@ -111,11 +112,14 @@ class FVASpeakerClient(Ui_FVADialog):
         self.timeout -= 1
         self.displaytimeout.display("%d:%02d" % (
             self.timeout / 60, self.timeout % 60))
+        if self.transaction_id in self.storage.transactions and not self.code.text():
+            self.code.setText(self.storage.transactions[self.transaction_id])
         if self.timeout == 0:
             self.rejected = True
             self.operation_finished = True
             self.dialog.hide()
             self.notify()
+            self.transaction_id = None
 
     def change_fva_status(self, status):
         if status == self.CONNECTING:

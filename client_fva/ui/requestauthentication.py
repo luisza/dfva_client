@@ -24,8 +24,8 @@ class PersonAuthenticationOpers(QThread):
         self.result = None
         self.pending_check = {}
         self.wait_time = UserSettings.getInstance().check_wait_time
-        storage = SessionStorage.getInstance()
-        self.myrequest = MyRequestModel(db=storage.db, user=user)
+        self.session_storage = SessionStorage.getInstance()
+        self.myrequest = MyRequestModel(db=self.session_storage.db, user=user)
 
 
     def log_transaction(self, identification, data):
@@ -44,6 +44,7 @@ class PersonAuthenticationOpers(QThread):
             self.log_transaction(identification, result)
             if result['status'] == 0:
                 self.pending_check[identification] = result['id']
+                self.session_storage.transactions[result['id_transaction']] = result['code']
             else:
                 self.remove_check.emit(identification)
         while self.pending_check:
@@ -54,6 +55,9 @@ class PersonAuthenticationOpers(QThread):
                     del self.pending_check[identification]
                     self.remove_check.emit(identification)
             time.sleep(self.wait_time)
+
+        if result['id_transaction'] in self.session_storage.transactions:
+            del self.session_storage.transactions[result['id_transaction']]
         self.has_result.emit(self.tid)
 
 

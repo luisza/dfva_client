@@ -20,6 +20,7 @@ from client_fva.user_settings import UserSettings
 class PersonSignOpers(QThread):
     has_result = pyqtSignal()
     has_changes = pyqtSignal(str, int, bool, str)
+    has_codes = pyqtSignal(str)
     remove_check = pyqtSignal(str)
 
     def __init__(self, person, identifications, user, data):
@@ -30,8 +31,8 @@ class PersonSignOpers(QThread):
         self.result = {}
         self.pending_check = {}
         self.wait_time = UserSettings.getInstance().check_wait_time
-        storage = SessionStorage.getInstance()
-        self.myrequest = MyRequestModel(db=storage.db, user=user)
+        self.session_storage = SessionStorage.getInstance()
+        self.myrequest = MyRequestModel(db=self.session_storage.db, user=user)
         self.logs_id = {}
 
     def log_transaction(self, identification, data):
@@ -53,6 +54,8 @@ class PersonSignOpers(QThread):
         status = self.result[identification]['status']
         if status == 0:
             pending_check = self.result[identification]['id']
+            self.session_storage.transactions[self.result[identification]['id_transaction']] = self.result[identification]['code']
+            self.has_codes.emit("Código de firma %s  para %s"%(self.result[identification]['code'],  identification))
             received = False
             while not received:
                 self.result[identification] = self.person.check_sign(pending_check)
@@ -65,6 +68,8 @@ class PersonSignOpers(QThread):
                             arch.write(b64decode(self.result[identification]["signed_document"]))
                     self.remove_check.emit(identification)
             time.sleep(self.wait_time)
+        if self.result[identification]['id_transaction'] in self.session_storage.transactions:
+            del self.session_storage.transactions[self.result[identification]['id_transaction']]
         return status
 
     def run(self):
@@ -240,6 +245,9 @@ class RequestSignature(QWidget, Ui_RequestSignature):
         self.update_process_bar(len(self.sign_list), 'Solicitud de firmado completa')
         self.active_btn()
 
+    def show_codes(self, message):
+        self.update_process_bar(0, message)
+
     def sign_document(self):
         if self.path is None:
             QtWidgets.QMessageBox.critical(self.widget, "Sin documento seleccionado",
@@ -272,6 +280,8 @@ class RequestSignature(QWidget, Ui_RequestSignature):
         self.pso.has_result.connect(self.end_sign)
         self.pso.has_changes.connect(self.check_transaction_change)
         self.pso.remove_check.connect(self.check_transaction_end)
+        self.pso.has_codes.connect(self.show_codes)
+
         self.pso.start()
 
     def check_transaction_end(self, identification):

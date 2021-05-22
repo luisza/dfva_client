@@ -23,8 +23,8 @@ class PersonSignOpers(QThread):
         super(PersonSignOpers, self).__init__()
         self.tid = tid
         self.result = None
-        storage = SessionStorage.getInstance()
-        self.mysign = MySignModel(db=storage.db, user=user)
+        self.session_storage = SessionStorage.getInstance()
+        self.mysign = MySignModel(db=self.session_storage.db, user=user)
 
     def run(self):
         data = self.data
@@ -34,6 +34,7 @@ class PersonSignOpers(QThread):
                                        _format=data["_format"], file_path=data["file_path"],
                                        algorithm=data["algorithm"], is_base64=data["is_base64"],
                                        wait=data["wait"], extras=data["extras"])
+
         self.mysign.update_mysign(mid, transaction_status=self.result["status"], transaction_text=self.result["status_text"])
 
         if self.result.get('signed_document'):
@@ -215,6 +216,7 @@ class SignValidate(QWidget, Ui_SignValidate):
                                    "wait": True, "extras": extras,  "file_path": self.path,
                                    "save_path": self.get_save_document_path(), "file_name": self.get_document_name()})
         persont.has_result.connect(self.sign_result)
+
         persont.start()
         self.opers.append(persont)
 
