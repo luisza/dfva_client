@@ -238,14 +238,14 @@ class SignValidate(QWidget, Ui_SignValidate):
         else:
             vi = ValidationInformation(self.widget, self.main_app)
             vi.status.setText(self.opers[tid].result['status_text'])
-            for signer in self.opers[tid].result['signers']:
-                vi.add_signer(signer['identification_number'], signer['full_name'], signer['signature_date'])
-
-            for warning in self.opers[tid].result['warnings']:
-                vi.add_warning(warning['description'])
-
-            for error in self.opers[tid].result['errors']:
-                vi.add_errors(error['detail'])
+            if 'validation_data' in self.opers[tid].result:
+                if 'firmas' in self.opers[tid].result['validation_data']:
+                    for signer in self.opers[tid].result['validation_data']['firmas']:
+                        vi.add_signer(signer)
+                if 'resumen' in self.opers[tid].result['validation_data']:
+                   vi.add_resumen(self.opers[tid].result['validation_data']['resumen'])
+                if 'errores' in self.opers[tid].result['validation_data']:
+                    vi.add_errors(self.opers[tid].result['validation_data']['errores'])
             vi.set_status_icon(self.opers[tid].result['status'])
             vi.show()
 
