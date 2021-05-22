@@ -246,7 +246,11 @@ class SignValidate(QWidget, Ui_SignValidate):
                    vi.add_resumen(self.opers[tid].result['validation_data']['resumen'])
                 if 'errores' in self.opers[tid].result['validation_data']:
                     vi.add_errors(self.opers[tid].result['validation_data']['errores'])
-            vi.set_status_icon(self.opers[tid].result['status'])
+                vi.set_status_icon(self.opers[tid].result['status'])
+            elif 'errores' in self.opers[tid].result:
+                QtWidgets.QMessageBox.critical(self.widget, "Problemas validando el documento",
+                                               self.opers[tid].result['errores'])
+                vi.set_status_icon(1)
             vi.show()
 
 

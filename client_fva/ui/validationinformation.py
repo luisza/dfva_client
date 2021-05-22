@@ -99,6 +99,11 @@ class ValidationInformation(QtWidgets.QDialog, Ui_Dialog):
             self.errorlabel.setText("")
 
     def add_resumen(self, data):
+        if not data:
+            self.set_status_resumen_icon(self.vtiempo, False)
+            self.set_status_resumen_icon(self.gintegridad, False)
+            return
+
         # {'garantia_de_integridad_y_autenticidad': True, 'garantia_validez_en_el_tiempo': True, 'resultado_de_validacion': 0}
         if 'garantia_de_integridad_y_autenticidad' in data:
             self.set_status_resumen_icon(self.gintegridad, data['garantia_de_integridad_y_autenticidad'])
