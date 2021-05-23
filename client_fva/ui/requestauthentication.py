@@ -15,6 +15,7 @@ class PersonAuthenticationOpers(QThread):
     has_result = pyqtSignal(int)
     has_changes = pyqtSignal(str, int, bool, str)
     remove_check = pyqtSignal(str)
+    new_code = pyqtSignal(str, str)
 
     def __init__(self, tid, person, identifications, user):
         self.identifications = identifications
@@ -39,12 +40,15 @@ class PersonAuthenticationOpers(QThread):
                                         transaction_text=data['status_text'])
 
     def run(self):
+        transactions = []
         for identification in self.identifications:
             result = self.person.authenticate(identification)
             self.log_transaction(identification, result)
             if result['status'] == 0:
                 self.pending_check[identification] = result['id']
                 self.session_storage.transactions[result['id_transaction']] = result['code']
+                transactions.append(result['id_transaction'])
+                self.new_code.emit(identification, result['code'])
             else:
                 self.remove_check.emit(identification)
         while self.pending_check:
@@ -54,10 +58,11 @@ class PersonAuthenticationOpers(QThread):
                 if result['received_notification']:
                     del self.pending_check[identification]
                     self.remove_check.emit(identification)
-            time.sleep(self.wait_time)
 
-        if result['id_transaction'] in self.session_storage.transactions:
-            del self.session_storage.transactions[result['id_transaction']]
+            time.sleep(self.wait_time)
+        for trans in transactions:
+            if trans in self.session_storage.transactions:
+                del self.session_storage.transactions[trans]
         self.has_result.emit(self.tid)
 
 
@@ -91,14 +96,16 @@ class RequestAuthentication(Ui_RequestAuthentication):
 
         self.auth_list = []
         self.status_widgets = {}
+        self.code_widgets = {}
         self.initialize()
 
 
     def initialize(self):
-        self.contacts.setColumnCount(3)
+        self.contacts.setColumnCount(4)
         self.contacts.setHorizontalHeaderItem(0, QTableWidgetItem("Estado"))
         self.contacts.setHorizontalHeaderItem(1, QTableWidgetItem("Identificación"))
         self.contacts.setHorizontalHeaderItem(2, QTableWidgetItem("Nombre"))
+        self.contacts.setHorizontalHeaderItem(3, QTableWidgetItem("Código"))
         self.contacts.resizeColumnsToContents()
         self.contacts_count = 0
         self.contacts.contextMenuEvent = self.context_element_menu_event
@@ -118,13 +125,16 @@ class RequestAuthentication(Ui_RequestAuthentication):
 
         status_widget = QTableWidgetItem()
         status_widget.setIcon(QtGui.QIcon(":/images/autentication.png"))
+        code_widget = QTableWidgetItem("")
 
         self.contacts.insertRow(self.contacts.rowCount())
         self.contacts.setItem(self.contacts_count, 0, status_widget)
         self.contacts.setItem(self.contacts_count, 1, QTableWidgetItem(identification))
         self.contacts.setItem(self.contacts_count, 2, QTableWidgetItem(name))
+        self.contacts.setItem(self.contacts_count, 3, code_widget)
         self.contacts_count += 1
         self.status_widgets[identification] = status_widget
+        self.code_widgets[identification] = code_widget
         self.contacts.resizeColumnsToContents()
 
     def change_person_status(self,status_widget,  status, error_text="Error o rechazo por parte del usuario"):
@@ -169,6 +179,7 @@ class RequestAuthentication(Ui_RequestAuthentication):
         self.pao.has_result.connect(self.end_authentication)
         self.pao.has_changes.connect(self.check_transaction_change)
         self.pao.remove_check.connect(self.check_transaction_end)
+        self.pao.new_code.connect(self.add_new_code)
         self.pao.start()
 
     def context_element_menu_event(self, pos):
@@ -227,3 +238,7 @@ class RequestAuthentication(Ui_RequestAuthentication):
             icon_status = self.ERROR
             icon_tooltip = text
         self.change_person_status(self.status_widgets[identification], icon_status, icon_tooltip)
+
+    def add_new_code(self, identification, code):
+        self.code_widgets[identification].setText(code)
+        self.contacts.resizeColumnsToContents()
