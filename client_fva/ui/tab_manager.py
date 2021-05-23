@@ -1,10 +1,11 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QThreadPool, QObject
 
 from client_fva.models.User import UserModel
 from client_fva.monitor import Monitor
 from client_fva.person import PersonClient
 from client_fva.session_storage import SessionStorage
+from client_fva.ui.login import PersonLoginOpers
 from client_fva.ui.signvalidate import SignValidate
 from client_fva import signals
 import logging
@@ -109,7 +110,9 @@ class TabManager(QObject):
         self.controller.set_enabled_specific_menu_actions(True)
         user = self.create_list_menu(self.session_storage.session_info[serial]['fvaspeaker'], name, serial, slot)
         self.session_storage.session_info[serial]['user'] = user
-        self.session_storage.session_info[serial]['personclient'].register(slot=slot)
+
+        loginthread = PersonLoginOpers(serial, slot, self.controller)
+        loginthread.run()
 
     def re_index_tabnumber(self):
         for x in range(0, self.controller.usrSlots.count()):

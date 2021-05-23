@@ -40,8 +40,6 @@ class OperandLogin:
             dev = oper1%oper2
         elif oper == '//':
             dev = oper1//oper2
-        elif oper == '**':
-            dev = oper1**oper2
         return dev
 
     @classmethod

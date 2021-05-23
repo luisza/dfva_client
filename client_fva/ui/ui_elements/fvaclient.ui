@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>638</width>
-    <height>452</height>
+    <width>660</width>
+    <height>508</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -118,8 +118,8 @@ background-color:rgb(216, 230, 225);</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>638</width>
-     <height>22</height>
+     <width>660</width>
+     <height>24</height>
     </rect>
    </property>
    <property name="acceptDrops">
@@ -171,6 +171,20 @@ background-color:rgb(216, 230, 225);}</string>
    <addaction name="menuRequests"/>
    <addaction name="menuFirma"/>
    <addaction name="menuContactos"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>660</width>
+     <height>0</height>
+    </size>
+   </property>
   </widget>
   <action name="actionRequestSignature">
    <property name="icon">
