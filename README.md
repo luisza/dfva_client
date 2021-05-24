@@ -1,5 +1,5 @@
 # dfva_client
-Python integration to DFVA service for digital Signature project
+Python integration to SIFVA service for digital Signature project
 
 Dependencias necesarias
 
