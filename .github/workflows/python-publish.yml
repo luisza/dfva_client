@@ -3,9 +3,7 @@
 
 name: Create linux packages
 
-on:
-  release:
-    types: [created]
+on: push 
 
 jobs:
   deploy:
