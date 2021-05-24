@@ -25,6 +25,8 @@ jobs:
       run: |
         pyinstaller -F main.spec
         mv sifav.sh dist/
+        ls -al dist/
+        ls -al build/
         tar -zcf  dist/sifav.tar.gz dist/SIFAV dist/sifav.sh
     - name: SCP Command to Transfer Files
       uses: appleboy/scp-action@v0.1.1
