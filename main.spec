@@ -50,7 +50,7 @@ pyz = PYZ(a.pure, a.zipped_data,
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
-          name='dfva',
+          name='SIFVA',
           debug=False,
           strip=False,
           upx=True,
@@ -61,7 +61,7 @@ coll = COLLECT(exe,
                a.datas,
                strip=False,
                upx=True,
-               name='dfva')
+               name='SIFVA')
 if _os == "darwin":
     app = BUNDLE(exe,
              name='dfva_client.app',
