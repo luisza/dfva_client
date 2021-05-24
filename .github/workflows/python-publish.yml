@@ -1,0 +1,39 @@
+# This workflow will upload a Python Package using Twine when a release is created
+# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+
+name: Create linux packages
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools wheel twine pyinstaller
+        pip install -r requirements.txt
+    - name: Install dependencies
+      run: |
+        pyinstaller -F main.spec
+        mv sifav.sh dist/
+        tar -zcf  dist/sifav.tar.gz dist/SIFAV dist/sifav.sh
+    - name: SCP Command to Transfer Files
+      uses: appleboy/scp-action@v0.1.1
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        source: "dist/sifav.tar.gz"
+        target: "dfva_client"
