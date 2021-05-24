@@ -54,16 +54,16 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=True )
+          console=True)
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
                a.datas,
                strip=False,
                upx=True,
-               name='SIFVA')
+               name='SIFVA', icon='client_fva/ui/ui_elements/images/icon.ico' )
 if _os == "darwin":
     app = BUNDLE(exe,
              name='dfva_client.app',
-             icon=None,
+             icon='client_fva/ui/ui_elements/images/icon.ico',
              bundle_identifier=None)
