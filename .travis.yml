@@ -28,7 +28,7 @@ script:
   - tar -zcf "dfva_client_$TRAVIS_OS_NAME_$TRAVIS_BUILD_NUMBER.tar.gz" dist/
 after_success:
 
-  -  curl --ftp-create-dirs -T "dfva_client_$TRAVIS_OS_NAME_$TRAVIS_BUILD_NUMBER.tar.gz"  sftp://${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/
+  -  curl --ftp-create-dirs -k -T "dfva_client_$TRAVIS_OS_NAME_$TRAVIS_BUILD_NUMBER.tar.gz"  sftp://${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/
 
 
 #  - ls -R dist
