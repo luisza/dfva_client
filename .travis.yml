@@ -18,7 +18,12 @@ env:
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  pip install setuptools-scm==6.0.1; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 -m pip install -r requirements.txt && python3 -m pip install pyinstaller  else pip install -r requirements.txt && pip install pyinstaller; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  pip install -r requirements.txt; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  pip install pyinstaller; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 -m pip install -r requirements.txt; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 -m pip install pyinstaller; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  pip install -r requirements.txt; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  pip install pyinstaller; fi
 
 script:
   - pyinstaller "main.spec"
