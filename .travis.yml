@@ -8,10 +8,11 @@ env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
 install:
   - pip install setuptools-scm==6.0.1
   - pip install -r requirements.txt
+  - pip install pyinstaller
 script:
-  - bash -c echo "Tests would go here"
-before_deploy:
   - pyinstaller "main.spec"
+before_deploy:
+  - ls dist
 deploy:
   provider: releases
   api_key: $RELEASE_TOKEN
