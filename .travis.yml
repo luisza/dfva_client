@@ -13,11 +13,7 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  python -m pip install --upgrade pip ; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install visualstudio2019buildtools ; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then pip install --upgrade pip; fi
-env:
-  global:
-  - 'SFTP_USER=[visualcon_user]'
-  - 'SFTP_PASSWORD=[visualcon_password]'
-  - PATH=/c/Python37:/c/Python37/Scripts:$PATH
+env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
 install:
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  pip install setuptools-scm==6.0.1; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  pip install -r requirements.txt; fi
@@ -32,7 +28,7 @@ script:
   - tar -zcf "dfva_client_$TRAVIS_OS_NAME_$TRAVIS_BUILD_NUMBER.tar.gz" dist/
 after_success:
 
-  -  curl --ftp-create-dirs -T "dfva_client_$TRAVIS_OS_NAME_$TRAVIS_BUILD_NUMBER.tar.gz"  sftp://${SFTP_USER}:${SFTP_PASSWORD}@visualcon.net/home/githubdeploy/
+  -  curl --ftp-create-dirs -T "dfva_client_$TRAVIS_OS_NAME_$TRAVIS_BUILD_NUMBER.tar.gz"  sftp://${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/
 
 
 #  - ls -R dist
