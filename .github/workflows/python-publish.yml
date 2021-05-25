@@ -29,9 +29,9 @@ jobs:
     - name: SCP Command to Transfer Files
       uses: appleboy/scp-action@v0.1.1
       with:
-        host: ${{ dfva_client_env.HOST }}
-        username: ${{ dfva_client_env.USERNAME }}
-        password: ${{ dfva_client_env.PASSWORD }}
-        port: ${{ dfva_client_env.PORT }}
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
         source: "dist/sifav.tar.gz"
         target: "dfva_client"
