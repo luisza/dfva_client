@@ -4,11 +4,11 @@ osx_image: xcode12.5
 before_install:
   - brew update
 #  - brew install python3
-  - python -m pip install --upgrade pip
+  - python3 -m pip install --upgrade pip
 
 install:
-  - pip install -r requirements.txt
-  - pip install pyinstaller
+  - python3 -m pip install -r requirements.txt
+  - python3 -m pip install pyinstaller
 script:
   - pyinstaller "main.spec"
   - ls -al dist/
