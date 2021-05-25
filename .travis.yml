@@ -7,15 +7,15 @@ osx_image: xcode12.5
       
 language: shell
 before_install:
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; python3 -m pip install --upgrade pip; fi
-  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install python --version=3.7;  pip install --upgrade pip; choco install visualstudio2019buildtools;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update && python3 -m pip install --upgrade pip; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install python --version=3.7 &&  pip install --upgrade pip && choco install visualstudio2019buildtools;fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then pip install --upgrade pip fi
 env: 
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then PATH=/c/Python37:/c/Python37/Scripts:$PATH; fi
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  pip install setuptools-scm==6.0.1; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 -m pip install -r requirements.txt; python3 -m pip install pyinstaller; else pip install -r requirements.txt; pip install pyinstaller; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 -m pip install -r requirements.txt && python3 -m pip install pyinstaller  else pip install -r requirements.txt && pip install pyinstaller; fi
 
 script:
   - pyinstaller "main.spec"
