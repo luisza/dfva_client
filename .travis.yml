@@ -34,13 +34,13 @@ after_success:
 #  - ls -R dist
 #before_deploy:
 #  - ls -R dist
-#deploy:
-#  provider: releases
-#  api_key: $RELEASE_TOKEN
-#  file_glob: true
-#  file: dist/*.exe
-#  skip_cleanup: true
-#  draft: true
-#  on:
-#    tags: true
+deploy:
+  provider: releases
+  api_key: $RELEASE_TOKEN
+  file_glob: true
+  file: "dfva_client_$TRAVIS_OS_NAME_$TRAVIS_BUILD_NUMBER.tar.gz"
+  skip_cleanup: true
+  draft: true
+  on:
+    tags: true
 
