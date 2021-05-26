@@ -8,12 +8,12 @@ osx_image: xcode12.5
 language: shell
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install curl --with-openssl; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install curl --force; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 -m pip install --upgrade pip; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install python --version=3.7; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  python -m pip install --upgrade pip ; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install visualstudio2019buildtools ; fi
-  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install curl; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install curl --force; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then pip install --upgrade pip; fi
 env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
 install:
