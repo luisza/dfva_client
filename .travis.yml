@@ -1,6 +1,6 @@
 os:
-  - linux
-  - osx
+#  - linux
+#  - osx
   - windows
 dist: focal
 osx_image: xcode12.5
