@@ -132,6 +132,11 @@ class UserSettings:
         os.chmod(os.path.join(self.settings_file_path,
                               self.settings_file_name), stat.S_IRWXU)
 
+    def get_home_path(self):
+        if not os.path.exists(self.settings_file_path):
+            os.mkdir(self.settings_file_path)
+        return self.settings_file_path
+
     def serialize_tokens(self, text):
         data = text.split(';')
         for key in data:

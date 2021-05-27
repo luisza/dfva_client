@@ -57,4 +57,6 @@ cp /client_fva/os_libs/linux/${ARCH}/libASEP11.so $DEB_HOMEDIR/usr/share/client_
 cp -a /client_fva/certs/ $DEB_HOMEDIR/usr/share/client_fva/
 
 dpkg-deb --build --root-owner-group $DEB_HOMEDIR
-
+alien -r $DEB_HOMEDIR.deb --scripts
+alien -l $DEB_HOMEDIR.deb --scripts
+alien -t $DEB_HOMEDIR.deb --scripts

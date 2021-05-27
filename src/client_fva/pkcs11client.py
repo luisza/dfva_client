@@ -34,6 +34,7 @@ class PKCS11Client:
         self.certificates = {}
         self.keys = {}
         self.lib = None
+        self.error_show_message = 0
 
     def get_slots(self, filter=[]):
         slots = None
@@ -44,12 +45,15 @@ class PKCS11Client:
             slots = self.lib.get_slots()
             if filter:
                 slots = [slot for slot in slots if slot.slot_id in filter]
+            self.error_show_message = 0
         except Exception as e:
-            signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR,
+            if self.error_show_message < self.settings.number_requests_before_fail:
+                signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR,
                                                         {'message': "La biblioteca instalada no funciona para leer "
                                                                     "las tarjetas, porque no ha instalado las "
                                                                     "bibliotecas necesarias o porque el sistema "
                                                                     "operativo no está soportado"}))
+                self.error_show_message += 1
             logger.error("Error abriendo dispositivos PKCS11 %r" % (e,))
 
         if not slots:
@@ -109,7 +113,7 @@ class PKCS11Client:
         _os = platform.system().lower()
         _os_arch = platform.machine()
         path = None
-        BASE_DIR = self.installation_path
+        BASE_DIR = self.settings.installation_path
         if _os == 'linux':
             path = os.path.join(
                 BASE_DIR, 'os_libs/%s/%s/libASEP11.so' % (_os, _os_arch))
@@ -122,10 +126,11 @@ class PKCS11Client:
 
         if path and os.path.exists(path):
             return path
-
-        signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR, {
+        if self.error_show_message < self.settings.number_requests_before_fail:
+            signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR, {
             'message': "No existe una biblioteca instalada para leer las tarjetas, esto puede ser porque no ha "
                        "instalado las bibliotecas necesarias o porque el sistema operativo no está soportado"}))
+            self.error_show_message += 1
 
     def get_pin(self, pin=None, slot=None):
         """Obtiene el pin de la tarjeta para iniciar sesión"""

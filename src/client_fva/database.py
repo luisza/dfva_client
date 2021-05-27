@@ -1,12 +1,17 @@
+from pathlib import Path
+
 from PyQt5 import QtSql
 import logging
+
+from client_fva.user_settings import UserSettings
 
 logger = logging.getLogger()
 
 
 def createDB():
+    settings = UserSettings.getInstance()
     db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-    db.setDatabaseName('dfva_client.db')
+    db.setDatabaseName(str(Path(settings.get_home_path()) / Path('dfva_client.db')))
 
     if not db.open():
         logger.error(db.lastError())
