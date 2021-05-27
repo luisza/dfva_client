@@ -1,0 +1,11 @@
+installerdebian:
+  image: client_fva_installer_debian
+  volumes:
+    - ./dist:/data
+    - ./src:/client_fva_base
+  environment:
+    - ARCH=amd64
+    - VERSION=1.0
+    - PACKAGE=clientfva
+  working_dir: /data
+

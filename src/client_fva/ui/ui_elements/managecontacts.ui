@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ManageContacts</class>
+ <widget class="QWidget" name="ManageContacts">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>615</width>
+    <height>371</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Administrar Contactos</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">color:rgb(76, 118, 82);
+background-color:rgb(216, 230, 225);</string>
+  </property>
+  <layout class="QGridLayout" name="manageContactsLayout">
+   <item row="3" column="1">
+    <widget class="QTableView" name="contactsTableView"/>
+   </item>
+   <item row="4" column="1">
+    <widget class="QPushButton" name="addContact">
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(11, 35, 21);
+background-color: rgb(229, 229, 229);</string>
+     </property>
+     <property name="text">
+      <string>Contacto</string>
+     </property>
+     <property name="icon">
+      <iconset resource="resources.qrc">
+       <normaloff>:/images/add.png</normaloff>:/images/add.png</iconset>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="QLineEdit" name="searchContact">
+     <property name="placeholderText">
+      <string>Buscar contacto...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLabel" name="titleLabel_4">
+     <property name="styleSheet">
+      <string notr="true">font: bold;</string>
+     </property>
+     <property name="text">
+      <string>Contactos</string>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="titleLabel_3">
+     <property name="styleSheet">
+      <string notr="true">font: bold;</string>
+     </property>
+     <property name="text">
+      <string>Grupos</string>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="2">
+    <widget class="QLabel" name="titleLabel_2">
+     <property name="styleSheet">
+      <string notr="true">font: bold;</string>
+     </property>
+     <property name="text">
+      <string>Administrar Contactos</string>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QPushButton" name="addGroup">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(11, 35, 21);
+background-color: rgb(229, 229, 229);</string>
+     </property>
+     <property name="text">
+      <string>Grupo</string>
+     </property>
+     <property name="icon">
+      <iconset resource="resources.qrc">
+       <normaloff>:/images/add.png</normaloff>:/images/add.png</iconset>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QTableView" name="groupsTableView"/>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

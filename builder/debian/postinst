@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" = configure ]; then
+    [ \! -e /etc/Athena/IDPClientDB.xml -o -L /etc/Athena/IDPClientDB.xml ] && cp /etc/Athena/client_fva_IDPClientDB.xml /etc/Athena/IDPClientDB.xml 
+    [ \! -e /usr/lib/libASEP11.so -o -L /usr/lib/libASEP11.so ] && cp /usr/share/client_fva/os_libs/linux/ARCH/libASEP11.so /usr/lib/libASEP11.so
+    [ \! -e /usr/lib/x64-athena/libASEP11.so -o -L /usr/lib/x64-athena/libASEP11.so ] && cp /usr/share/client_fva/os_libs/linux/ARCH/libASEP11.so /usr/lib/x64-athena/libASEP11.so
+    [ \! -e /usr/lib/ARCH-linux-gnu/libASEP11.so -o -L /usr/lib/ARCH-linux-gnu/libASEP11.so ] && cp /usr/share/client_fva/os_libs/linux/ARCH/libASEP11.so /usr/lib/ARCH-linux-gnu/libASEP11.so
+    
+fi
+exit 0
