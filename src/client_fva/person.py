@@ -303,6 +303,7 @@ class PersonBaseClient(PersonClientInterface):
         sign_id = data['id']
         if data['status'] != 0:
             wait = False
+            signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR,  {'message': data['status_text']}))
         else:
             self.session_storage.transactions[data['id_transaction']] = data['code']
         if wait:
@@ -312,7 +313,15 @@ class PersonBaseClient(PersonClientInterface):
                                                                                                 identification,
                                                                                                 data['code']))
                 time.sleep(self.wait_time)
-                data = self.check_sign(sign_id)
+                ok = False
+                counttry = 0
+                while not ok and counttry < self.settings.number_requests_before_fail:
+                    try:
+                        data = self.check_sign(sign_id)
+                        ok=True
+                    except requests.exceptions.ConnectionError:
+                        ok = False
+                        counttry += 1
                 wait_count += 1
             self.delete_sign(sign_id)
         if 'id_transaction' in data and data['id_transaction'] in self.session_storage.transactions:
@@ -327,8 +336,11 @@ class PersonBaseClient(PersonClientInterface):
         return data
 
     def delete_sign(self, code):
-        return self.requests.delete(self.settings.fva_server_url + self.settings.sign_delete % (code,),
+        try:
+            return self.requests.delete(self.settings.fva_server_url + self.settings.sign_delete % (code,),
                                    headers=self.get_http_headers())
+        except requests.exceptions.ConnectionError:
+            pass
 
     def validate(self, document, file_path=None, is_base64=False, _format='certificate'):
         self.notify('process', 1, 'Validando archivo')

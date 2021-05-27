@@ -1,6 +1,9 @@
+import logging
 import os
 from pathlib import Path
 from base64 import b64decode
+
+import requests
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread
 from PyQt5.QtWidgets import QWidget
@@ -12,10 +15,12 @@ from client_fva.ui.signvalidateui import Ui_SignValidate
 from client_fva.ui.validationinformation import ValidationInformation
 from client_fva.ui.validationinformationcertificate import ValidationInformationCertificate
 from client_fva.user_settings import UserSettings
-
+logger = logging.getLogger()
+from client_fva import signals
 
 class PersonSignOpers(QThread):
     has_result = pyqtSignal(int)
+    end_success = pyqtSignal()
 
     def __init__(self, tid, person, user, data):
         self.data = data
@@ -25,21 +30,38 @@ class PersonSignOpers(QThread):
         self.result = None
         self.session_storage = SessionStorage.getInstance()
         self.mysign = MySignModel(db=self.session_storage.db, user=user)
+        self.settings = UserSettings.getInstance()
 
     def run(self):
         data = self.data
         mid = self.mysign.add_mysign(data["identification"], data["file_path"], data["file_name"],
                                      signed_document_path=data["save_path"])
-        self.result = self.person.sign(data["identification"], data["document"], data["resume"],
+        ok = False
+        counttry = 0
+        while not ok and counttry < self.settings.number_requests_before_fail:
+            try:
+                self.result = self.person.sign(data["identification"], data["document"], data["resume"],
                                        _format=data["_format"], file_path=data["file_path"],
                                        algorithm=data["algorithm"], is_base64=data["is_base64"],
                                        wait=data["wait"], extras=data["extras"])
-
+                ok=True
+            except requests.exceptions.ConnectionError:
+                logger.warning("Error de comunicación intentando firmar")
+                ok = False
+                counttry += 1
+        if not ok:
+            signals.send('notify', signals.SignalObject(
+                signals.NOTIFTY_ERROR,
+                    {'message': "Error de comunicación, verifique su conexión de internet"
+             }) )
+            self.result = {'status': 1, 'status_text': 'Error de comunicación, no se puedo conectar con el servidor',
+                           'signed_document': None}
         self.mysign.update_mysign(mid, transaction_status=self.result["status"], transaction_text=self.result["status_text"])
 
         if self.result.get('signed_document'):
             with open(data["save_path"], "wb") as arch:
                 arch.write(b64decode(self.result["signed_document"]))
+                self.end_success.emit()
 
         self.has_result.emit(self.tid)
 
@@ -55,9 +77,22 @@ class PersonValidateOpers(QThread):
         self.result = None
 
     def run(self):
-        self.result = self.person.validate(self.data["document"], self.data["file_path"], self.data["algorithm"],
-                                           self.data["is_base64"], self.data["_format"])
-        self.has_result.emit(self.tid)
+        settings =  UserSettings.getInstance()
+        ok = False
+        counttry = 0
+        while not ok and counttry < settings.number_requests_before_fail:
+            try:
+                self.result = self.person.validate(self.data["document"], self.data["file_path"], self.data["algorithm"],
+                                                   self.data["is_base64"], self.data["_format"])
+                self.has_result.emit(self.tid)
+                ok=True
+            except requests.exceptions.ConnectionError:
+                ok = False
+                counttry += 1
+        if not ok:
+            signals.send('notify', signals.SignalObject(
+                signals.NOTIFTY_ERROR,
+                {'message': "Error en la red, por favor verifique su conexión a internet" }))
 
 
 class SignValidate(QWidget, Ui_SignValidate):
@@ -163,6 +198,8 @@ class SignValidate(QWidget, Ui_SignValidate):
     @pyqtSlot()
     def end_sign(self):
         self.clean()
+
+    def end_success(self):
         QtWidgets.QMessageBox.information(self.widget, "Documento firmado con éxito",
                                           "El documento seleccionado fue firmado y guardado con éxito en la carpeta de "
                                           "destino.")
@@ -216,6 +253,7 @@ class SignValidate(QWidget, Ui_SignValidate):
                                    "wait": True, "extras": extras,  "file_path": self.path,
                                    "save_path": self.get_save_document_path(), "file_name": self.get_document_name()})
         persont.has_result.connect(self.sign_result)
+        persont.end_success.connect(self.end_success)
 
         persont.start()
         self.opers.append(persont)
@@ -226,7 +264,7 @@ class SignValidate(QWidget, Ui_SignValidate):
             self.signValidateProgressBar.setFormat(text)
 
     def sign_result(self, tid):
-        print(self.opers[tid].result)
+        self.update_process_bar(0, '')
 
     def validate_result(self, tid):
         if self.opers[tid].data['_format'] == 'certificate':

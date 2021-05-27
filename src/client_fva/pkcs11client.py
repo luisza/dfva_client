@@ -260,6 +260,8 @@ class PKCS11Client:
                 }
             if slot is not None:
                 self.keys[slot] = keys
+            else:
+                return keys
         return self.keys[slot]
 
     def get_identification(self, slot=None):

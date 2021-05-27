@@ -3,8 +3,9 @@ import time
 
 import requests
 from PyQt5 import QtWidgets, QtCore
-
+from client_fva import signals
 from client_fva.session_storage import SessionStorage
+from client_fva.user_settings import UserSettings
 
 
 class EjecutionTimer(QtCore.QRunnable):
@@ -55,15 +56,27 @@ class PersonLoginOpers(QtCore.QThread):
         super(PersonLoginOpers, self).__init__()
         self.session_storage = SessionStorage.getInstance()
         self.threadpool = QtCore.QThreadPool()
+        self.settings = UserSettings.getInstance()
 
     def run(self):
         self.start_process_bar()
         self.timer = EjecutionTimer(self)
         self.threadpool.start(self.timer)
-        try:
-            self.session_storage.session_info[self.serial]['personclient'].register(slot=self.slot)
-        except requests.exceptions.ConnectionError:
-            pass
+        ok = False
+        counttry = 0
+        while not ok and counttry < self.settings.number_requests_before_fail:
+            try:
+                self.session_storage.session_info[self.serial]['personclient'].register(slot=self.slot)
+                ok = True
+            except requests.exceptions.ConnectionError:
+                ok= False
+                counttry += 1
+        if not ok:
+            signals.send('notify', signals.SignalObject(
+                signals.NOTIFTY_ERROR,
+                {'message': "Error en la red, no se puede autenticar al usuario, por favor verifique su conexión a internet"
+             })
+                             )
         self.end_process_bar()
 
     def on_timer(self, minutes):
