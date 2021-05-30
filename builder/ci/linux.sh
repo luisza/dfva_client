@@ -1,5 +1,6 @@
 #!/bin/bash
 
+echo $(whereis python)
 OLD_PATH=$(pwd)
 cd src
 
