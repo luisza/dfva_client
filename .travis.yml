@@ -2,7 +2,7 @@ os:
   - linux
 #  - osx
 #  - windows
-dist: focal
+dist: bionic
 osx_image: xcode11.4
       
 language: shell
