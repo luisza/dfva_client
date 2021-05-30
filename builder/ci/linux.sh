@@ -57,10 +57,12 @@ cp $OLD_PATH/src/os_libs/linux/${ARCH}/libASEP11.so $DEB_HOMEDIR/usr/share/clien
 cp -a $OLD_PATH/src/certs/ $DEB_HOMEDIR/usr/share/client_fva/
 
 dpkg-deb --build --root-owner-group $DEB_HOMEDIR
-alien -r $DEB_HOMEDIR.deb --scripts
-alien -l $DEB_HOMEDIR.deb --scripts
-alien -t $DEB_HOMEDIR.deb --scripts
- 
+sudo alien -r $DEB_HOMEDIR.deb --scripts
+sudo alien -l $DEB_HOMEDIR.deb --scripts
+sudo alien -t $DEB_HOMEDIR.deb --scripts
+
+ls -al .
+echo $(pwd)
 
 mv build/${PACKAGE}_${VERSION}_${ARCH}.deb $OLD_PATH/
 mv build/${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm  $OLD_PATH/
