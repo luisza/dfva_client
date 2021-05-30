@@ -2,6 +2,7 @@
 source /etc/profile
 export LC_ALL="en_US.UTF-8"
 
+OLD_PWD=$(pwd)
 cd src/
 
 sed -ie 's/http:\/\/localhost:8000/https:\/\/firmadigital.solvosoft.com/g' client_fva/user_settings.py
@@ -34,4 +35,4 @@ END
 chmod u+x dist/scripts/postinstall
 
 cd dist
-pkgbuild --root ./package --identifier cr.clientfva  --script ./scripts --version 0.2 --install-location / ../client_fva_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.pkg
+pkgbuild --root ./package --identifier cr.clientfva  --script ./scripts --version 0.2 --install-location / ${OLD_PWD}/client_fva_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.pkg
