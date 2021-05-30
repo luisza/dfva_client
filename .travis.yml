@@ -1,6 +1,6 @@
 os:
-#  - linux
-  - osx
+  - linux
+#  - osx
 #  - windows
 dist: focal
 osx_image: xcode11.4
@@ -16,7 +16,12 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install visualstudio2019buildtools ; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install curl --force; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then pip install --upgrade pip; fi
-env: PATH=/c/Python37:/c/Python37/Scripts:/c/ProgramData/chocolatey/lib/curl/tools:$PATH
+env: 
+  - PATH=/c/Python37:/c/Python37/Scripts:/c/ProgramData/chocolatey/lib/curl/tools:$PATH
+  - PACKAGE=clientfva
+  - VERSION=1.0
+  - ARCH=amd64
+  - RPM_ARCH=x86_64
 install:
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  pip install setuptools-scm==6.0.1; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  pip install -r requirements.txt; fi
@@ -28,12 +33,16 @@ install:
 
 script:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then ./builder/ci/mac.sh; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export EXTENSION='pkg'; fi
+
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  ./builder/ci/linux.sh; fi
+
 #  - tar -zcf "dfva_client_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.tar.gz" dist/
 after_success:
-
-  -  curl --ftp-create-dirs -k -T "client_fva_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.${EXTENSION}"  sftp://${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/
-
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl --ftp-create-dirs -k -T "client_fva_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.pkg"  sftp://${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  curl --ftp-create-dirs -k -T "${PACKAGE}_${VERSION}_${ARCH}.deb"  sftp://${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/${TRAVIS_BUILD_NUMBER}/; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  curl --ftp-create-dirs -k -T "${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm"  sftp://${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/${TRAVIS_BUILD_NUMBER}/; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  curl --ftp-create-dirs -k -T "lsb-${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm"  sftp://${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/${TRAVIS_BUILD_NUMBER}/; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  curl --ftp-create-dirs -k -T "${PACKAGE}-${VERSION}.tgz"  sftp://${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/${TRAVIS_BUILD_NUMBER}/; fi
 
 #  - ls -R dist
 #before_deploy:
@@ -42,7 +51,12 @@ deploy:
   provider: releases
   api_key: $RELEASE_TOKEN
   file_glob: true
-  file: "dfva_client_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.tar.gz"
+  file:
+      - if [ "$TRAVIS_OS_NAME" = "osx" ]; then  client_fva_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.pkg; fi
+      - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  ${PACKAGE}_${VERSION}_${ARCH}.deb; fi
+      - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  ${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm; fi
+      - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  lsb-${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm; fi
+      - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  ${PACKAGE}-${VERSION}.tgz; fi
   skip_cleanup: true
   draft: true
   on:
