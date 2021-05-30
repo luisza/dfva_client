@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 
 from PyQt5.QtCore import QThread
 import logging
@@ -35,6 +37,9 @@ class Monitor(QThread):
         usando detect_device( notify_exception=True) para que envíe notificaciones
         de los errores presentados al detectar las tarjetas.
         """
+
+
+        logger.debug("Installation path: "+str(self.settings.installation_path))
         logger.debug("Monitor: detect device")
         tmp_device = []
         added_device = {}

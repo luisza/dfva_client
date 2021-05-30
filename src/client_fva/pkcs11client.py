@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pkcs11
 import os
 from pkcs11.constants import Attribute

@@ -1,7 +1,7 @@
 os:
-  - linux
+#  - linux
   - osx
-  - windows
+#  - windows
 dist: focal
 osx_image: xcode12.5
       
@@ -10,7 +10,6 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install curl-openssl --force; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH="/usr/local/opt/curl/bin:$PATH"; fi
-
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 -m pip install --upgrade pip; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install python --version=3.7; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  python -m pip install --upgrade pip ; fi
@@ -28,11 +27,12 @@ install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  pip install pyinstaller; fi
 
 script:
-  - pyinstaller "main.spec"
-  - tar -zcf "dfva_client_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.tar.gz" dist/
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then ./builder/ci/mac.sh; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export EXTENSION='pkg'; fi
+#  - tar -zcf "dfva_client_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.tar.gz" dist/
 after_success:
 
-  -  curl --ftp-create-dirs -k -T "dfva_client_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.tar.gz"  sftp://${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/
+  -  curl --ftp-create-dirs -k -T "client_fva_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.${EXTENSION}"  sftp://${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/
 
 
 #  - ls -R dist
