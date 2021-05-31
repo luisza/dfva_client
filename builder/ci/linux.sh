@@ -1,16 +1,12 @@
 #!/bin/bash
 
-
-
 OLD_PATH=$(pwd)
 
-echo "$SSH_KEY" > /tmp/ssh_key_enc
-cat /tmp/ssh_key_enc
-base64 --decode /tmp/ssh_key_enc > /tmp/ssh_key
-chmod 0600 /tmp/ssh_key
-echo '################################################################################\n\n\n'
-cat /tmp/ssh_key
+base64 --decode builder/ci/.visualcon > /tmp/git_deploy_key
 
+eval "$(ssh-agent -s)"
+echo 'echo ${SSH_KEY}' > /tmp/askpass && chmod +x /tmp/askpass
+DISPLAY=":0.0" SSH_ASKPASS="/tmp/askpass" setsid ssh-add /tmp/git_deploy_key </dev/null
 cd src
 
 sed -i 's/http:\/\/localhost:8000/https:\/\/firmadigital.solvosoft.com/g' client_fva/user_settings.py
