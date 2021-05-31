@@ -37,10 +37,10 @@ script:
 #  - tar -zcf "dfva_client_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.tar.gz" dist/
 after_success:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl --ftp-create-dirs -k -T "client_fva_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.pkg"  sftp://${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp "${PACKAGE}_${VERSION}_${ARCH}.deb"  ${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp "${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm" ${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp "lsb-${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm"  ${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp "${PACKAGE}-${VERSION}.tgz"  ${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${PACKAGE}_${VERSION}_${ARCH}.deb"  ${visualcon_user}:${visualcon_password}@visualcon.net:/home/githubdeploy/; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm" ${visualcon_user}:${visualcon_password}@visualcon.net:/home/githubdeploy/; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "lsb-${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm"  ${visualcon_user}:${visualcon_password}@visualcon.net:/home/githubdeploy/; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${PACKAGE}-${VERSION}.tgz"  ${visualcon_user}:${visualcon_password}@visualcon.net:/home/githubdeploy/; fi
 
 #  - ls -R dist
 #before_deploy:
