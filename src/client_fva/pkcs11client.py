@@ -95,8 +95,18 @@ class PKCS11Client:
         if os.path.exists('/usr/lib/libASEP11.so'):  # Linux
             return '/usr/lib/libASEP11.so'
 
+        if os.path.exists('/usr/lib/x64-athena/libASEP11.so'):  # Linux
+            return '/usr/lib/x64-athena/libASEP11.so'
+
+        if os.path.exists('/usr/lib/x86-athena/libASEP11.so'):  # Linux
+            return '/usr/lib/x86-athena/libASEP11.so'
+
         if os.path.exists("/usr/local/lib/libASEP11.dylib"):  # macOS
             return "/usr/local/lib/libASEP11.dylib"
+
+        if os.path.exists("/Library/Application Support/Athena/libASEP11.dylib"):  # macOS
+            return "/Library/Application Support/Athena/libASEP11.dylib"
+
 
         # FIXME: Hacer la construcción del path por defecto para windows,
         # sugerencia
