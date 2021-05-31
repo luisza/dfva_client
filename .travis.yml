@@ -31,7 +31,7 @@ install:
 
 script:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then ./builder/ci/mac.sh; fi
-
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then ./builder/ci/windows.sh; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  ./builder/ci/linux.sh; fi
 
 #  - tar -zcf "dfva_client_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.tar.gz" dist/
