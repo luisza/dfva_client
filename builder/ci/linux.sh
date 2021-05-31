@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo $SSH_KEY > /tmp/ssh_key
+
 echo $(whereis python)
 OLD_PATH=$(pwd)
 cd src
