@@ -1,6 +1,7 @@
 #!/bin/bash
 
 choco install innosetup sqlite
+cat /c/ProgramData/chocolatey/logs/chocolatey.log
 
 OLD_PATH=$(pwd)
 echo $OLD_PATH
@@ -19,9 +20,10 @@ mkdir -p $EXE_HOMEDIR/
 cp $OLD_PATH/src/os_libs/windows/asepkcs.dll $EXE_HOMEDIR/
 cp $OLD_PATH/src/dist/client_fva.exe $EXE_HOMEDIR/
 cp $OLD_PATH/src/client_fva/ui/ui_elements/images/icon.png $EXE_HOMEDIR/
+cp $OLD_PATH/src/client_fva/ui/ui_elements/images/icon.ico $EXE_HOMEDIR/
 cp $OLD_PATH/src/os_libs/windows/installer.iss $EXE_HOMEDIR/
 
 cd $EXE_HOMEDIR/
 iscc installer.iss
 
-ls -al .
+ls -al Output

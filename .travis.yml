@@ -19,7 +19,7 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install -y python3-pip alien rsync; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then python3 -m pip install --upgrade pip setuptools; fi
 env: 
-  - PATH=/c/Python37:/c/Python37/Scripts:/c/ProgramData/chocolatey/lib/curl/tools:$PATH PACKAGE=clientfva VERSION=1.0 ARCH=amd64  RPM_ARCH=x86_64
+  - PATH=/c/Python37:/c/Python37/Scripts:/c/ProgramData/chocolatey/lib/curl/tools:/c/ProgramData/chocolatey/lib/SQLite/tools:$PATH PACKAGE=clientfva VERSION=1.0 ARCH=amd64  RPM_ARCH=x86_64
 install:
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  pip install setuptools-scm==6.0.1; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  pip install -r requirements.txt; fi
