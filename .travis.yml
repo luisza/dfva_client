@@ -1,7 +1,7 @@
 os:
-  - linux
-  - osx
-#  - windows
+#  - linux
+#  - osx
+  - windows
 dist: bionic
 #dist: focal
 osx_image: xcode11.4
@@ -14,7 +14,7 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 -m pip install --upgrade pip; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install python --version=3.7; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  python -m pip install --upgrade pip ; fi
-  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install visualstudio2019buildtools ; fi
+#  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install visualstudio2019buildtools ; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install curl --force; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install -y python3-pip alien rsync; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then python3 -m pip install --upgrade pip setuptools; fi

@@ -29,6 +29,9 @@ mkdir -p /etc/Athena/
 cp /usr/local/client_fva/etc/Athena/IDPClientDB.xml /etc/Athena/
 
 [ \! -e /usr/local/lib/libASEP11.dylib -o -L /usr/local/lib/libASEP11.dylib ] && cp /usr/local/client_fva/os_libs/macos/libASEP11.dylib /usr/local/lib/libASEP11.dylib
+mkdir -p /Library/Application\ Support/Athena/
+[ \! -e /Library/Application\ Support/Athena/libASEP11.dylib -o -L /Library/Application\ Support/Athena/libASEP11.dylib ] && cp /usr/local/client_fva/os_libs/macos/libASEP11.dylib /Library/Application\ Support/Athena/libASEP11.dylib
+
 
 exit 0 # all good
 END
