@@ -3,7 +3,7 @@
 OLD_PATH=$(pwd)
 
 base64 --decode builder/ci/.visualcon > /tmp/git_deploy_key
-
+chmod 0600 /tmp/git_deploy_key
 eval "$(ssh-agent -s)"
 echo 'echo ${SSH_KEY}' > /tmp/askpass && chmod +x /tmp/askpass
 DISPLAY=":0.0" SSH_ASKPASS="/tmp/askpass" setsid ssh-add /tmp/git_deploy_key </dev/null
