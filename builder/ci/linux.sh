@@ -1,10 +1,13 @@
 #!/bin/bash
 
+
+
+OLD_PATH=$(pwd)
+
 echo "$SSH_KEY" > /tmp/ssh_key_enc
 base64 --decode /tmp/ssh_key_enc > /tmp/ssh_key
-chown 0600 /tmp/ssh_key
-echo $(whereis python)
-OLD_PATH=$(pwd)
+chmod 0600 /tmp/ssh_key
+
 cd src
 
 sed -i 's/http:\/\/localhost:8000/https:\/\/firmadigital.solvosoft.com/g' client_fva/user_settings.py
