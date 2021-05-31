@@ -69,9 +69,10 @@ sudo alien -t $DEB_HOMEDIR.deb --scripts
 ls -al .
 echo $(pwd)
 
-mv ${PACKAGE}_${VERSION}_${ARCH}.deb $OLD_PATH/
-mv ${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm  $OLD_PATH/
-mv lsb-${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm $OLD_PATH/
-mv ${PACKAGE}-${VERSION}.tgz $OLD_PATH/
+mkdir -p $OLD_PATH/release
+mv ${PACKAGE}_${VERSION}_${ARCH}.deb $OLD_PATH/release/
+mv ${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm  $OLD_PATH/release/
+mv lsb-${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm $OLD_PATH/release/
+mv ${PACKAGE}-${VERSION}.tgz $OLD_PATH/release/
  
 cd $OLD_PATH

@@ -33,6 +33,6 @@ cp /usr/local/client_fva/etc/Athena/IDPClientDB.xml /etc/Athena/
 exit 0 # all good
 END
 chmod u+x dist/scripts/postinstall
-
+mkdir $OLD_PWD/release
 cd dist
-pkgbuild --root ./package --identifier cr.clientfva  --script ./scripts --version 0.2 --install-location / ${OLD_PWD}/client_fva_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.pkg
+pkgbuild --root ./package --identifier cr.clientfva  --script ./scripts --version 0.2 --install-location / $OLD_PWD/release/client_fva_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.pkg

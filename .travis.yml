@@ -1,6 +1,6 @@
 os:
   - linux
-#  - osx
+  - osx
 #  - windows
 dist: bionic
 #dist: focal
@@ -37,13 +37,11 @@ script:
 #  - tar -zcf "dfva_client_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.tar.gz" dist/
 after_success:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl --ftp-create-dirs -k -T "client_fva_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.pkg"  sftp://${visualcon_user}:${visualcon_password}@visualcon.net/home/githubdeploy/; fi
-
-  - cat /tmp/ssh_key
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null   ${visualcon_user}@visualcon.net mkdir -p /home/githubdeploy/${TRAVIS_BUILD_NUMBER}/ ; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp -i /tmp/ssh_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${PACKAGE}_${VERSION}_${ARCH}.deb"  ${visualcon_user}@visualcon.net:/home/githubdeploy/${TRAVIS_BUILD_NUMBER}/; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp -i /tmp/ssh_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm" ${visualcon_user}@visualcon.net:/home/githubdeploy/${TRAVIS_BUILD_NUMBER}/; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp -i /tmp/ssh_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "lsb-${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm"  ${visualcon_user}@66.113.177.161:/home/githubdeploy/${TRAVIS_BUILD_NUMBER}/; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp -i /tmp/ssh_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${PACKAGE}-${VERSION}.tgz"  ${visualcon_user}@visualcon.net:/home/githubdeploy/${TRAVIS_BUILD_NUMBER}/; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp -i /tmp/ssh_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "release/${PACKAGE}_${VERSION}_${ARCH}.deb"  ${visualcon_user}@visualcon.net:/home/githubdeploy/${TRAVIS_BUILD_NUMBER}/; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp -i /tmp/ssh_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "release/${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm" ${visualcon_user}@visualcon.net:/home/githubdeploy/${TRAVIS_BUILD_NUMBER}/; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp -i /tmp/ssh_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "release/lsb-${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm"  ${visualcon_user}@66.113.177.161:/home/githubdeploy/${TRAVIS_BUILD_NUMBER}/; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp -i /tmp/ssh_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "release/${PACKAGE}-${VERSION}.tgz"  ${visualcon_user}@visualcon.net:/home/githubdeploy/${TRAVIS_BUILD_NUMBER}/; fi
 
 #  - ls -R dist
 #before_deploy:
@@ -53,11 +51,7 @@ deploy:
   api_key: $RELEASE_TOKEN
   file_glob: true
   file:
-      - if [ "$TRAVIS_OS_NAME" = "osx" ]; then  client_fva_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.pkg; fi
-      - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  ${PACKAGE}_${VERSION}_${ARCH}.deb; fi
-      - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  ${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm; fi
-      - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  lsb-${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm; fi
-      - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  ${PACKAGE}-${VERSION}.tgz; fi
+      - release/*
   skip_cleanup: true
   draft: true
   on:
