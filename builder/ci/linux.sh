@@ -5,8 +5,11 @@
 OLD_PATH=$(pwd)
 
 echo "$SSH_KEY" > /tmp/ssh_key_enc
+cat /tmp/ssh_key_enc
 base64 --decode /tmp/ssh_key_enc > /tmp/ssh_key
 chmod 0600 /tmp/ssh_key
+echo '################################################################################\n\n\n'
+cat /tmp/ssh_key
 
 cd src
 
