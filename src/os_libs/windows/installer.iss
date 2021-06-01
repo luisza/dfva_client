@@ -31,6 +31,6 @@ Source: "asepkcs.dll"; DestDir: "{autopf}\System32"; DestName: "asepkcs.dll" Fla
 Source: "asepkcs.dll"; DestDir: "{app}\os_libs\windows\"; DestName: "asepkcs.dll" Flags: onlyifdoesntexist recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\Cliente FVA"; Filename: "{app}\client_fva.exe" IconFilename: "{app}\icon.png"
+Name: "{group}\Cliente FVA"; Filename: "{app}\client_fva.exe"
 
 
