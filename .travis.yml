@@ -12,7 +12,8 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install curl-openssl --force; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH="/usr/local/opt/curl/bin:$PATH"; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 -m pip install --upgrade pip; fi
-  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install python --version=3.7.9 innosetup postgresql; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install python --version=3.7.9; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install innosetup postgresql; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  python -m pip install --upgrade pip ; fi
 #  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install visualstudio2019buildtools ; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install curl --force; fi
