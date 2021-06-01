@@ -1,7 +1,5 @@
 #!/bin/bash
 
-choco install innosetup sqlite
-
 OLD_PATH=$(pwd)
 echo $OLD_PATH
 
@@ -24,5 +22,6 @@ cp $OLD_PATH/src/os_libs/windows/installer.iss $EXE_HOMEDIR/
 
 cd $EXE_HOMEDIR/
 iscc installer.iss
+mkdir $OLD_PATH/release/
+cp Output/mysetup.exe $OLD_PATH/release/client_fva_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.exe
 
-ls -al Output

@@ -27,8 +27,8 @@ ArchitecturesInstallIn64BitMode=x64
 [Files]
 Source: "client_fva.exe"; DestDir: "{app}"; DestName: "client_fva.exe"
 Source: "icon.png"; DestDir: "{app}"; DestName: "icon.png"
-Source: "asepkcs.dll"; DestDir: "{autopf}\System32"; DestName: "asepkcs.dll" Flags: onlyifdoesntexist 
-Source: "asepkcs.dll"; DestDir: "{app}\os_libs\windows\"; DestName: "asepkcs.dll" Flags: onlyifdoesntexist recursesubdirs createallsubdirs
+Source: "asepkcs.dll"; DestDir: "{autopf}\System32"; DestName: "asepkcs.dll"; Flags: onlyifdoesntexist 
+Source: "asepkcs.dll"; DestDir: "{app}\os_libs\windows\"; DestName: "asepkcs.dll"; Flags: onlyifdoesntexist recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\Cliente FVA"; Filename: "{app}\client_fva.exe"
