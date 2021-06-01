@@ -33,8 +33,4 @@ Source: "asepkcs.dll"; DestDir: "{app}\os_libs\windows\"; DestName: "asepkcs.dll
 [Icons]
 Name: "{group}\Cliente FVA"; Filename: "{app}\client_fva.exe" IconFilename: "{app}\icon.png"
 
-[Setup]
-SetupIconFile=icon.ico
-WizardImageStretch=no
-WizardImageBackColor=$ffffff
 
