@@ -2,6 +2,7 @@
 
 OLD_PATH=$(pwd)
 echo $OLD_PATH
+export PATH=$PATH:/c/Program\ Files/PostgreSQL/13/bin
 
 cd src
 sed -i 's/http:\/\/localhost:8000/https:\/\/firmadigital.solvosoft.com/g' client_fva/user_settings.py
