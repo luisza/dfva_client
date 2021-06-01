@@ -1,7 +1,6 @@
 #!/bin/bash
 
 choco install innosetup sqlite
-cat /c/ProgramData/chocolatey/logs/chocolatey.log
 
 OLD_PATH=$(pwd)
 echo $OLD_PATH
