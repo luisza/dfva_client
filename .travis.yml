@@ -1,6 +1,6 @@
 os:
-#  - linux
-#  - osx
+  - linux
+  - osx
   - windows
 dist: bionic
 #dist: focal
@@ -44,7 +44,7 @@ after_success:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp -i /tmp/ssh_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "release/lsb-${PACKAGE}-${VERSION}-2.${RPM_ARCH}.rpm"  ${visualcon_user}@66.113.177.161:/home/githubdeploy/${TRAVIS_BUILD_NUMBER}/; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then  scp -i /tmp/ssh_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "release/${PACKAGE}-${VERSION}.tgz"  ${visualcon_user}@visualcon.net:/home/githubdeploy/${TRAVIS_BUILD_NUMBER}/; fi
 
-  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then winscp.com /command "open sftp://${visualcon_user}:${visualcon_password}@visualcon.net/" "put $OLD_PATH/release/client_fva_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.exe /home/githubdeploy/" "exit"; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  winscp.exe /command "open sftp://${visualcon_user}:${visualcon_password}@visualcon.net/" "put $OLD_PATH/release/client_fva_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.exe /home/githubdeploy/" "exit"; fi
 
 
 
