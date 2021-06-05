@@ -1,11 +1,11 @@
-FROM python:3.7-buster
+FROM i386/python:3.7-buster
 ENV PYTHONUNBUFFERED 1
 ENV DEBIAN_FRONTEND noninteractive
 
 MAINTAINER Luis Zarate @luisza
 
 RUN apt-get update && \
-    apt-get install -y  build-essential libssl1.1 libnss3 libssl-dev libffi-dev libnss3-dev dh-make alien
+    apt-get install -y  build-essential libssl1.1 libnss3 libssl-dev libffi-dev libnss3-dev dh-make gem2deb npm2deb
 
 RUN pip install --trusted-host pypi.python.org --no-cache-dir  --upgrade pip && \
     pip install pyinstaller
@@ -14,7 +14,7 @@ RUN pip install --trusted-host pypi.python.org --no-cache-dir  --upgrade pip && 
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --trusted-host pypi.python.org --no-cache-dir -r /tmp/requirements.txt
 
-VOLUME [ "/client_fva_base" ]
+COPY src /client_fva_base
 
 COPY builder/debian/copyright /tmp/copyright
 COPY builder/debian/postinst /tmp/postinst

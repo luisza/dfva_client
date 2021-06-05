@@ -25,4 +25,4 @@ cd $EXE_HOMEDIR/
 iscc installer.iss
 mkdir $OLD_PATH/release/
 cp Output/mysetup.exe $OLD_PATH/release/client_fva_${TRAVIS_OS_NAME}_${TRAVIS_BUILD_NUMBER}.exe
-
+exit 0
