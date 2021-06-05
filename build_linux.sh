@@ -1,7 +1,7 @@
 #!/bin/sh
 
 VERSION=$(awk '{print $3}' src/client_fva/__init__.py)
-VERSION=echo "${VERSION//\'//}" 
+VERSION=$( echo "$VERSION" | sed "s/'//g")
 NAME='client_fva'
 PACKAGE='clientfva'
 ARCH='amd64'
