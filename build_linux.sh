@@ -5,9 +5,9 @@ NAME='client_fva'
 PACKAGE='clientfva'
 ARCH='amd64'
 
-docker build -t debbuilder -f builder/Dockerfile_Debian .
-docker build -t rpmbuilder -f builder/Dockerfile_Fedora .
-docker build -t rpmbuildercentos -f builder/Dockerfile_Centos .
+docker build -q -t debbuilder -f builder/Dockerfile_Debian .
+docker build -q -t rpmbuilder -f builder/Dockerfile_Fedora .
+docker build -q -t rpmbuildercentos -f builder/Dockerfile_Centos .
 mkdir -p rpm
 mkdir -p deb
 mkdir -p release
