@@ -17,7 +17,7 @@ chmod 777 rpm
 chmod 777 deb
 
 docker run --env VERSION=$VERSION --env NAME=$NAME --env ARCH=$ARCH  --env OS='centos' -v $(pwd)/rpm:/packages rpmbuildercentos
-docker run --env VERSION=$VERSION --env NAME=$NAME --env ARCH=$ARCH  --env OS='fedora' -v $(pwd)/rpm:/packages rmpbuilder
+docker run --env VERSION=$VERSION --env NAME=$NAME --env ARCH=$ARCH  --env OS='fedora' -v $(pwd)/rpm:/packages rpmbuilder
 docker run --env VERSION=$VERSION --env NAME=$NAME --env ARCH=$ARCH --env PACKAGE=$PACKAGE -v $(pwd)/deb:/packages debbuilder
 
 cp rpm/* release/

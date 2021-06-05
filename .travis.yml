@@ -10,14 +10,14 @@ services:
 language: shell
 before_install:
 #  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install curl-openssl --force; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH="/usr/local/opt/curl/bin:$PATH"; fi
+#  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install curl-openssl --force; fi
+#  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH="/usr/local/opt/curl/bin:$PATH"; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 -m pip install --upgrade pip; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install python --version=3.7.9; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install innosetup postgresql winscp; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  python -m pip install --upgrade pip ; fi
 #  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install visualstudio2019buildtools ; fi
-  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install curl --force; fi
+#  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then  choco install curl --force; fi
 
 env: 
   - PATH=/c/Python37:/c/Python37/Scripts:/c/ProgramData/chocolatey/lib/curl/tools:/c/ProgramData/chocolatey/lib/SQLite/tools:$PATH PACKAGE=clientfva VERSION=1.0 ARCH=amd64  RPM_ARCH=x86_64
