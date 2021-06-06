@@ -3,6 +3,7 @@ import os
 import stat
 import logging
 from pathlib import Path
+import pathlib
 
 class UserSettings:
     __instance = None

@@ -6,9 +6,9 @@ export PATH=$PATH:/c/Program\ Files/PostgreSQL/13/bin:/c/Program\ Files\ \(x86\)
 
 cd src
 sed -i 's/http:\/\/localhost:8000/https:\/\/firmadigital.solvosoft.com/g' client_fva/user_settings.py
-sed -i 's/self.installation_path = None/self.installation_path = "C:\\\\"/g'  client_fva/user_settings.py
+sed -i 's/self.installation_path = None/self.installation_path = "C"/g'  client_fva/user_settings.py
 
-pyinstaller --clean --onefile -n client_fva -i client_fva/ui/ui_elements/images/icon.ico --upx-dir=/usr/local/share/  --noconfirm --log-level=WARN --windowed --noconsole --hidden-import 'pkcs11.defaults' main.py
+pyinstaller --clean --onefile -n client_fva -i client_fva/ui/ui_elements/images/icon.ico --noconfirm --log-level=WARN --windowed --noconsole --hidden-import pkcs11.defaults main.py
 
 cd dist
 mkdir workdir

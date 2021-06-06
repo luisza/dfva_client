@@ -121,23 +121,23 @@ class PKCS11Client:
             return directorioDeWindows;
           }
         """
+        system32 = Path(os.environ['SYSTEMROOT']) / "System32\\asepkcs.dll"
+        if system32.exists():
+            return str(system32)
 
         _os = platform.system().lower()
         _os_arch = platform.machine()
         path = None
         BASE_DIR = self.settings.get_installation_path()
         if _os == 'linux':
-            path = os.path.join(
-                BASE_DIR, 'os_libs/%s/%s/libASEP11.so' % (_os, _os_arch))
+            path = Path(BASE_DIR) / 'os_libs/%s/%s/libASEP11.so' % (_os, _os_arch)
         elif _os == "darwin":
-            path = os.path.join(
-                BASE_DIR, 'os_libs/macos/libASEP11.dylib')
+            path = Path(BASE_DIR) / 'os_libs/macos/libASEP11.dylib'
         elif _os == "windows":
-            path = os.path.join(
-                BASE_DIR, 'os_libs/windows/asepkcs.dll')
+            path = Path(BASE_DIR) / 'os_libs/windows/asepkcs.dll'
 
-        if path and os.path.exists(path):
-            return path
+        if path and path.exists():
+            return str(path)
         if self.error_show_message < self.settings.number_requests_before_fail:
             signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR, {
             'message': "No existe una biblioteca instalada para leer las tarjetas, esto puede ser porque no ha "
