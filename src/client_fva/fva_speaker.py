@@ -35,7 +35,7 @@ class FVA_Base_client(object):
             raise Exception("Pkcs11Client not found")
         self.identification = self.pkcs11client.get_identification(slot=self.slot_number)
         self.mutex = QMutex()
-        self.ca_bundle = self.settings.installation_path / Path('certs/ca_bundle.pem')
+        self.ca_bundle = self.settings.get_installation_path() / Path('certs/ca_bundle.pem')
 
     def start_the_negotiation(self):
         """

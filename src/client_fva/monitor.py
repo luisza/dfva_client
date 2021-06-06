@@ -39,7 +39,7 @@ class Monitor(QThread):
         """
 
 
-        logger.debug("Installation path: "+str(self.settings.installation_path))
+        logger.debug("Installation path: "+str(self.settings.get_installation_path()))
         logger.debug("Monitor: detect device")
         tmp_device = []
         added_device = {}

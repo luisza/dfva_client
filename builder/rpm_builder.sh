@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sed -i 's/http:\/\/localhost:8000/https:\/\/firmadigital.solvosoft.com/g' source/client_fva/user_settings.py
-sed -i 's/self.installation_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))/self.installation_path = "\/usr\/share\/client_fva\/"/g'  source/client_fva/user_settings.py
+sed -i 's/self.installation_path = None/self.installation_path = "\/usr\/share\/client_fva\/"/g'  source/client_fva/user_settings.py
 
 cd source/
 
@@ -15,10 +15,10 @@ mkdir -p  ~/rpmbuild/$NAME/
 
 
 cp dist/client_fva $DEB_HOMEDIR/client_fva.bin
-cp -ar ~/source/client_fva/ui/ui_elements/images $DEB_HOMEDIR/
+cp ~/source/client_fva/ui/ui_elements/images/icon.png $DEB_HOMEDIR/icon.png
 cp ~/source/os_libs/Athena/IDPClientDB.xml $DEB_HOMEDIR/client_fva_IDPClientDB.xml
 cp ~/source/os_libs/linux/${ARCH}/libASEP11.so $DEB_HOMEDIR/libASEP11.so
-cp -a ~/source/certs/* $DEB_HOMEDIR/
+cp ~/source/certs/ca_bundle.pem $DEB_HOMEDIR/
 
 tee -a $DEB_HOMEDIR/client_fva.desktop << END
 [Desktop Entry]

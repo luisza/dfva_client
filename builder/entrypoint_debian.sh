@@ -4,7 +4,7 @@ cp -a /client_fva_base /client_fva/
 cd /client_fva/ 
 
 sed -i 's/http:\/\/localhost:8000/https:\/\/firmadigital.solvosoft.com/g' /client_fva/client_fva/user_settings.py
-sed -i 's/self.installation_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))/self.installation_path = "\/usr\/share\/client_fva\/"/g'  /client_fva/client_fva/user_settings.py
+sed -i 's/self.installation_path = None/self.installation_path = "\/usr\/share\/client_fva\/"/g'  /client_fva/client_fva/user_settings.py
 
 pyinstaller --clean --onefile -n client_fva -i client_fva/ui/ui_elements/images/icon.ico --upx-dir=/usr/local/share/  --noconfirm --log-level=WARN --windowed --distpath=/data/ --workpath=/tmp/client_fvabuild --hidden-import 'pkcs11.defaults' main.py
 

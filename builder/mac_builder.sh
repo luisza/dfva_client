@@ -18,7 +18,7 @@ fi
 
 cd src/
 sed -ie 's/http:\/\/localhost:8000/https:\/\/firmadigital.solvosoft.com/g' client_fva/user_settings.py
-sed -ie 's/self.installation_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))/self.installation_path = "\/usr\/local\/client_fva\/"/g'  client_fva/user_settings.py
+sed -ie 's/self.installation_path = None/self.installation_path = "\/usr\/local\/client_fva\/"/g'  client_fva/user_settings.py
 
 pyinstaller --clean --onefile -n client_fva -i client_fva/ui/ui_elements/images/icon.icns --upx-dir=/usr/local/share/  --noconfirm --log-level=WARN --windowed  --hidden-import 'pkcs11.defaults' main.py
 

@@ -60,7 +60,7 @@ class UserSettings:
         self.config = configparser.ConfigParser()
         self.settings_file_path = str( Path.home() / ".fva_client" )
         self.settings_file_name = "client.conf"
-        self.installation_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.installation_path = None
 
         self.secret_auth_keys = {}
         # non-active wait time for the thread
@@ -77,6 +77,10 @@ class UserSettings:
             'odt': 'odf', 'ods': 'odf', 'odp': 'odf', 'odg': 'odf', 'odf': 'odf', 'xmlc': 'xml_contrafirma'
         }
 
+    def get_installation_path(self):
+        if self.installation_path:
+            return self.installation_path
+        return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def save(self):
         self.config['APPEARANCE'] = {

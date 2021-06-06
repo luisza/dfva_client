@@ -125,7 +125,7 @@ class PKCS11Client:
         _os = platform.system().lower()
         _os_arch = platform.machine()
         path = None
-        BASE_DIR = self.settings.installation_path
+        BASE_DIR = self.settings.get_installation_path()
         if _os == 'linux':
             path = os.path.join(
                 BASE_DIR, 'os_libs/%s/%s/libASEP11.so' % (_os, _os_arch))

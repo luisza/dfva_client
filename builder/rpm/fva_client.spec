@@ -1,9 +1,9 @@
 Name:           client_fva
 Version:        0.2
 Release:        1
-Summary:        Firma Digital de Costa Rica, aplicación grafica
+Summary:        Firma Digital de Costa Rica, aplicación gráfica
 Source:         %{name}-%{version}.tar.gz
-License:        GPLv3+
+License:        GPLv2
 URL:            https://github.com/luisza/dfva_client/
 Requires:       pcsc-lite libxcb  xcb-util
 
@@ -18,15 +18,13 @@ Cliente de escritorio para firmar y validar documentos de Firma Digital de Costa
 
 %install 
 
-mkdir -p %{buildroot}/usr/share/client_fva/client_fva/ui/ui_elements/images/
-mkdir -p %{buildroot}/usr/share/client_fva/os_libs/linux/x86_64/
 mkdir -p %{buildroot}/usr/share/applications/
 mkdir -p %{buildroot}/usr/share/client_fva/certs/
 install -m 755  %{_builddir}/%{name}/client_fva.bin %{buildroot}/%{_datadir}/%{name}/client_fva.bin
 install -m 755  %{_builddir}/%{name}/client_fva.desktop %{buildroot}/usr/share/applications/client_fva.desktop 
-install -m 755  -d %{_builddir}/%{name}/images/ %{buildroot}/%{_datadir}/%{name}/
-install -m 755  -C %{_builddir}/%{name}/libASEP11.so %{buildroot}/%{_datadir}/%{name}/libASEP11.so
-install -m 755  -C %{_builddir}/%{name}/client_fva_IDPClientDB.xml %{buildroot}/%{_datadir}/%{name}/IDPClientDB.xml
+install -m 755  %{_builddir}/%{name}/icon.png  %{buildroot}/%{_datadir}/%{name}/icon.png
+install -m 755  %{_builddir}/%{name}/libASEP11.so %{buildroot}/%{_datadir}/%{name}/libASEP11.so
+install -m 755  %{_builddir}/%{name}/client_fva_IDPClientDB.xml %{buildroot}/%{_datadir}/%{name}/IDPClientDB.xml
 install -m 755  %{_builddir}/%{name}/ca_bundle.pem %{buildroot}/%{_datadir}/%{name}/certs/ca_bundle.pem
 
 %files
