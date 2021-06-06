@@ -8,3 +8,4 @@ requests==2.25.1
 #pyscard==1.9.9
 sip==6.0.2
 #pycparser==2.18
+humanize

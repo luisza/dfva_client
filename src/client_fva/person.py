@@ -1,21 +1,21 @@
+import logging
 import random
+import time
+from base64 import b64encode
+from datetime import datetime
+from json import JSONDecodeError
 
 import requests
-import time
-from datetime import datetime
-from base64 import b64encode
-
-from PyQt5.QtCore import QObject, pyqtSignal, QMutex
+from PyQt5.QtCore import QObject, pyqtSignal
 from pkcs11 import Mechanism
+from pytz import timezone
 
+from client_fva.user_settings import UserSettings
 from decorators import decore_pkcs11
 from . import signals
-from .exception import UserRejectPin, SinPerson, PinNotProvided, PinIncorrect
+from .exception import UserRejectPin, SinPerson
 from .rsa import get_hash_sum
-from pytz import timezone
-from client_fva.user_settings import UserSettings
 from .session_storage import SessionStorage
-import logging
 
 logger = logging.getLogger()
 
@@ -248,6 +248,8 @@ class PersonBaseClient(PersonClientInterface):
                                     json=params, headers=self.get_http_headers())
 
         data = result.json()
+        if hasattr(self.requests, 'hide'):
+            self.requests.hide()
         self.notify('process', 3, 'Datos de autenticación recibidos correctamente')
         id_auth = data['id']
         if wait:
@@ -266,11 +268,16 @@ class PersonBaseClient(PersonClientInterface):
         result = self.requests.get(self.settings.fva_server_url + self.settings.check_authenticate_person % (code,),
                                    headers=self.get_http_headers())
         data = result.json()
+        if hasattr(self.requests, 'hide'):
+            self.requests.hide()
         return data
 
     def delete_authenticate(self, code):
-        return self.requests.delete(self.settings.fva_server_url + self.settings.authenticate_delete % (code,),
+        dev =  self.requests.delete(self.settings.fva_server_url + self.settings.authenticate_delete % (code,),
                                     headers=self.get_http_headers())
+        if hasattr(self.requests, 'hide'):
+            self.requests.hide()
+        return dev
 
     def sign(self, identification, document, resume, _format="xml_cofirma", file_path=None, is_base64=False,
              algorithm='sha512', wait=False, extras=None):
@@ -300,6 +307,8 @@ class PersonBaseClient(PersonClientInterface):
                                     headers=self.get_http_headers())
         self.notify('process', 4, 'Documento enviado')
         data = result.json()
+        if hasattr(self.requests, 'hide'):
+            self.requests.hide()
         sign_id = data['id']
         if data['status'] != 0:
             wait = False
@@ -333,12 +342,17 @@ class PersonBaseClient(PersonClientInterface):
         result = self.requests.get(self.settings.fva_server_url + self.settings.check_sign_person % (code,),
                                    headers=self.get_http_headers())
         data = result.json()
+        if hasattr(self.requests, 'hide'):
+            self.requests.hide()
         return data
 
     def delete_sign(self, code):
         try:
-            return self.requests.delete(self.settings.fva_server_url + self.settings.sign_delete % (code,),
+            result= self.requests.delete(self.settings.fva_server_url + self.settings.sign_delete % (code,),
                                    headers=self.get_http_headers())
+            if hasattr(self.requests, 'hide'):
+                self.requests.hide()
+            return result
         except requests.exceptions.ConnectionError:
             pass
 
@@ -363,6 +377,8 @@ class PersonBaseClient(PersonClientInterface):
         result = self.requests.post(self.settings.fva_server_url + url, json=params, headers=self.get_http_headers())
 
         data = result.json()
+        if hasattr(self.requests, 'hide'):
+            self.requests.hide()
         self.notify('process', 4, 'Operación completa')
         return data
 
@@ -371,6 +387,8 @@ class PersonBaseClient(PersonClientInterface):
         result = self.requests.get(self.settings.fva_server_url + self.settings.suscriptor_connected%(identification),
                                    headers=self.get_http_headers())
         data = result.json()
+        if hasattr(self.requests, 'hide'):
+            self.requests.hide()
         dev = False
         if 'is_connected' in data:
             dev = data['is_connected']
@@ -495,13 +513,24 @@ class PKCS11PersonClient(OSPersonClient):
             }
             result = self.requests.post(self.settings.fva_server_url + self.settings.login_person, json=params)
             data = result.json()
+            if data['token'] is None:
+                raise ValueError(data['error_text'])
             self.settings.secret_auth_keys[self.serial] = data['token']
             return data['token']
+
         except UserRejectPin as e:
             signals.send('notify', signals.SignalObject(signals.NOTIFTY_INFO, {
                 'message': "La autenticación en la plataforma de firma no ha sido realizada debido a que el PIN no fue "
                            "provisto, se solicitará nuevamente al intentar firmar o validar un documento."}))
             logger.info("El usuario rechazó la solicitud del pin, sesión sin registro.")
+        except ValueError as e:
+            signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR, {
+                'message': "La autenticación en la plataforma de firma no ha sido realizada debido a problemas con el certificado"}))
+            logger.error("Error autenticando ."+str(e))
+        except JSONDecodeError as e:
+            signals.send('notify', signals.SignalObject(signals.NOTIFTY_ERROR, {
+                'message': "La autenticación en la plataforma de firma no ha sido realizada debido a error interno de comunicación"}))
+            logger.error("Error autenticando ."+str(e))
 
     def unregister(self):
         self.close()

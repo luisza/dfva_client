@@ -1,4 +1,6 @@
 import sys
+
+from PyQt5.QtCore import pyqtSignal, QObject
 from PyQt5.QtWidgets import QInputDialog, QLineEdit
 
 from client_fva.models.Pin import Secret
@@ -27,6 +29,62 @@ main_app = None
 fva_client_ui = None
 DEFAULT_TAB_INDEX = 0
 
+
+class StatusBarManager(QObject):
+    MAX_STEPS = 6
+    hide = pyqtSignal()
+    show = pyqtSignal()
+    text = pyqtSignal(str)
+    value = pyqtSignal(int)
+    textbase = pyqtSignal(str)
+
+
+    def __init__(self, controller):
+        super().__init__()
+        self.controller = controller
+        self.progressbar = QtWidgets.QProgressBar(controller.centralWidget)
+        self.progressbar.setStyleSheet("")
+        self.progressbar.setProperty("value", 0)
+        self.progressbar.setOrientation(QtCore.Qt.Horizontal)
+        self.progressbar.setInvertedAppearance(False)
+        self.progressbar.setTextDirection(QtWidgets.QProgressBar.BottomToTop)
+        self.controller.statusBar.addWidget(self.progressbar)
+        self.start_process_bar()
+        self.progressbar.hide()
+        self.base_text = ''
+
+        self.hide.connect(self.hide_fn)
+        self.show.connect(self.show_fn)
+        self.text.connect(self.text_fn)
+        self.value.connect(self.value_fn)
+        self.textbase.connect(self.basetext_fn)
+
+    def start_process_bar(self):
+        self.progressbar.setRange(0, self.MAX_STEPS)
+        self.progressbar_status = 0
+        self.progressbar.setValue(self.progressbar_status)
+        self.operation_finished = False
+
+    def end_process_bar(self):
+        self.progressbar.setValue(self.MAX_STEPS)
+        self.controller.statusBar.removeWidget(self.progressbar)
+        self.operation_finished = True
+
+    def hide_fn(self):
+        self.progressbar.hide()
+
+    def show_fn(self):
+        self.progressbar.setFixedWidth(self.controller.centralWidget.width())
+        self.progressbar.show()
+
+    def basetext_fn(self, textdata):
+        self.base_text = textdata
+
+    def text_fn(self, textdata):
+        self.progressbar.setFormat(self.base_text + textdata)
+
+    def value_fn(self, val):
+        self.progressbar.setValue(val)
 
 class FVAClient(Ui_FVAClientUI):
 
@@ -57,6 +115,7 @@ class FVAClient(Ui_FVAClientUI):
         self.session_storage = SessionStorage.getInstance()
         self.session_storage.parent_widget = self.centralWidget
         self.main_thread = QtCore.QThread.currentThread()
+        self.statusBarManager = StatusBarManager(self)
 
         # load initial app settings
         self.user_settings = usersettings

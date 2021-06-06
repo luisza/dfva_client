@@ -4,6 +4,7 @@ from PyQt5.QtCore import QThreadPool, QObject
 from client_fva.models.User import UserModel
 from client_fva.monitor import Monitor
 from client_fva.person import PersonClient
+from client_fva.qtrequest import RequestWidget
 from client_fva.session_storage import SessionStorage
 from client_fva.ui.login import PersonLoginOpers
 from client_fva.ui.signvalidate import SignValidate
@@ -97,7 +98,8 @@ class TabManager(QObject):
     def create_tab(self, name, slot, serial):
         FVADialog = QtWidgets.QDialog()
         self.session_storage.session_info[serial]['tabnumber'] = self.controller.usrSlots.count()
-        self.session_storage.session_info[serial]['personclient'] = PersonClient(slot=slot, person=name, serial=serial)
+        myrequestdialog = RequestWidget(self.controller)
+        self.session_storage.session_info[serial]['personclient'] = PersonClient(slot=slot, person=name, serial=serial, request_client=myrequestdialog)
         self.session_storage.session_info[serial]['fvaspeaker'] = FVASpeakerClient(FVADialog, slot, name)
 
         sign_validate_ui = SignValidate(QtWidgets.QWidget(), self.main_app, serial)
