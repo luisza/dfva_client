@@ -26,6 +26,10 @@ Puede descargar el ejecutable desde la sección release de este repositorio
 
 # Pasos para generar ejecutable (para desarrolladores)
 
+Para encontrar algunos errores derivados de QT5 se puede ejecutar la aplicación con:
+
+    export QT_DEBUG_PLUGINS=1
+
 Instale dependencias 
 
      sudo apt install virtualenv python3-dev libxcb-xinerama0 libxcb-icccm4 libxcb-image0 libxkbcommon-x11-0 libxcb-xkb1 libxcb-render-util0 libxcb-keysyms1 libxcb-util0 libxcb-randr0

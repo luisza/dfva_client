@@ -5,7 +5,7 @@ sed -i 's/self.installation_path = os.path.dirname(os.path.dirname(os.path.abspa
 
 cd source/
 
-pyinstaller --clean --onefile -n client_fva -i client_fva/ui/ui_elements/images/icon.ico --upx-dir=/usr/local/share/  --noconfirm --log-level=WARN --windowed --hidden-import 'pkcs11.defaults' main.py
+pyinstaller --clean --onefile -n client_fva -i client_fva/ui/ui_elements/images/icon.png --upx-dir=/usr/local/share/  --noconfirm --log-level=WARN --windowed --hidden-import 'pkcs11.defaults' main.py
 
 
 
@@ -25,7 +25,7 @@ tee -a $DEB_HOMEDIR/client_fva.desktop << END
 Name=Cliente FVA
 Comment=Firma Digital para Costa Rica
 Exec=/usr/share/client_fva/client_fva.bin
-Icon=/usr/share/client_fva/client_fva/ui/ui_elements/images/icon.png
+Icon=/usr/share/client_fva/icon.png
 Terminal=false
 Type=Application
 Categories=Network;Application;

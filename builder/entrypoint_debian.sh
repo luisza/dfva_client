@@ -26,7 +26,7 @@ Version: ${VERSION}
 Architecture: ${ARCH}
 Priority: optional
 Section: non-free
-Depends: pcscd
+Depends: pcscd, libxcb-xinerama0,  libxcb-util1 | libxcb-util0
 Homepage: https://github.com/luisza/dfva_client/
 Maintainer: Luis Zarate Montero<luisza14@gmail.com>
 Description: Cliente para firmar digitalmente documentos
