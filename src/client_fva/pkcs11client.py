@@ -92,36 +92,17 @@ class PKCS11Client:
         if 'PKCS11_MODULE' in os.environ:
             return os.environ['PKCS11_MODULE']
 
-        if os.path.exists('/usr/lib/libASEP11.so'):  # Linux
-            return '/usr/lib/libASEP11.so'
+        if os.path.exists('/usr/lib/SCMiddleware/libidop11.so'):  # Linux
+            return '/usr/lib/SCMiddleware/libidop11.so'
 
-        if os.path.exists('/usr/lib/x64-athena/libASEP11.so'):  # Linux
-            return '/usr/lib/x64-athena/libASEP11.so'
-
-        if os.path.exists('/usr/lib/x86-athena/libASEP11.so'):  # Linux
-            return '/usr/lib/x86-athena/libASEP11.so'
-
-        if os.path.exists("/usr/local/lib/libASEP11.dylib"):  # macOS
-            return "/usr/local/lib/libASEP11.dylib"
-
-        if os.path.exists("/Library/Application Support/Athena/libASEP11.dylib"):  # macOS
-            return "/Library/Application Support/Athena/libASEP11.dylib"
+        if os.path.exists("/Library/SCMiddleware/libidop11.dylib"):  # macOS
+            return "/Library/SCMiddleware/libidop11.dylib"
 
 
         # FIXME: Hacer la construcción del path por defecto para windows,
         # sugerencia
-        """
-        public static String ObtenerDirectorioDeWindows()
-          {
-            String direccionDeWindows = System.getenv("SystemRoot");
-            if ((direccionDeWindows == null) || (direccionDeWindows.equalsIgnoreCase(""))) {
-              direccionDeWindows = System.getenv("WINDIR");
-            }
-            String directorioDeWindows = direccionDeWindows + File.separator + "system32";
-            return directorioDeWindows;
-          }
-        """
-        system32 = Path(os.environ['SYSTEMROOT']) / "System32\\asepkcs.dll"
+ 
+        system32 = Path(os.environ['PROGRAMFILES']) / "\\Smart Card Middleware\\bin\\idoPKCS.dll"
         if system32.exists():
             return str(system32)
 
@@ -130,11 +111,11 @@ class PKCS11Client:
         path = None
         BASE_DIR = self.settings.get_installation_path()
         if _os == 'linux':
-            path = Path(BASE_DIR) / 'os_libs/%s/%s/libASEP11.so' % (_os, _os_arch)
+            path = Path(BASE_DIR) / 'os_libs/linux/libidop11.so' 
         elif _os == "darwin":
-            path = Path(BASE_DIR) / 'os_libs/macos/libASEP11.dylib'
+            path = Path(BASE_DIR) / 'os_libs/macos/libidop11.dylib'
         elif _os == "windows":
-            path = Path(BASE_DIR) / 'os_libs/windows/asepkcs.dll'
+            path = Path(BASE_DIR) / 'os_libs/windows/idoPKCS.dll'
 
         if path and path.exists():
             return str(path)

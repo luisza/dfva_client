@@ -64,7 +64,7 @@ class PersonClientInterface:
     .. code:: bash
 
         export PKCS11_PIN=<pin>
-        export PKCS11_MODULE='<somepath>/dfva_client/clients/libs/linux/x86_64/libASEP11.so'
+        export PKCS11_MODULE='<somepath>/dfva_client/clients/libs/libidop11.so'
 
     Aunque el cliente puede detectar los módulos y pedirá el pin en la consola, el método de variables de entorno es más rápido.
 

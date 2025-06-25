@@ -139,11 +139,11 @@ class PKCS11Client:
         if 'PKCS11_MODULE' in os.environ:
             return os.environ['PKCS11_MODULE']
 
-        if os.path.exists('/usr/lib/libASEP11.so'):  # Linux
-            return '/usr/lib/libASEP11.so'
+        if os.path.exists('/usr/lib/SCMiddleware/libidop11.so'):  # Linux
+            return '/usr/lib/SCMiddleware/libidop11.so'
 
-        if os.path.exists("/usr/local/lib/libASEP11.dylib"):  # macOS
-            return "/usr/local/lib/libASEP11.dylib"
+        if os.path.exists("/Library/SCMiddleware/libidop11.dylib"):  # macOS
+            return "/Library/SCMiddleware/libidop11.dylib"
 
         # FIXME: Hacer la construcción del path por defecto para windows,
         # sugerencia
@@ -165,13 +165,13 @@ class PKCS11Client:
             os.path.dirname(os.path.abspath(__file__)))
         if _os == 'linux':
             path = os.path.join(
-                BASE_DIR, 'os_libs/%s/%s/libASEP11.so' % (_os, _os_arch))
+                BASE_DIR, 'os_libs/linux/libidop11.so' )
         elif _os == "darwin":
             path = os.path.join(
-                BASE_DIR, 'os_libs/macos/libASEP11.dylib')
+                BASE_DIR, 'os_libs/macos/libidop11.dylib')
         elif _os == "windows":
             path = os.path.join(
-                BASE_DIR, 'os_libs/windows/asepkcs.dll')
+                BASE_DIR, 'os_libs/windows/idoPKCS.dll')
 
         if os.path.exists(path):
             return path
